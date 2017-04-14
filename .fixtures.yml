@@ -10,5 +10,8 @@ fixtures:
     stdlib:
       repo: https://github.com/simp/puppetlabs-stdlib
       ref: 4.13.1
+    gitlab:
+      repo: https://github.com/simp/puppet-gitlab
+      ref: v1.13.3
   symlinks:
     simp_gitlab: "#{source_dir}"
