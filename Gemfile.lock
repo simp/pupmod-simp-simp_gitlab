@@ -488,7 +488,7 @@ DEPENDENCIES
   rspec
   rspec-puppet
   simp-beaker-helpers (~> 1.7)
-  simp-rake-helpers (~> 3.0)
+  simp-rake-helpers (~> 3.5)
   simp-rspec-puppet-facts (~> 1.3)
   travis
   travis-lint
