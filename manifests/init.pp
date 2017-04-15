@@ -87,6 +87,8 @@ class simp_gitlab (
   Stdlib::Absolutepath $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
   Boolean              $two_way_ssl_validation  = false,
   Integer              $ssl_verify_depth        = 2,
+  Array[String]        $openssl_cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
+
 
 
 ) {
@@ -104,11 +106,12 @@ class simp_gitlab (
     default => {}
   }
   $_nginx_pki_options = $::simp_gitlab::pki ? {
-    true => merge( $__nginx_pki_options, {
+    true => merge( {
       'ssl_certificate'        => $app_pki_cert,
       'ssl_certificate_key'    => $app_pki_key,
       'redirect_http_to_https' => true,
-    }),
+      'ssl_ciphers'            => join($::simp_gitlab::openssl_cipher_suite, ':'),
+    }, $__nginx_pki_options ),
     default => {}
   }
   $_nginx_options = merge($_nginx_pki_options, $nginx_options)

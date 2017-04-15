@@ -19,19 +19,19 @@ describe 'simp_gitlab' do
     on_supported_os({
       :selinux_mode   => :permissive,
     }).each do |os, os_facts|
-      context "on #{os}" do
+      context "on #{os} (SELinux permissive)" do
         let(:facts){
           os_facts.merge({
           :gitlab_systemd => os_facts.fetch('init_systems',{}).include?('systemd'),
         })}
 
-        context "simp_gitlab class without any parameters" do
+        context 'simp_gitlab class without any parameters' do
           let(:params) {{ }}
-          it_behaves_like "a structured module"
+          it_behaves_like 'a structured module'
           it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
         end
 
-        context "simp_gitlab class with firewall enabled" do
+        context 'simp_gitlab class with firewall enabled' do
           let(:params) {{
             :trusted_nets    => ['10.0.2.0/24'],
             :tcp_listen_port => 1234,
@@ -42,16 +42,17 @@ describe 'simp_gitlab' do
           }
         end
 
-        context "simp_gitlab class with pki enabled" do
+        context 'simp_gitlab class with pki enabled' do
           let(:params) {{
             :pki => true,
           }}
           it { is_expected.to contain_class('gitlab').with_external_port(443) }
           it { is_expected.to contain_class('gitlab').with_external_url(/^https/) }
           it { is_expected.to contain_class('gitlab').with_nginx({
-            "ssl_certificate"        => "/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub",
-            "ssl_certificate_key"    => "/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem",
-            "redirect_http_to_https" => true
+            'ssl_certificate'        => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
+            'ssl_certificate_key'    => '/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem',
+            'redirect_http_to_https' => true,
+            'ssl_ciphers'=>'DEFAULT:!MEDIUM',
           })}
 
           context 'and 2-way validation' do
@@ -63,11 +64,12 @@ describe 'simp_gitlab' do
             it { is_expected.to contain_class('gitlab').with_external_port(443) }
             it { is_expected.to contain_class('gitlab').with_external_url(/^https/) }
             it { is_expected.to contain_class('gitlab').with_nginx({
-              "ssl_verify_client"      => "on",
-              "ssl_verify_depth"       => 2,
-              "ssl_certificate"        => "/some/other/path/public/foo.example.com.pub",
-              "ssl_certificate_key"    => "/some/other/path/private/foo.example.com.pem",
-              "redirect_http_to_https" => true,
+              'ssl_certificate'        => '/some/other/path/public/foo.example.com.pub',
+              'ssl_certificate_key'    => '/some/other/path/private/foo.example.com.pem',
+              'redirect_http_to_https' => true,
+              'ssl_ciphers'            => 'DEFAULT:!MEDIUM',
+              'ssl_verify_client'      => 'on',
+              'ssl_verify_depth'       => 2,
             })}
           end
         end
@@ -98,28 +100,30 @@ describe 'simp_gitlab' do
   on_supported_os({
     :selinux_mode   => :enforcing,
   }).each do |os, os_facts|
-    context "simp_gitlab class with selinux enabled" do
-      let(:facts){
-        os_facts.merge({
-        :gitlab_systemd => os_facts.fetch('init_systems',{}).include?('systemd'),
-      })}
-      let(:params) {{ :enable_selinux => true }}
+    context "on #{os} (SELinux enforcing)" do
+      context 'simp_gitlab class with selinux enabled' do
+        let(:facts){
+          os_facts.merge({
+          :gitlab_systemd => os_facts.fetch('init_systems',{}).include?('systemd'),
+        })}
+        let(:params) {{ :enable_selinux => true }}
 
-      ### it_behaves_like "a structured module"
-      ### it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
+        ### it_behaves_like 'a structured module'
+        ### it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
 
-      skip('FIXME: verify selinux works (see ##://docs.gitlab.com/omnibus/common_installation_problems/README.html#git-user-does-not-have-ssh-access')
+        skip('FIXME: verify selinux works (see ##://docs.gitlab.com/omnibus/common_installation_problems/README.html#git-user-does-not-have-ssh-access')
+      end
     end
-  end
 
-  context 'unsupported operating system' do
-    describe 'simp_gitlab class without any parameters on Solaris/Nexenta' do
-      let(:facts) {{
-        :osfamily        => 'Solaris',
-        :operatingsystem => 'Nexenta',
-      }}
+    context 'unsupported operating system' do
+      describe 'simp_gitlab class without any parameters on Solaris/Nexenta' do
+        let(:facts) {{
+          :osfamily        => 'Solaris',
+          :operatingsystem => 'Nexenta',
+        }}
 
-      it { expect { is_expected.to contain_package('simp_gitlab') }.to raise_error(Puppet::Error, /Nexenta not supported/) }
+        it { expect { is_expected.to contain_package('simp_gitlab') }.to raise_error(Puppet::Error, /Nexenta not supported/) }
+      end
     end
   end
 end

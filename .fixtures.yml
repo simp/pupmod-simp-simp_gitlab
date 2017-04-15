@@ -7,6 +7,9 @@ fixtures:
     pki:
       repo: https://github.com/simp/pupmod-simp-pki
       ref: 6.0.0
+    simp_options:
+      repo: https://github.com/simp/pupmod-simp-simp_options
+      ref: 1.0.1
     simplib:
       repo: https://github.com/simp/pupmod-simp-simplib
       ref: 3.3.1
