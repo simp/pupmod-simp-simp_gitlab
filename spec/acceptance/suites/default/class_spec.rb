@@ -14,13 +14,14 @@ describe 'simp_gitlab class' do
   let(:pupenv) {{'PUPPET_EXTRA_OPTS' => '--logdest /var/log/puppetlabs/puppet/beaker.log'}}
   let(:manifest) {
     <<-EOS
-      class { 'simp_gitlab': enable_pki => true }
+      class { 'simp_gitlab':
+        pki => true,
+        app_pki_external_source => '/etc/pki/simp-testing/pki',
+      }
     EOS
   }
 
-  copy_keydist_to(server)
-
-  context 'default parameters' do
+  context 'default parameters (PKI enabled)' do
     # Using puppet_apply as a helper
     it 'should work with no errors' do
       apply_manifest_on(server, manifest, :catch_failures => true, :environment => pupenv)

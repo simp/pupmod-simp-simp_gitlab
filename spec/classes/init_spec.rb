@@ -44,7 +44,7 @@ describe 'simp_gitlab' do
 
         context "simp_gitlab class with pki enabled" do
           let(:params) {{
-            :enable_pki => true,
+            :pki => true,
           }}
           it { is_expected.to contain_class('gitlab').with_external_port(443) }
           it { is_expected.to contain_class('gitlab').with_external_url(/^https/) }

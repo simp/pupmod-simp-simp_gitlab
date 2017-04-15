@@ -1,12 +1,9 @@
-# Full description of SIMP module 'simp_gitlab' here.
+# SIMP Profile for managing GitLab
 #
 # === Welcome to SIMP!
+#
 # This module is a component of the System Integrity Management Platform, a
 # managed security compliance framework built on Puppet.
-#
-# ---
-# *FIXME:* verify that the following paragraph fits this module's characteristics!
-# ---
 #
 # This module is optimally designed for use within a larger SIMP ecosystem, but
 # it can be used independently:
@@ -16,51 +13,83 @@
 #
 # * If used independently, all SIMP-managed security subsystems are disabled by
 #   default, and must be explicitly opted into by administrators.  Please
-#   review the +trusted_nets+ and +$enable_*+ parameters for details.
-#
-# @param service_name
-#   The name of the simp_gitlab service
-#
-# @param package_name
-#   The name of the simp_gitlab package
+#   review the parameters (e.g., `$trusted_nets`, `pki`) for details.
 #
 # @param trusted_nets
 #   A whitelist of subnets (in CIDR notation) permitted access
 #
-# @param enable_auditing
-#   If true, manage auditing for simp_gitlab
-#
+#### @param enable_auditing
+####   If true, manage auditing for simp_gitlab
+####
 # @param enable_firewall
 #   If true, manage firewall rules to acommodate simp_gitlab
 #
-# @param enable_logging
-#   If true, manage logging configuration for simp_gitlab
+#### @param enable_logging
+####   If true, manage logging configuration for simp_gitlab
+####
+#### @param enable_selinux
+####   If true, manage selinux to permit simp_gitlab
+####
+#### @param enable_tcpwrappers
+####   If true, manage TCP wrappers configuration for simp_gitlab
 #
-# @param enable_pki
-#   If true, manage PKI/PKE configuration for simp_gitlab
+# @param pki
+#   * If 'simp', include SIMP's pki module and use pki::copy to manage
+#     application certs in /etc/pki/simp_apps/openldap/x509
+#   * If true, do *not* include SIMP's pki module, but still use pki::copy
+#     to manage certs in /etc/pki/simp_apps/openldap/x509
+#   * If false, do not include SIMP's pki module and do not use pki::copy
+#     to manage certs.  You will need to appropriately assign a subset of:
+#     * app_pki_dir
+#     * app_pki_key
+#     * app_pki_cert
+#     * app_pki_ca
 #
-# @param enable_selinux
-#   If true, manage selinux to permit simp_gitlab
+# @param app_pki_external_source
+#   * If pki = 'simp' or true, this is the directory from which certs will be
+#     copied, via pki::copy.  Defaults to /etc/pki/simp/x509.
 #
-# @param enable_tcpwrappers
-#   If true, manage TCP wrappers configuration for simp_gitlab
+#   * If pki = false, this variable has no effect.
+#
+# @param app_pki_dir
+#   This variable controls the basepath of $app_pki_key, $app_pki_cert,
+#   $app_pki_ca, $app_pki_ca_dir, and $app_pki_crl.
+#   It defaults to /etc/pki/simp_apps/openldap/x509.
+#
+# @param app_pki_key
+#   Full path of the private SSL key file.
+#
+# @param app_pki_cert
+#   Full path of the public SSL certificate.
+#
+# @param app_pki_ca
+#   Full path of the the SSL CA certificate.
 #
 # @author simp
 #
 class simp_gitlab (
-  Simplib::Netlist     $trusted_nets               = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
-  Boolean              $enable_pki                 = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
-  Stdlib::Absolutepath $app_pki_external_source    = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
-  Boolean              $enable_auditing            = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
-  Boolean              $enable_firewall            = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
-  Boolean              $enable_logging             = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
-  Boolean              $enable_selinux             = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
-  Boolean              $enable_tcpwrappers         = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
+  Simplib::Netlist     $trusted_nets            = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
+  Variant[Enum['simp'],Boolean] $pki            = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
+  Simplib::Uri         $external_url            = $pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
+  Simplib::Port        $tcp_listen_port         = $pki ? { true => 443, default => 80},
+  Boolean              $enable_auditing         = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
+  Boolean              $enable_firewall         = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
+  Boolean              $enable_logging          = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
+  Boolean              $enable_selinux          = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
+  Boolean              $enable_tcpwrappers      = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
 
-  Hash                 $nginx_options              = {},
-  Simplib::Uri         $external_url               = $enable_pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
-  Simplib::Port        $tcp_listen_port            = $enable_pki ? { true => 443, default => 80},
+  Hash                 $nginx_options           = {},
+
+  Stdlib::Absolutepath $app_pki_external_source = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
+  Stdlib::Absolutepath $app_pki_dir             = '/etc/pki/simp_apps/gitlab/x509',
+  Stdlib::Absolutepath $app_pki_key             = "${app_pki_dir}/private/${facts['fqdn']}.pem",
+  Stdlib::Absolutepath $app_pki_cert            = "${app_pki_dir}/public/${facts['fqdn']}.pub",
+  Stdlib::Absolutepath $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
+
 ) {
+
+  # FIXME: SSL ciphers: https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
+  # FIXME: 2-way client auth: https://docs.gitlab.com/omnibus/settings/nginx.html#enable-2-way-ssl-client-authentication
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
@@ -73,12 +102,7 @@ class simp_gitlab (
     fail( "could not determine server name for URL '${external_url}'" )
   }
 
-  # TODO: should these be params?
-  $app_pki_dir             = '/etc/pki/simp_apps/gitlab/x509'
-  $app_pki_key             = "${app_pki_dir}/private/${external_server}.pem"
-  $app_pki_cert            = "${app_pki_dir}/public/${external_server}.pub"
-
-  $default_nginx_options = $enable_pki ? {
+  $_nginx_pki_options = $::simp_gitlab::pki ? {
     true => {
       'ssl_certificate'        => $app_pki_cert,
       'ssl_certificate_key'    => $app_pki_key,
@@ -87,17 +111,18 @@ class simp_gitlab (
     default => {}
   }
 
-  $_nginx_options = merge($default_nginx_options, $nginx_options)
+  $_nginx_options = merge($_nginx_pki_options, $nginx_options)
 
   class { 'gitlab':
     external_url  => $simp_gitlab::external_url,
     external_port => $simp_gitlab::tcp_listen_port,
-    nginx         => $_nginx_options,
+    nginx         => $simp_gitlab::_nginx_options,
   }
 
-  if $enable_pki {
+  if $pki {
     pki::copy{ 'gitlab':
-      pki => $enable_pki,
+      pki    => $::simp_gitlab::pki,
+      source => $::simp_gitlab::app_pki_external_source,
     }
     Pki::Copy['gitlab'] -> Class['gitlab']
   }
@@ -105,7 +130,7 @@ class simp_gitlab (
   if $enable_firewall {
     iptables::listen::tcp_stateful { 'allow_simp_gitlab_tcp_connections':
       trusted_nets => $::simp_gitlab::trusted_nets,
-      dports       => $::simp_gitlab::tcp_listen_port
+      dports       => $::simp_gitlab::tcp_listen_port,
     }
   }
 
@@ -118,7 +143,7 @@ class simp_gitlab (
   ###  ~> Class[ '::simp_gitlab::service' ]
   ###  -> Class[ '::simp_gitlab' ]
   ###
-  ###  if $enable_pki {
+  ###  if $pki {
   ###    include '::simp_gitlab::config::pki'
   ###    Class[ '::simp_gitlab::config::pki' ]
   ###    -> Class[ '::simp_gitlab::service' ]
