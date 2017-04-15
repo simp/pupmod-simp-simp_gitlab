@@ -3,30 +3,40 @@ require 'spec_helper_acceptance'
 test_name 'simp_gitlab class'
 
 describe 'simp_gitlab class' do
+  let(:server) {only_host_with_role( hosts, 'server' )}
+  let(:curl_ssl_cmd ) {
+    server = only_host_with_role( hosts, 'server' )
+    fqdn = fact_on(server, 'fqdn')
+    'curl  --cacert /etc/pki/simp/x509/cacerts/cacerts.pem' +
+         " --cert /etc/pki/simp/x509/public/#{fqdn}.pub" +
+         " --key /etc/pki/simp/x509/private/#{fqdn}.pem"
+  }
+  let(:pupenv) {{'PUPPET_EXTRA_OPTS' => '--logdest /var/log/puppetlabs/puppet/beaker.log'}}
   let(:manifest) {
     <<-EOS
-      class { 'simp_gitlab': }
+      class { 'simp_gitlab': enable_pki => true }
     EOS
   }
+
+  copy_keydist_to(server)
 
   context 'default parameters' do
     # Using puppet_apply as a helper
     it 'should work with no errors' do
-      apply_manifest(manifest, :catch_failures => true)
+      apply_manifest_on(server, manifest, :catch_failures => true, :environment => pupenv)
     end
 
     it 'should be idempotent' do
-      apply_manifest(manifest, :catch_changes => true)
+      apply_manifest_on(server, manifest, :catch_changes => true, :environment => pupenv)
     end
 
-
-    describe package('simp_gitlab') do
-      it { is_expected.to be_installed }
+    it 'allows http connection on port 80' do
+      shell 'sleep 90' # give it some time to start up
+      fqdn = fact_on(server, 'fqdn')
+      describe command( "#{curl_ssl_cmd} -L https://#{fqdn}/users/sign_in" ) do
+        its(:stdout) { should match /GitLab|password/ }
+      end
     end
 
-    describe service('simp_gitlab') do
-      it { is_expected.to be_enabled }
-      it { is_expected.to be_running }
-    end
   end
 end

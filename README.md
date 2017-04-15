@@ -17,6 +17,36 @@
 
 ## Description
 
+SIMP profiles for GitLab Omnibus:
+
+### Further reading
+
+  * GitLab Omnibus
+    - documentation: https://docs.gitlab.com/omnibus/README.html
+      - [Common installation problems](https://docs.gitlab.com/omnibus/common_installation_problems/README.html)
+      - [Maintainence commands](https://docs.gitlab.com/omnibus/maintenance/README.html#maintenance-commands)
+      - [Troubleshooting](https://docs.gitlab.com/omnibus/README.html#troubleshooting)
+    - architecture: https://docs.gitlab.com/omnibus/architecture/README.html
+      - [Global GitLab configuratino template](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template)
+      - [Templates for configurations of components](https://docs.gitlab.com/omnibus/architecture/README.html#templates-for-configuration-of-components)
+      - [`gitlab-reconfigure`](https://docs.gitlab.com/omnibus/architecture/README.html#what-happens-during-gitlab-ctl-reconfigure)
+    - source: https://gitlab.com/gitlab-org/omnibus-gitlab
+    - optional services:
+      - Mattermost (chat): https://docs.gitlab.com/omnibus/gitlab-mattermost/README.html
+      - Prometheus (monitoring): https://docs.gitlab.com/ce/administration/monitoring/prometheus/index.html
+      - GitLab Docker images: https://docs.gitlab.com/omnibus/docker/README.html
+  * vshn/gitlab component module:
+    * https://github.com/vshn/puppet-gitlab
+  - Security & compliance
+    - https://www.stigviewer.com/stig/web_server/
+
+### Dev notes
+
+#### Omnibus syslog is GitLab Enterprise Edition only
+  - [ ] `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
+  - [ ] [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
+
+
 **FIXME:** Ensure the *Description* section is correct and complete, then remove this message!
 
 Start with a one- or two-sentence summary of what the module does and/or what

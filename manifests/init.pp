@@ -48,63 +48,109 @@
 # @author simp
 #
 class simp_gitlab (
-  String           $service_name           = 'simp_gitlab',
-  String           $package_name           = 'simp_gitlab',
-  Simplib::Port    $tcp_listen_port        = 9999,
-  Simplib::Netlist $trusted_nets           = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
-  Boolean          $enable_pki             = simplib::lookup('simp_options::pki', { 'default_value' => false }),
-  Boolean          $enable_auditing        = simplib::lookup('simp_options::auditd', { 'default_value' => false }),
-  Boolean          $enable_firewall        = simplib::lookup('simp_options::firewall', { 'default_value' => false }),
-  Boolean          $enable_logging         = simplib::lookup('simp_options::syslog', { 'default_value' => false }),
-  Boolean          $enable_selinux         = simplib::lookup('simp_options::selinux', { 'default_value' => false }),
-  Boolean          $enable_tcpwrappers     = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false })
+  Simplib::Netlist     $trusted_nets               = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
+  Boolean              $enable_pki                 = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
+  Stdlib::Absolutepath $app_pki_external_source    = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
+  Boolean              $enable_auditing            = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
+  Boolean              $enable_firewall            = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
+  Boolean              $enable_logging             = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
+  Boolean              $enable_selinux             = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
+  Boolean              $enable_tcpwrappers         = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
 
+  Hash                 $nginx_options              = {},
+  Simplib::Uri         $external_url               = $enable_pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
+  Simplib::Port        $tcp_listen_port            = $enable_pki ? { true => 443, default => 80},
 ) {
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
-  include '::simp_gitlab::install'
-  include '::simp_gitlab::config'
-  include '::simp_gitlab::service'
-  Class[ '::simp_gitlab::install' ]
-  -> Class[ '::simp_gitlab::config'  ]
-  ~> Class[ '::simp_gitlab::service' ]
-  -> Class[ '::simp_gitlab' ]
 
-  if $enable_pki {
-    include '::simp_gitlab::config::pki'
-    Class[ '::simp_gitlab::config::pki' ]
-    -> Class[ '::simp_gitlab::service' ]
+  if $external_url =~ /\/\/(.+)?([:\/]|$)/ {
+    $external_server = $1
+  }
+  else {
+    fail( "could not determine server name for URL '${external_url}'" )
   }
 
-  if $enable_auditing {
-    include '::simp_gitlab::config::auditing'
-    Class[ '::simp_gitlab::config::auditing' ]
-    -> Class[ '::simp_gitlab::service' ]
+  # TODO: should these be params?
+  $app_pki_dir             = '/etc/pki/simp_apps/gitlab/x509'
+  $app_pki_key             = "${app_pki_dir}/private/${external_server}.pem"
+  $app_pki_cert            = "${app_pki_dir}/public/${external_server}.pub"
+
+  $default_nginx_options = $enable_pki ? {
+    true => {
+      'ssl_certificate'        => $app_pki_cert,
+      'ssl_certificate_key'    => $app_pki_key,
+      'redirect_http_to_https' => true,
+    },
+    default => {}
+  }
+
+  $_nginx_options = merge($default_nginx_options, $nginx_options)
+
+  class { 'gitlab':
+    external_url  => $simp_gitlab::external_url,
+    external_port => $simp_gitlab::tcp_listen_port,
+    nginx         => $_nginx_options,
+  }
+
+  if $enable_pki {
+    pki::copy{ 'gitlab':
+      pki => $enable_pki,
+    }
+    Pki::Copy['gitlab'] -> Class['gitlab']
   }
 
   if $enable_firewall {
-    include '::simp_gitlab::config::firewall'
-    Class[ '::simp_gitlab::config::firewall' ]
-    -> Class[ '::simp_gitlab::service'  ]
+    iptables::listen::tcp_stateful { 'allow_simp_gitlab_tcp_connections':
+      trusted_nets => $::simp_gitlab::trusted_nets,
+      dports       => $::simp_gitlab::tcp_listen_port
+    }
   }
 
-  if $enable_logging {
-    include '::simp_gitlab::config::logging'
-    Class[ '::simp_gitlab::config::logging' ]
-    -> Class[ '::simp_gitlab::service' ]
-  }
-
-  if $enable_selinux {
-    include '::simp_gitlab::config::selinux'
-    Class[ '::simp_gitlab::config::selinux' ]
-    -> Class[ '::simp_gitlab::service' ]
-  }
-
-  if $enable_tcpwrappers {
-    include '::simp_gitlab::config::tcpwrappers'
-    Class[ '::simp_gitlab::config::tcpwrappers' ]
-    -> Class[ '::simp_gitlab::service' ]
-  }
+  #### Note: this is a profile; the full component pattern is probably overkill
+  ###  include '::simp_gitlab::install'
+  ###  include '::simp_gitlab::config'
+  ###  include '::simp_gitlab::service'
+  ###  Class[ '::simp_gitlab::install' ]
+  ###  -> Class[ '::simp_gitlab::config'  ]
+  ###  ~> Class[ '::simp_gitlab::service' ]
+  ###  -> Class[ '::simp_gitlab' ]
+  ###
+  ###  if $enable_pki {
+  ###    include '::simp_gitlab::config::pki'
+  ###    Class[ '::simp_gitlab::config::pki' ]
+  ###    -> Class[ '::simp_gitlab::service' ]
+  ###  }
+  ###
+  ###  if $enable_auditing {
+  ###    include '::simp_gitlab::config::auditing'
+  ###    Class[ '::simp_gitlab::config::auditing' ]
+  ###    -> Class[ '::simp_gitlab::service' ]
+  ###  }
+  ###
+  ###  if $enable_firewall {
+  ###    include '::simp_gitlab::config::firewall'
+  ###    Class[ '::simp_gitlab::config::firewall' ]
+  ###    -> Class[ '::simp_gitlab::service'  ]
+  ###  }
+  ###
+  ###  if $enable_logging {
+  ###    include '::simp_gitlab::config::logging'
+  ###    Class[ '::simp_gitlab::config::logging' ]
+  ###    -> Class[ '::simp_gitlab::service' ]
+  ###  }
+  ###
+  ###  if $enable_selinux {
+  ###    include '::simp_gitlab::config::selinux'
+  ###    Class[ '::simp_gitlab::config::selinux' ]
+  ###    -> Class[ '::simp_gitlab::service' ]
+  ###  }
+  ###
+  ###  if $enable_tcpwrappers {
+  ###    include '::simp_gitlab::config::tcpwrappers'
+  ###    Class[ '::simp_gitlab::config::tcpwrappers' ]
+  ###    -> Class[ '::simp_gitlab::service' ]
+  ###  }
 }

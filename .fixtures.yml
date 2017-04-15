@@ -4,6 +4,9 @@ fixtures:
     iptables:
       repo: https://github.com/simp/pupmod-simp-iptables
       ref: 6.0.1
+    pki:
+      repo: https://github.com/simp/pupmod-simp-pki
+      ref: 6.0.0
     simplib:
       repo: https://github.com/simp/pupmod-simp-simplib
       ref: 3.3.1
