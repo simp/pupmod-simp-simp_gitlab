@@ -33,9 +33,9 @@ describe 'simp_gitlab' do
 
         context "simp_gitlab class with firewall enabled" do
           let(:params) {{
-            :trusted_nets     => ['10.0.2.0/24'],
+            :trusted_nets    => ['10.0.2.0/24'],
             :tcp_listen_port => 1234,
-            :enable_firewall => true,
+            :firewall        => true,
           }}
           ###it_behaves_like "a structured module"
           it { is_expected.to create_iptables__listen__tcp_stateful('allow_simp_gitlab_tcp_connections').with_dports(1234)

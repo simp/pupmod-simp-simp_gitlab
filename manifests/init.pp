@@ -21,7 +21,7 @@
 #### @param enable_auditing
 ####   If true, manage auditing for simp_gitlab
 ####
-# @param enable_firewall
+# @param firewall
 #   If true, manage firewall rules to acommodate simp_gitlab
 #
 #### @param enable_logging
@@ -73,7 +73,7 @@ class simp_gitlab (
   Simplib::Uri         $external_url            = $pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
   Simplib::Port        $tcp_listen_port         = $pki ? { true => 443, default => 80},
   Boolean              $enable_auditing         = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
-  Boolean              $enable_firewall         = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
+  Boolean              $firewall                = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
   Boolean              $enable_logging          = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
   Boolean              $enable_selinux          = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
   Boolean              $enable_tcpwrappers      = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
@@ -127,7 +127,7 @@ class simp_gitlab (
     Pki::Copy['gitlab'] -> Class['gitlab']
   }
 
-  if $enable_firewall {
+  if $firewall {
     iptables::listen::tcp_stateful { 'allow_simp_gitlab_tcp_connections':
       trusted_nets => $::simp_gitlab::trusted_nets,
       dports       => $::simp_gitlab::tcp_listen_port,
@@ -155,7 +155,7 @@ class simp_gitlab (
   ###    -> Class[ '::simp_gitlab::service' ]
   ###  }
   ###
-  ###  if $enable_firewall {
+  ###  if $firewall {
   ###    include '::simp_gitlab::config::firewall'
   ###    Class[ '::simp_gitlab::config::firewall' ]
   ###    -> Class[ '::simp_gitlab::service'  ]
