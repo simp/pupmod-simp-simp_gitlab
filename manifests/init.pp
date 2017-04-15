@@ -85,32 +85,32 @@ class simp_gitlab (
   Stdlib::Absolutepath $app_pki_key             = "${app_pki_dir}/private/${facts['fqdn']}.pem",
   Stdlib::Absolutepath $app_pki_cert            = "${app_pki_dir}/public/${facts['fqdn']}.pub",
   Stdlib::Absolutepath $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
+  Boolean              $two_way_ssl_validation  = false,
+  Integer              $ssl_verify_depth        = 2,
+
 
 ) {
 
   # FIXME: SSL ciphers: https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
-  # FIXME: 2-way client auth: https://docs.gitlab.com/omnibus/settings/nginx.html#enable-2-way-ssl-client-authentication
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
-
-  if $external_url =~ /\/\/(.+)?([:\/]|$)/ {
-    $external_server = $1
-  }
-  else {
-    fail( "could not determine server name for URL '${external_url}'" )
-  }
-
-  $_nginx_pki_options = $::simp_gitlab::pki ? {
+  $__nginx_pki_options = $::simp_gitlab::two_way_ssl_validation ? {
     true => {
-      'ssl_certificate'        => $app_pki_cert,
-      'ssl_certificate_key'    => $app_pki_key,
-      'redirect_http_to_https' => true,
+      'ssl_verify_client' => 'on',
+      'ssl_verify_depth'  => $::simp_gitlab::ssl_verify_depth,
     },
     default => {}
   }
-
+  $_nginx_pki_options = $::simp_gitlab::pki ? {
+    true => merge( $__nginx_pki_options, {
+      'ssl_certificate'        => $app_pki_cert,
+      'ssl_certificate_key'    => $app_pki_key,
+      'redirect_http_to_https' => true,
+    }),
+    default => {}
+  }
   $_nginx_options = merge($_nginx_pki_options, $nginx_options)
 
   class { 'gitlab':

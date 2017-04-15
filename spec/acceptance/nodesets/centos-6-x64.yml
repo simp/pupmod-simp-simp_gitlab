@@ -1,4 +1,3 @@
-# This nodeset spins up a simple one-host test VM for both EL6 and EL6
 HOSTS:
   server:
     roles:
@@ -15,7 +14,7 @@ HOSTS:
     platform:   el-6-x86_64
     box:        centos/6
     hypervisor: vagrant
-    vagrant_memsize: 128
+    vagrant_memsize: 192
 
 CONFIG:
   log_level: verbose

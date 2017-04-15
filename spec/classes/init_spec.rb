@@ -53,6 +53,23 @@ describe 'simp_gitlab' do
             "ssl_certificate_key"    => "/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem",
             "redirect_http_to_https" => true
           })}
+
+          context 'and 2-way validation' do
+            let(:params) {{
+              :pki                    => true,
+              :two_way_ssl_validation => true,
+              :app_pki_dir            => '/some/other/path',
+            }}
+            it { is_expected.to contain_class('gitlab').with_external_port(443) }
+            it { is_expected.to contain_class('gitlab').with_external_url(/^https/) }
+            it { is_expected.to contain_class('gitlab').with_nginx({
+              "ssl_verify_client"      => "on",
+              "ssl_verify_depth"       => 2,
+              "ssl_certificate"        => "/some/other/path/public/foo.example.com.pub",
+              "ssl_certificate_key"    => "/some/other/path/private/foo.example.com.pem",
+              "redirect_http_to_https" => true,
+            })}
+          end
         end
 
 ###

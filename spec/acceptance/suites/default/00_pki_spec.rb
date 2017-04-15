@@ -1,8 +1,8 @@
 require 'spec_helper_acceptance'
 
-test_name 'simp_gitlab class'
+test_name 'simp_gitlab pki tls with firewall connection'
 
-describe 'simp_gitlab class' do
+describe 'simp_gitlab pki tls with firewall' do
 
   let(:server) {only_host_with_role( hosts, 'server' )}
   let(:client) {only_host_with_role( hosts, 'client' )}
@@ -24,7 +24,7 @@ describe 'simp_gitlab class' do
          " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
   end
 
-  context 'default parameters (PKI enabled)' do
+  context 'with PKI + firewall enabled' do
     # Using puppet_apply as a helper
     it 'should work with no errors' do
       apply_manifest_on(server, manifest, :catch_failures => true, :environment => pupenv)
