@@ -1,6 +1,9 @@
 ---
 fixtures:
   repositories:
+    auditd:
+      repo: https://github.com/simp/pupmod-simp-auditd
+      ref: 7.0.1
     iptables:
       repo: https://github.com/simp/pupmod-simp-iptables
       ref: 6.0.1
@@ -16,6 +19,9 @@ fixtures:
     stdlib:
       repo: https://github.com/simp/puppetlabs-stdlib
       ref: 4.13.1
+    svckill:
+      repo: https://github.com/simp/pupmod-simp-svckill
+      ref: 3.2.0
     gitlab:
       repo: https://github.com/simp/puppet-gitlab
       ref: v1.13.3

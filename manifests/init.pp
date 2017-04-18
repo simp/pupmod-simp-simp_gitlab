@@ -72,11 +72,12 @@ class simp_gitlab (
   Variant[Enum['simp'],Boolean] $pki            = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
   Simplib::Uri         $external_url            = $pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
   Simplib::Port        $tcp_listen_port         = $pki ? { true => 443, default => 80},
-  Boolean              $enable_auditing         = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
+  Boolean              $auditing         = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
   Boolean              $firewall                = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
-  Boolean              $enable_logging          = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
-  Boolean              $enable_selinux          = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
-  Boolean              $enable_tcpwrappers      = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
+  Boolean              $syslog                  = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
+  Boolean              $selinux                 = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
+  ### nginx + rails do not use TCP wrappers
+  ###Boolean              $tcpwrappers             = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
 
   Hash                 $nginx_options           = {},
 
@@ -88,15 +89,32 @@ class simp_gitlab (
   Boolean              $two_way_ssl_validation  = false,
   Integer              $ssl_verify_depth        = 2,
   Array[String]        $openssl_cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
+  Enum['ce','ee']      $edition                 = 'ce',
 
 
 
 ) {
 
-  # FIXME: SSL ciphers: https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
+  # FIXME: nginx trusted_net
+  # FIXME: git server trusted_net
+  # FIXME: SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
+  # FIXME: LDAP configuration
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
+
+
+  # alternate port numbers must be included as part of $external_url
+  if $simp_gitlab::external_url =~ /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ {
+    $_external_url = "${1}:${simp_gitlab::tcp_listen_port}${2}"
+  } else {
+    $_external_url = $external_url
+  }
+
+  $_nginx_common_options = {
+    'custom_gitlab_server_config' => "location ^~ /foo-namespace/bar-project/raw/ {\n deny all;\n}\n",
+    'custom_nginx_config'         => "include /etc/nginx/conf.d/*.conf;",
+  }
 
   $__nginx_pki_options = $::simp_gitlab::two_way_ssl_validation ? {
     true => {
@@ -105,19 +123,20 @@ class simp_gitlab (
     },
     default => {}
   }
+
   $_nginx_pki_options = $::simp_gitlab::pki ? {
-    true => merge( {
-      'ssl_certificate'        => $app_pki_cert,
-      'ssl_certificate_key'    => $app_pki_key,
-      'redirect_http_to_https' => true,
-      'ssl_ciphers'            => join($::simp_gitlab::openssl_cipher_suite, ':'),
+    true                          => merge( {
+      'ssl_certificate'           => $::simp_gitlab::app_pki_cert,
+      'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
+      'redirect_http_to_https'    => true,
+      'ssl_ciphers'               => join($::simp_gitlab::openssl_cipher_suite, ':'),
     }, $__nginx_pki_options ),
     default => {}
   }
   $_nginx_options = merge($_nginx_pki_options, $nginx_options)
 
   class { 'gitlab':
-    external_url  => $simp_gitlab::external_url,
+    external_url  => $_external_url,
     external_port => $simp_gitlab::tcp_listen_port,
     nginx         => $simp_gitlab::_nginx_options,
   }
@@ -131,7 +150,7 @@ class simp_gitlab (
   }
 
   if $firewall {
-    iptables::listen::tcp_stateful { 'allow_simp_gitlab_tcp_connections':
+    iptables::listen::tcp_stateful { 'allow_gitlab_nginx_tcp_connections':
       trusted_nets => $::simp_gitlab::trusted_nets,
       dports       => $::simp_gitlab::tcp_listen_port,
     }

@@ -38,7 +38,7 @@ describe 'simp_gitlab' do
             :firewall        => true,
           }}
           ###it_behaves_like "a structured module"
-          it { is_expected.to create_iptables__listen__tcp_stateful('allow_simp_gitlab_tcp_connections').with_dports(1234)
+          it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_nginx_tcp_connections').with_dports(1234)
           }
         end
 
@@ -74,6 +74,14 @@ describe 'simp_gitlab' do
           end
         end
 
+        context 'using alternate ports 777' do
+          let(:params) {{
+            :pki             => true,
+            :tcp_listen_port => 777,
+          }}
+          it { is_expected.to contain_class('gitlab').with_external_port(777) }
+          it { is_expected.to contain_class('gitlab').with_external_url(%r(^https://[^/]+?:777(/?.*)?))}
+        end
 ###
 ###        context "simp_gitlab class with auditing enabled" do
 ###          let(:params) {{

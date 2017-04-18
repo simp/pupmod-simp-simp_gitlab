@@ -26,7 +26,7 @@ describe 'simp_gitlab class' do
     it 'allow https connection on port 80' do
       shell 'sleep 90' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
-      result = on(client, "#{curl_ssl_cmd} -L http://#{fqdn}/users/sign_in" )
+      result = on(client, "curl -L http://#{fqdn}/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
     end
   end
