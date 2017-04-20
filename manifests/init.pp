@@ -76,8 +76,6 @@ class simp_gitlab (
   Boolean              $firewall                = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
   Boolean              $syslog                  = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
   Boolean              $selinux                 = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
-  ### nginx + rails do not use TCP wrappers
-  ###Boolean              $tcpwrappers             = simplib::lookup('simp_options::tcpwrappers', { 'default_value' => false }),
 
   Hash                 $nginx_options           = {},
 
@@ -90,12 +88,15 @@ class simp_gitlab (
   Integer              $ssl_verify_depth        = 2,
   Array[String]        $openssl_cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
   Enum['ce','ee']      $edition                 = 'ce',
-
-
-
 ) {
 
-  # FIXME: nginx trusted_net
+  include 'postfix'
+  include 'ntpd'
+
+  # On EL7, GitLab pulls in
+  svckill{ 'chronyd': ignore => ['chronyd'] }
+
+  # FIXME: nginx trusted_nets
   # FIXME: git server trusted_net
   # FIXME: SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
   # FIXME: LDAP configuration
@@ -103,6 +104,20 @@ class simp_gitlab (
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
+
+  file{ ['/etc/nginx', '/etc/nginx/conf.d']:
+    ensure => directory,
+  }
+
+  $_http_access_list = epp('simp_gitlab/etc/nginx/http_access_list.conf.epp', {
+     'allowed_nets' => $::simp_gitlab::trusted_nets,
+     'module_name'  => $module_name,
+  })
+  file{ '/etc/nginx/conf.d/http_access_list.conf':
+    content => $_http_access_list,
+  }
+
+  # TODO nginxconf file
 
   # alternate port numbers must be included as part of $external_url
   if $simp_gitlab::external_url =~ /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ {
@@ -112,7 +127,7 @@ class simp_gitlab (
   }
 
   $_nginx_common_options = {
-    'custom_gitlab_server_config' => "location ^~ /foo-namespace/bar-project/raw/ {\n deny all;\n}\n",
+    #    'custom_gitlab_server_config' => "location ^~ /foo-namespace/bar-project/raw/ {\n deny all;\n}\n",
     'custom_nginx_config'         => "include /etc/nginx/conf.d/*.conf;",
   }
 
@@ -133,7 +148,8 @@ class simp_gitlab (
     }, $__nginx_pki_options ),
     default => {}
   }
-  $_nginx_options = merge($_nginx_pki_options, $nginx_options)
+
+  $_nginx_options = merge($_nginx_common_options, $_nginx_pki_options, $nginx_options)
 
   class { 'gitlab':
     external_url  => $_external_url,

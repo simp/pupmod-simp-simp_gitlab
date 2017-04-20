@@ -4,15 +4,30 @@ fixtures:
     auditd:
       repo: https://github.com/simp/pupmod-simp-auditd
       ref: 7.0.1
+    concat:
+      repo: https://github.com/simp/puppetlabs-concat
+      ref: simp6.0.0-2.2.0
     iptables:
       repo: https://github.com/simp/pupmod-simp-iptables
+      ref: 6.0.1
+    ntpd:
+      repo: https://github.com/simp/pupmod-simp-ntpd
       ref: 6.0.1
     pki:
       repo: https://github.com/simp/pupmod-simp-pki
       ref: 6.0.0
+    postfix:
+      repo: https://github.com/simp/pupmod-simp-postfix
+      ref: 5.0.1
+    rsyslog:
+      repo: https://github.com/simp/pupmod-simp-rsyslog
+      ref: 7.0.2
     simp_options:
       repo: https://github.com/simp/pupmod-simp-simp_options
       ref: 1.0.1
+    simpcat:
+      repo: https://github.com/simp/pupmod-simp-simpcat
+      ref: 6.0.0-pre1
     simplib:
       repo: https://github.com/simp/pupmod-simp-simplib
       ref: 3.3.1
