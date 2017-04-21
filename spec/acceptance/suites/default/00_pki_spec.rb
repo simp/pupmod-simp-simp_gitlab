@@ -35,11 +35,15 @@ describe 'simp_gitlab pki tls with firewall' do
 
 
   before :all do
-    hosts.add_env_var('PUPPET_EXTRA_OPTS', '--logdest /var/log/puppetlabs/puppet/beaker.log')
-    apply_manifest_on(server, "class{ 'svckill': mode => 'enforcing' }")
+
   end
 
   context 'with PKI + firewall enabled' do
+    it 'should prep the test enviornment' do
+      #hosts.add_env_var('PUPPET_EXTRA_OPTS', '--logdest /var/log/puppetlabs/puppet/beaker.log')
+      apply_manifest_on(server, "class{ 'svckill': mode => 'enforcing' }")
+    end
+
     it 'should work with no errors' do
       apply_manifest_on(server, manifest, :catch_failures => true)
     end
@@ -75,7 +79,7 @@ describe 'simp_gitlab pki tls with firewall' do
     it 'should be idempotent' do
       new_lines = '        tcp_listen_port         => 777,'
       new_manifest = manifest.gsub(%r[^\ *}], "\n#{new_lines}\n\}")
-      apply_manifest_on(server, manifest, :catch_changes => true)
+      apply_manifest_on(server, new_manifest, :catch_changes => true)
     end
 
     it 'allows https connection on port 777 from permitted clients' do
