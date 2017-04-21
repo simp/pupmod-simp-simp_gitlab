@@ -18,6 +18,11 @@
 # @param trusted_nets
 #   A whitelist of subnets (in CIDR notation) permitted access
 #
+# @param tcp_listen_port
+#   The port upon which to listen for regular ``TCP`` connections.  By default
+#   this will be '80' if HTTPS is disabled and '443' if HTTPS is enabled.
+#
+#
 #### @param enable_auditing
 ####   If true, manage auditing for simp_gitlab
 ####
@@ -65,14 +70,18 @@
 # @param app_pki_ca
 #   Full path of the the SSL CA certificate.
 #
+# @param edition ('ce')
+#   Edition of GitLab to manage
+#
 # @author simp
 #
 class simp_gitlab (
   Simplib::Netlist     $trusted_nets            = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
   Variant[Enum['simp'],Boolean] $pki            = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
   Simplib::Uri         $external_url            = $pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
+  Simplib::Netlist     $denied_nets             = [],
   Simplib::Port        $tcp_listen_port         = $pki ? { true => 443, default => 80},
-  Boolean              $auditing         = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
+  Boolean              $auditing                = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
   Boolean              $firewall                = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
   Boolean              $syslog                  = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
   Boolean              $selinux                 = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
@@ -94,32 +103,31 @@ class simp_gitlab (
   include 'ntpd'
 
   # On EL7, GitLab pulls in
-  svckill{ 'chronyd': ignore => ['chronyd'] }
+  svckill::ignore{ 'chronyd': }
 
-  # FIXME: nginx trusted_nets
-  # FIXME: git server trusted_net
+  # FIXME: nginx trusted_nets (still needs work)
+    # FIXME: git server trusted_net
   # FIXME: SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
   # FIXME: LDAP configuration
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
-
-  file{ ['/etc/nginx', '/etc/nginx/conf.d']:
+  file{['/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d', '/etc/gitlab/nginx/gitlab-server.conf.d']:
     ensure => directory,
   }
 
   $_http_access_list = epp('simp_gitlab/etc/nginx/http_access_list.conf.epp', {
      'allowed_nets' => $::simp_gitlab::trusted_nets,
+     'denied_nets'  => $::simp_gitlab::denied_nets,
      'module_name'  => $module_name,
   })
-  file{ '/etc/nginx/conf.d/http_access_list.conf':
+
+  file{ '/etc/gitlab/nginx/conf.d/http_access_list.conf':
     content => $_http_access_list,
   }
 
-  # TODO nginxconf file
-
-  # alternate port numbers must be included as part of $external_url
+  # GitLab Omnibus requires alternate port numbers to be included as part of $external_url
   if $simp_gitlab::external_url =~ /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ {
     $_external_url = "${1}:${simp_gitlab::tcp_listen_port}${2}"
   } else {
@@ -127,8 +135,7 @@ class simp_gitlab (
   }
 
   $_nginx_common_options = {
-    #    'custom_gitlab_server_config' => "location ^~ /foo-namespace/bar-project/raw/ {\n deny all;\n}\n",
-    'custom_nginx_config'         => "include /etc/nginx/conf.d/*.conf;",
+    'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
   }
 
   $__nginx_pki_options = $::simp_gitlab::two_way_ssl_validation ? {
@@ -145,6 +152,14 @@ class simp_gitlab (
       'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
       'redirect_http_to_https'    => true,
       'ssl_ciphers'               => join($::simp_gitlab::openssl_cipher_suite, ':'),
+      'ssl_protocols'             => "TLSv1 TLSv1.1 TLSv1.2", #TODO: param
+      #      'ssl_session_cache'         => "builtin:1000  shared:SSL:10m",
+      'ssl_session_timeout'       => "5m",
+      'ssl_prefer_server_ciphers' => "on",
+
+
+
+
     }, $__nginx_pki_options ),
     default => {}
   }

@@ -49,14 +49,14 @@ describe 'simp_gitlab' do
           it 'should contain correct nginx settings' do
             nginx = catalogue.resource('class','gitlab').send(:parameters)[:nginx]
             expect( nginx ).to include({
-              'ssl_certificate' => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
+              'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+              'ssl_certificate'     => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
               'ssl_certificate_key' => '/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem',
-              'custom_nginx_config' =>  'include /etc/nginx/conf.d/*.conf;',
-              'ssl_ciphers' => 'DEFAULT:!MEDIUM',
+              'ssl_ciphers'         => 'DEFAULT:!MEDIUM',
             })
-            it { is_expected.to contain_file('/etc/nginx/conf.d/http_access_list.conf').with_content(/allow 127.0.0.1\/32;\n+\s+deny all;\n/)}
             expect( nginx ).not_to include('ssl_verify_client'=> 'on')
           end
+          it { is_expected.to contain_file('/etc/gitlab/nginx/conf.d/http_access_list.conf').with_content(/allow 127.0.0.1\/32;\n+\s+deny all;\n/)}
 
           context 'and 2-way validation' do
             let(:params) {{
@@ -70,10 +70,11 @@ describe 'simp_gitlab' do
             it 'should contain correct nginx settings' do
               nginx = catalogue.resource('class','gitlab').send(:parameters)[:nginx]
               expect( nginx ).to include({
-                'ssl_certificate'        => '/some/other/path/public/foo.example.com.pub',
-                'ssl_certificate_key'    => '/some/other/path/private/foo.example.com.pem',
-                'ssl_verify_client'      => 'on',
-                'ssl_verify_depth'       => 2,
+                'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+                'ssl_certificate'     => '/some/other/path/public/foo.example.com.pub',
+                'ssl_certificate_key' => '/some/other/path/private/foo.example.com.pem',
+                'ssl_verify_client'   => 'on',
+                'ssl_verify_depth'    => 2,
               })
             end
           end

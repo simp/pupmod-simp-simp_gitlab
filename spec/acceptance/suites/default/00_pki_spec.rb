@@ -5,13 +5,14 @@ test_name 'simp_gitlab pki tls with firewall connection'
 describe 'simp_gitlab pki tls with firewall' do
 
   let(:server) {only_host_with_role( hosts, 'server' )}
-  let(:client) {only_host_with_role( hosts, 'permittedclient' )}
-  let(:unknown_client) {only_host_with_role( hosts, 'unknownclient' )}
+  let(:permitted_client) {only_host_with_role( hosts, 'permittedclient' )}
+  let(:denied_client) {only_host_with_role( hosts, 'unknownclient' )}
   let(:pupenv) {{'PUPPET_EXTRA_OPTS' => '--logdest /var/log/puppetlabs/puppet/beaker.log'}}
   let(:manifest) do
     <<-EOS
       include 'svckill'
       class { 'simp_gitlab':
+        trusted_nets            => ['10.0.0.0/8', '192.168.21.21', '192.168.21.22', '127.0.0.1/32'],
         pki                     => true,
         firewall                => true,
         app_pki_external_source => '/etc/pki/simp-testing/pki',
@@ -19,12 +20,14 @@ describe 'simp_gitlab pki tls with firewall' do
     EOS
   end
 
+  # helper to build up curl command strings
   def curl_ssl_cmd( host )
     fqdn   = fact_on(host, 'fqdn')
     'curl  --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
          " --cert /etc/pki/simp-testing/pki/public/#{fqdn}.pub" +
          " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
   end
+
 
   context 'with PKI + firewall enabled' do
     it 'should work with no errors' do
@@ -35,11 +38,18 @@ describe 'simp_gitlab pki tls with firewall' do
       apply_manifest_on(server, manifest, :catch_changes => true, :environment => pupenv)
     end
 
-    it 'allows https connection on port 443' do
+    it 'allows https connection on port 443 from permitted clients' do
       shell 'sleep 30' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
-      result = on(client, "#{curl_ssl_cmd(client)} -L https://#{fqdn}/users/sign_in" )
+
+      result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
+
+      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}/users/sign_in" )
+      expect(result.stdout).to match(/GitLab|password/)
+
+      result = on(denied_client, "#{curl_ssl_cmd(denied_client)} -L https://#{fqdn}/users/sign_in" )
+      expect(result.stdout).to match(/403 Forbidden/)
     end
   end
 
@@ -58,28 +68,18 @@ describe 'simp_gitlab pki tls with firewall' do
       apply_manifest_on(server, manifest, :catch_changes => true, :environment => pupenv)
     end
 
-    it 'allows https connection on port 777' do
+    it 'allows https connection on port 777 from permitted clients' do
       shell 'sleep 30' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
-      result = on(client, "#{curl_ssl_cmd(client)} -L https://#{fqdn}:777/users/sign_in" )
+      result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
-    end
-  end
 
-  context 'with PKI + firewall enabled' do
-    it 'should work with no errors' do
-      apply_manifest_on(server, manifest, :catch_failures => true, :environment => pupenv)
-    end
-
-    it 'should be idempotent' do
-      apply_manifest_on(server, manifest, :catch_changes => true, :environment => pupenv)
-    end
-
-    it 'allows https connection on port 443' do
-      shell 'sleep 30' # give it some time to start up
-      fqdn = fact_on(server, 'fqdn')
-      result = on(client, "#{curl_ssl_cmd(client)} -L https://#{fqdn}/users/sign_in" )
+      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}:777/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
+
+      result = on(denied_client, "#{curl_ssl_cmd(denied_client)} -L https://#{fqdn}:777/users/sign_in" )
+      expect(result.stdout).to match(/403 Forbidden/)
     end
+
   end
 end
