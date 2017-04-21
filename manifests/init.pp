@@ -49,10 +49,11 @@
 #     to manage certs in /etc/pki/simp_apps/openldap/x509
 #   * If ``false``, do not include SIMP's pki module and do not use pki::copy
 #     to manage certs.  You will need to appropriately assign a subset of:
-#     * app_pki_dir
-#     * app_pki_key
-#     * app_pki_cert
-#     * app_pki_ca
+#
+#        * app_pki_dir
+#        * app_pki_key
+#        * app_pki_cert
+#        * app_pki_ca
 #
 # @param app_pki_external_source
 #   * If pki = 'simp' or true, this is the directory from which certs will be
@@ -74,8 +75,8 @@
 # @param app_pki_ca
 #   Full path of the the SSL CA certificate.
 #
-# @param edition ('ce')
-#   Edition of GitLab to manage
+# @param edition
+#   Edition of GitLab to manage (`'ce'` or `'ee'`)
 #
 # @param syslog
 #   Whether or not to use the SIMP Rsyslog module.
@@ -83,9 +84,18 @@
 # @param syslog_target
 #   If $syslog is true, store logs at this (filesystem) location.
 #
+# @param two_way_ssl_validation
+#   When `true`, server and clients will require mutual TLS authentication.
 #
+# @param ssl_verify_depth
+#   Sets the verification depth in the client certificates chain.
 #
-# 
+# @param nginx_options
+#   Hash of 'nginx' config parameters.  Maps to `$::gitlab::nginx`.
+#
+# @param cipher_suite
+#   The cipher suite to use with SSL
+#
 # @author simp
 #
 class simp_gitlab (
@@ -97,7 +107,6 @@ class simp_gitlab (
   Boolean              $auditing                = simplib::lookup('simp_options::auditd', { 'default_value'      => false }),
   Boolean              $firewall                = simplib::lookup('simp_options::firewall', { 'default_value'    => false }),
   Boolean              $syslog                  = simplib::lookup('simp_options::syslog', { 'default_value'      => false }),
-  Boolean              $selinux                 = simplib::lookup('simp_options::selinux', { 'default_value'     => false }),
 
   Hash                 $nginx_options           = {},
 
@@ -108,7 +117,7 @@ class simp_gitlab (
   Stdlib::Absolutepath $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
   Boolean              $two_way_ssl_validation  = false,
   Integer              $ssl_verify_depth        = 2,
-  Array[String]        $openssl_cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
+  Array[String]        $cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
   Enum['ce','ee']      $edition                 = 'ce',
 ) {
 
@@ -126,7 +135,7 @@ class simp_gitlab (
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
-  file{['/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d', '/etc/gitlab/nginx/gitlab-server.conf.d']:
+  file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
     ensure => directory,
   }
 
@@ -164,7 +173,7 @@ class simp_gitlab (
       'ssl_certificate'           => $::simp_gitlab::app_pki_cert,
       'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
       'redirect_http_to_https'    => true,
-      'ssl_ciphers'               => join($::simp_gitlab::openssl_cipher_suite, ':'),
+      'ssl_ciphers'               => join($::simp_gitlab::cipher_suite, ':'),
       'ssl_protocols'             => "TLSv1 TLSv1.1 TLSv1.2", #TODO: param
       #      'ssl_session_cache'         => "builtin:1000  shared:SSL:10m",
       'ssl_session_timeout'       => "5m",
