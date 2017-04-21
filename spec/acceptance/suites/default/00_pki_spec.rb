@@ -85,7 +85,7 @@ describe 'simp_gitlab pki tls with firewall' do
     it 'allows https connection on port 777 from permitted clients' do
       shell 'sleep 30' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
-      result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}/users/sign_in" )
+      result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}:777/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
 
       result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}:777/users/sign_in" )
