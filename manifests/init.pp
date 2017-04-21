@@ -1,6 +1,6 @@
 # SIMP Profile for managing GitLab
 #
-# === Welcome to SIMP!
+# ## Welcome to SIMP!
 #
 # This module is a component of the System Integrity Management Platform, a
 # managed security compliance framework built on Puppet.
@@ -18,32 +18,36 @@
 # @param trusted_nets
 #   A whitelist of subnets (in CIDR notation) permitted access
 #
+# @param denied_nets
+#   A blacklist of subnets (in CIDR notation) that should be explicitly denied access
+#
+# @param external_url
+#   Default: http://$fqdn
+#   External URL of Gitlab.  By default, this will be 'https' if ``$pki`` is
+#   set and 'http' if is ``false``.
+#
 # @param tcp_listen_port
-#   The port upon which to listen for regular ``TCP`` connections.  By default
-#   this will be '80' if HTTPS is disabled and '443' if HTTPS is enabled.
+#   The port upon which to listen for regular TCP connections.  By default
+#   this will be ``'80'`` if HTTPS is disabled and ``'443'`` if HTTPS is enabled.
 #
 #
-#### @param enable_auditing
-####   If true, manage auditing for simp_gitlab
-####
+# @param auditing
+#   If ``true``, manage auditing for **simp_gitlab**
+#
 # @param firewall
-#   If true, manage firewall rules to acommodate simp_gitlab
+#   If ``true``, manage firewall rules to acommodate **simp_gitlab**
 #
-#### @param enable_logging
-####   If true, manage logging configuration for simp_gitlab
-####
-#### @param enable_selinux
-####   If true, manage selinux to permit simp_gitlab
-####
 #### @param enable_tcpwrappers
 ####   If true, manage TCP wrappers configuration for simp_gitlab
+####   NOTE: NGINX + rails doesn't use tcpwrappers. If *NOTHING* covered by
+####         simp_gitlab is affected, remove it.
 #
 # @param pki
-#   * If 'simp', include SIMP's pki module and use pki::copy to manage
+#   * If ``'simp'``, include SIMP's pki module and use pki::copy to manage
 #     application certs in /etc/pki/simp_apps/openldap/x509
-#   * If true, do *not* include SIMP's pki module, but still use pki::copy
+#   * If ``true``, do *not* include SIMP's pki module, but still use pki::copy
 #     to manage certs in /etc/pki/simp_apps/openldap/x509
-#   * If false, do not include SIMP's pki module and do not use pki::copy
+#   * If ``false``, do not include SIMP's pki module and do not use pki::copy
 #     to manage certs.  You will need to appropriately assign a subset of:
 #     * app_pki_dir
 #     * app_pki_key
@@ -73,6 +77,15 @@
 # @param edition ('ce')
 #   Edition of GitLab to manage
 #
+# @param syslog
+#   Whether or not to use the SIMP Rsyslog module.
+#
+# @param syslog_target
+#   If $syslog is true, store logs at this (filesystem) location.
+#
+#
+#
+# 
 # @author simp
 #
 class simp_gitlab (
