@@ -478,7 +478,7 @@ DEPENDENCIES
   metadata-json-lint
   pry
   pry-doc
-  puppet (~> 4.8.0)
+  puppet (~> 4.8.1)
   puppet-blacksmith
   puppet-lint-empty_string-check
   puppet-lint-trailing_comma-check

@@ -118,6 +118,7 @@ class simp_gitlab (
   Boolean              $two_way_ssl_validation  = false,
   Integer              $ssl_verify_depth        = 2,
   Array[String]        $cipher_suite    = simplib::lookup('simp_options::openssl::cipher_suites', { 'default_value' => ['DEFAULT', '!MEDIUM']}),
+  Boolean              $enable_prometheus       = true,
   Enum['ce','ee']      $edition                 = 'ce',
 ) {
 
@@ -138,7 +139,7 @@ class simp_gitlab (
   -> Class['simp_gitlab::install']
   -> Class['postfix']
 
-  svckill::ignore{ 'chronyd': } # On EL7, GitLab pulls in
+  svckill::ignore{ 'chronyd': } # On EL7, GitLab pulls in the chronyd service
 
   if $pki {
     pki::copy{ 'gitlab':

@@ -1,9 +1,7 @@
-# == Class simp_gitlab::install
+# ## Class simp_gitlab::install
 #
-# This class is called from simp_gitlab for install.
-#
-# GitLab config & installation is handled by the (chef) Omnibus installer, so
-# this "install" class contains logic for config & install
+# This class is called from simp_gitlab to configure & run the GitLab Omnibus
+# installer.  It uses the `vshn/gitlab` module to manage the Omnibus config.
 #
 class simp_gitlab::install {
   assert_private()
@@ -14,6 +12,8 @@ class simp_gitlab::install {
     'module_name'  => $module_name,
   })
 
+  # If you need to configure the main NGINX server, use a `file` resource to
+  # drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
   file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
     ensure => directory,
   }
@@ -28,37 +28,9 @@ class simp_gitlab::install {
     default => "${external_url}",
   }
 
-  $_nginx_common_options = {
-    'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
-  }
-
-  $__nginx_pki_options = $::simp_gitlab::two_way_ssl_validation ? {
-    true => {
-      'ssl_verify_client' => 'on',
-      'ssl_verify_depth'  => $::simp_gitlab::ssl_verify_depth,
-    },
-    default => {}
-  }
-
-  $_nginx_pki_options = $::simp_gitlab::pki ? {
-    true                          => merge( {
-      'ssl_certificate'           => $::simp_gitlab::app_pki_cert,
-      'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
-      'redirect_http_to_https'    => true,
-      'ssl_ciphers'               => join($::simp_gitlab::cipher_suite, ':'),
-      'ssl_protocols'             => 'TLSv1 TLSv1.1 TLSv1.2', #TODO: param
-      #      'ssl_session_cache'         => "builtin:1000  shared:SSL:10m",
-      'ssl_session_timeout'       => '5m',
-      'ssl_prefer_server_ciphers' => 'on',
-    }, $__nginx_pki_options ),
-    default => {}
-  }
-
-  $_nginx_options = merge($_nginx_common_options, $_nginx_pki_options, $::simp_gitlab::nginx_options)
-
   class { 'gitlab':
     external_url  => $_external_url,
     external_port => $simp_gitlab::tcp_listen_port,
-    nginx         => $_nginx_options,
+    nginx         => simp_gitlab::omnibus_config::nginx(),
   }
 }
