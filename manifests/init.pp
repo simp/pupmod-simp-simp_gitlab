@@ -123,10 +123,14 @@ class simp_gitlab (
 ) {
 
   # FIXME: *test* SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
-  # FIXME: - [ ] LDAP configuration
-  # FIXME: - [ ] User accounts
-  # FIXME: - [ ] Sending email
-  # FIXME: - [ ] Logging
+  # TODO: - [ ] LDAP configuration
+  # TODO: - [ ] User accounts
+  # TODO: - [ ] Sending email
+  # TODO: - [ ] Logging (EE does syslog, for CE options, see https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/settings/logs.md)
+  # TODO: - [ ] SIMP ELG integration
+  # DONE: - [X] Verify SELinux (already done?) https://gitlab.com/gitlab-org/omnibus-gitlab#omnibus-gitlab-and-selinux
+  # DONE: - [X] Verify SELinux .git user .ssh dir: https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/common_installation_problems/README.md#selinux-enabled-systems: https://simp-doc.readthedocs.io/en/6.0.0-0/user_guide/User_Management/Local_Users.html?highlight=security.conf#service-account
+  # TODO: - [X] Verify FIPS
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }

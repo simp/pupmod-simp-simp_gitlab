@@ -1,8 +1,6 @@
 # Compile a hash of settings for the gitlab module's `nginx` parameter, using SIMP settings
 function simp_gitlab::omnibus_config::nginx() >> Hash {
 
-  # If you need to configure the main NGINX server, use a `file` resource to
-  # drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
   $_nginx_common_options = {
     'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
   }

@@ -12,8 +12,8 @@ class simp_gitlab::install {
     'module_name'  => $module_name,
   })
 
-  # If you need to configure the main NGINX server, use a `file` resource to
-  # drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
+  # If you need to configure the main NGINX server, you can use a `file`
+  # resource to # drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
   file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
     ensure => directory,
   }
