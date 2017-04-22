@@ -36,7 +36,7 @@ describe 'simp_gitlab' do
             :firewall        => true,
           }}
           ###it_behaves_like "a structured module"
-          it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_nginx_tcp_connections').with_dports(1234)
+          it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_tcp_connections').with_dports(1234)
           }
         end
 

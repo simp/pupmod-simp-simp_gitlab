@@ -121,96 +121,37 @@ class simp_gitlab (
   Enum['ce','ee']      $edition                 = 'ce',
 ) {
 
-  include 'postfix'
-  include 'ntpd'
-
-  # On EL7, GitLab pulls in
-  svckill::ignore{ 'chronyd': }
-
-  # FIXME: nginx trusted_nets (still needs work)
-    # FIXME: git server trusted_net
-  # FIXME: SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
-  # FIXME: LDAP configuration
+  # FIXME: *test* SSL ciphers (implemented, but untested): https://docs.gitlab.com/omnibus/settings/nginx.html#using-custom-ssl-ciphers
+  # FIXME: - [ ] LDAP configuration
+  # FIXME: - [ ] User accounts
+  # FIXME: - [ ] Sending email
+  # FIXME: - [ ] Logging
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
-  file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
-    ensure => directory,
-  }
+  include 'postfix'
+  include 'ntpd'
+  include 'simp_gitlab::install'
 
-  $_http_access_list = epp('simp_gitlab/etc/nginx/http_access_list.conf.epp', {
-     'allowed_nets' => $::simp_gitlab::trusted_nets,
-     'denied_nets'  => $::simp_gitlab::denied_nets,
-     'module_name'  => $module_name,
-  })
+  Class['ntpd']
+  -> Class['simp_gitlab::install']
+  -> Class['postfix']
 
-  file{ '/etc/gitlab/nginx/conf.d/http_access_list.conf':
-    content => $_http_access_list,
-  }
-
-  # GitLab Omnibus requires alternate port numbers to be included as part of $external_url
-  if $simp_gitlab::external_url =~ /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ {
-    $_external_url = "${1}:${simp_gitlab::tcp_listen_port}${2}"
-  } else {
-    $_external_url = $external_url
-  }
-
-  $_nginx_common_options = {
-    'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
-  }
-
-  $__nginx_pki_options = $::simp_gitlab::two_way_ssl_validation ? {
-    true => {
-      'ssl_verify_client' => 'on',
-      'ssl_verify_depth'  => $::simp_gitlab::ssl_verify_depth,
-    },
-    default => {}
-  }
-
-  $_nginx_pki_options = $::simp_gitlab::pki ? {
-    true                          => merge( {
-      'ssl_certificate'           => $::simp_gitlab::app_pki_cert,
-      'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
-      'redirect_http_to_https'    => true,
-      'ssl_ciphers'               => join($::simp_gitlab::cipher_suite, ':'),
-      'ssl_protocols'             => "TLSv1 TLSv1.1 TLSv1.2", #TODO: param
-      #      'ssl_session_cache'         => "builtin:1000  shared:SSL:10m",
-      'ssl_session_timeout'       => "5m",
-      'ssl_prefer_server_ciphers' => "on",
-
-
-
-
-    }, $__nginx_pki_options ),
-    default => {}
-  }
-
-  $_nginx_options = merge($_nginx_common_options, $_nginx_pki_options, $nginx_options)
-
-  class { 'gitlab':
-    external_url  => $_external_url,
-    external_port => $simp_gitlab::tcp_listen_port,
-    nginx         => $simp_gitlab::_nginx_options,
-  }
+  svckill::ignore{ 'chronyd': } # On EL7, GitLab pulls in
 
   if $pki {
     pki::copy{ 'gitlab':
       pki    => $::simp_gitlab::pki,
       source => $::simp_gitlab::app_pki_external_source,
     }
-    Pki::Copy['gitlab'] -> Class['gitlab']
+    Pki::Copy['gitlab'] -> Class['::simp_gitlab::install']
   }
 
   if $firewall {
-    iptables::listen::tcp_stateful { 'allow_gitlab_nginx_tcp_connections':
-      trusted_nets => $::simp_gitlab::trusted_nets,
-      dports       => $::simp_gitlab::tcp_listen_port,
-    }
+    include 'simp_gitlab::config::firewall'
+    Class['simp_gitlab::config::firewall'] -> Class['::simp_gitlab::install']
   }
-
-  #### Note: this is a profile; the full component pattern is probably overkill
-  ###  include '::simp_gitlab::install'
   ###  include '::simp_gitlab::config'
   ###  include '::simp_gitlab::service'
   ###  Class[ '::simp_gitlab::install' ]
@@ -218,23 +159,12 @@ class simp_gitlab (
   ###  ~> Class[ '::simp_gitlab::service' ]
   ###  -> Class[ '::simp_gitlab' ]
   ###
-  ###  if $pki {
-  ###    include '::simp_gitlab::config::pki'
-  ###    Class[ '::simp_gitlab::config::pki' ]
-  ###    -> Class[ '::simp_gitlab::service' ]
-  ###  }
-  ###
   ###  if $enable_auditing {
   ###    include '::simp_gitlab::config::auditing'
   ###    Class[ '::simp_gitlab::config::auditing' ]
   ###    -> Class[ '::simp_gitlab::service' ]
   ###  }
   ###
-  ###  if $firewall {
-  ###    include '::simp_gitlab::config::firewall'
-  ###    Class[ '::simp_gitlab::config::firewall' ]
-  ###    -> Class[ '::simp_gitlab::service'  ]
-  ###  }
   ###
   ###  if $enable_logging {
   ###    include '::simp_gitlab::config::logging'
@@ -253,4 +183,5 @@ class simp_gitlab (
   ###    Class[ '::simp_gitlab::config::tcpwrappers' ]
   ###    -> Class[ '::simp_gitlab::service' ]
   ###  }
+
 }
