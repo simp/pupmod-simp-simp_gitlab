@@ -11,6 +11,13 @@ describe 'simp_gitlab pki tls with firewall' do
   let(:manifest) do
     <<-EOS
       include 'svckill'
+      include 'iptables'
+      iptables::listen::tcp_stateful { 'ssh':
+        dports       => 22,
+        trusted_nets => ['any'],
+      }
+
+
       class { 'simp_gitlab':
         trusted_nets => [
                           '10.0.0.0/8',
@@ -19,7 +26,6 @@ describe 'simp_gitlab pki tls with firewall' do
                           '127.0.0.1/32',
                         ],
         pki          => true,
-        firewall     => true,
         app_pki_external_source => '/etc/pki/simp-testing/pki',
       }
     EOS
@@ -28,35 +34,38 @@ describe 'simp_gitlab pki tls with firewall' do
   # helper to build up curl command strings
   def curl_ssl_cmd( host )
     fqdn   = fact_on(host, 'fqdn')
-    'curl  --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
+    'curl  --connect-timeout 30'+
+         ' --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
          " --cert /etc/pki/simp-testing/pki/public/#{fqdn}.pub" +
          " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
   end
 
 
-  before :all do
-
-  end
-
-  context 'with PKI + firewall enabled' do
+  context 'with PKI enabled' do
     it 'should prep the test enviornment' do
-      #hosts.add_env_var('PUPPET_EXTRA_OPTS', '--logdest /var/log/puppetlabs/puppet/beaker.log')
-      apply_manifest_on(server, "class{ 'svckill': mode => 'enforcing' }")
+      test_prep_manifest = <<-EOM
+      # clean up Vagrant's dingleberries
+      class{ 'svckill': mode => 'enforcing' }
+      EOM
+      apply_manifest_on(server,  test_prep_manifest)
     end
 
     it 'should work with no errors' do
-      apply_manifest_on(server, manifest, :catch_failures => true)
+      no_firewall_manifest = manifest.sub(/include 'iptables'/,"class {'iptables': enable => false }")
+      apply_manifest_on(server, no_firewall_manifest, :catch_failures => true)
     end
 
     it 'should be idempotent' do
-      apply_manifest_on(server, manifest, :catch_changes => true)
+      no_firewall_manifest = manifest.sub(/include 'iptables'/,"class {'iptables': enable => false }")
+      apply_manifest_on(server, no_firewall_manifest, :catch_changes => true)
     end
 
     it 'allows https connection on port 443 from permitted clients' do
       shell 'sleep 30' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
 
-      result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}/users/sign_in" )
+      # retry on first connection in case it still needs more time
+      result = on(server, "#{curl_ssl_cmd(server)} --retry 3 --retry-delay 15 -L https://#{fqdn}/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
 
       result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}/users/sign_in" )
@@ -68,22 +77,38 @@ describe 'simp_gitlab pki tls with firewall' do
   end
 
 
-  context 'with PKI + custom port 777' do
+  context 'with PKI + firewall + custom port 777' do
+    let(:new_lines) do
+      '        firewall                => true,' + "\n"
+      '        tcp_listen_port         => 777,'
+    end
+
+    it 'should prep the test enviornment' do
+      test_prep_manifest = <<-EOM
+      # Turns off firewalld in EL7.  Presumably this would already be done.
+      include 'iptables'
+
+      iptables::listen::tcp_stateful { 'ssh':
+        dports       => 22,
+        trusted_nets => ['any'],
+      }
+
+      class{ 'svckill': mode => 'enforcing' }
+      EOM
+      apply_manifest_on(server,  test_prep_manifest)
+    end
 
     it 'should work with no errors' do
-      new_lines = '        tcp_listen_port         => 777,'
-      new_manifest = manifest.gsub(%r[^\ *}], "\n#{new_lines}\n\}")
+      new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
       apply_manifest_on(server, new_manifest, :catch_failures => true)
     end
 
     it 'should be idempotent' do
-      new_lines = '        tcp_listen_port         => 777,'
-      new_manifest = manifest.gsub(%r[^\ *}], "\n#{new_lines}\n\}")
+      new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
       apply_manifest_on(server, new_manifest, :catch_changes => true)
     end
 
     it 'allows https connection on port 777 from permitted clients' do
-      shell 'sleep 30' # give it some time to start up
       fqdn = fact_on(server, 'fqdn')
       result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}:777/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
@@ -92,8 +117,8 @@ describe 'simp_gitlab pki tls with firewall' do
       expect(result.stdout).to match(/GitLab|password/)
 
       result = on(denied_client, "#{curl_ssl_cmd(denied_client)} -L https://#{fqdn}:777/users/sign_in" )
-      expect(result.stdout).to match(/403 Forbidden/)
+      expect(result.stderr).to match(/Failed connect to #{fqdn}/)
     end
-
   end
+
 end

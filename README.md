@@ -4,50 +4,37 @@
 
 #### Table of Contents
 
-1. [Description](#description)
-2. [Setup - The basics of getting started with simp_gitlab](#setup)
-    * [What simp_gitlab affects](#what-simp_gitlab-affects)
-    * [Setup requirements](#setup-requirements)
-    * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
-3. [Usage - Configuration options and additional functionality](#usage)
-4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
-5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Development - Guide for contributing to the module](#development)
-    * [Acceptance Tests - Beaker env variables](#acceptance-tests)
+* [Description](#description)
+	* [This is a SIMP module](#this-is-a-simp-module)
+* [Setup](#setup)
+	* [What simp_gitlab affects](#what-simp_gitlab-affects)
+	* [Setup Requirements **OPTIONAL**](#setup-requirements-optional)
+	* [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
+* [Usage](#usage)
+* [Reference](#reference)
+	* [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
+* [Limitations](#limitations)
+  * [Omnibus syslog is limited to GitLab Enterprise Edition (TODO: see if we can ship the individual logs)](#omnibus-syslog-is-limited-to-gitlab-enterprise-edition-todo-see-if-we-can-ship-the-individual-logs)
+* [Development](#development)
+	* [Acceptance tests](#acceptance-tests)
+
 
 ## Description
 
-SIMP profiles for GitLab Omnibus:
+This module provides profiles for managing [GitLab Omnibus](gitlab_omnibus)
+with SIMP.
 
-### Further reading
 
-  * GitLab Omnibus
-    - documentation: https://docs.gitlab.com/omnibus/README.html
-      - [Common installation problems](https://docs.gitlab.com/omnibus/common_installation_problems/README.html)
-      - [Maintainence commands](https://docs.gitlab.com/omnibus/maintenance/README.html#maintenance-commands)
-      - [Troubleshooting](https://docs.gitlab.com/omnibus/README.html#troubleshooting)
-    - architecture: https://docs.gitlab.com/omnibus/architecture/README.html
-      - [Global GitLab configuratino template](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template)
-      - [Templates for configurations of components](https://docs.gitlab.com/omnibus/architecture/README.html#templates-for-configuration-of-components)
-      - [`gitlab-reconfigure`](https://docs.gitlab.com/omnibus/architecture/README.html#what-happens-during-gitlab-ctl-reconfigure)
-    - source: https://gitlab.com/gitlab-org/omnibus-gitlab
-    - optional services:
-      - Mattermost (chat): https://docs.gitlab.com/omnibus/gitlab-mattermost/README.html
-      - Prometheus (monitoring): https://docs.gitlab.com/ce/administration/monitoring/prometheus/index.html
-      - GitLab Docker images: https://docs.gitlab.com/omnibus/docker/README.html
-  * vshn/gitlab component module:
-    * https://github.com/vshn/puppet-gitlab
-  - Security & compliance
-    - https://www.stigviewer.com/stig/web_server/
+[gitlab_omnibus]: https://docs.gitlab.com/omnibus/ "GitLab Omnibus"
+[vshn_gitlab]: https://github.com/vshn/puppet-gitlab
+[simp_simp_options]: https://github.com/simp/pupmod-simp-simp_options
 
-### Dev notes
 
-#### Omnibus syslog is GitLab Enterprise Edition only
-  - [ ] `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
-  - [ ] [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
-
+The profiles make extensive use of the component module
+[`vshn/gitlab`](vshn_gitlab)
 
 **FIXME:** Ensure the *Description* section is correct and complete, then remove this message!
+
 
 Start with a one- or two-sentence summary of what the module does and/or what
 problem it solves. This is your 30-second elevator pitch for your module.
@@ -66,21 +53,21 @@ This module is a component of the [System Integrity Management
 Platform](https://github.com/NationalSecurityAgency/SIMP), a
 compliance-management framework built on Puppet.
 
-If you find any issues, they may be submitted to our [bug
-tracker](https://simp-project.atlassian.net/).
-
 **FIXME:** Ensure the *This is a SIMP module* section is correct and complete, then remove this message!
 
-This module is optimally designed for use within a larger SIMP ecosystem, but
-it can be used independently:
+It is designed to be used within a larger SIMP ecosystem, but it can be used
+independently:
 
  * When included within the SIMP ecosystem, security compliance settings will
    be managed from the Puppet server.
- * If used independently, all SIMP-managed security subsystems are disabled by
-   default and must be explicitly opted into by administrators.  Please review
-   the parameters in
-   [`simp/simp_options`](https://github.com/simp/pupmod-simp-simp_options) for
+ * If used as an independent module, all SIMP-managed security subsystems are
+   disabled by default and must be explicitly opted into by administrators.
+   Please review the parameters in [`simp/simp_options`](simp_simp_options) for
    details.
+
+
+If you find any issues, please let us know by filing an issue at
+https://simp-project.atlassian.net/.
 
 ## Setup
 
@@ -121,6 +108,19 @@ basic use of the module.
 
 ## Usage
 
+A basic GitLab setup using PKI
+```puppet
+class { 'simp_gitlab':
+  trusted_nets => [
+                    '10.0.0.0/8',
+                    '192.168.21.21',
+                    '192.168.21.22',
+                  ],
+  pki          => true,
+  firewall     => true,
+}
+```
+
 **FIXME:** Ensure the *Usage* section is correct and complete, then remove this message!
 
 This section is where you describe how to customize, configure, and do the
@@ -134,7 +134,33 @@ examples and code samples for doing things with your module.
 Please refer to the inline documentation within each source file, or to the
 module's generated YARD documentation for reference material.
 
+### Further Reference for munging GitLab Omnibus
+
+  * GitLab Omnibus
+    - documentation: https://docs.gitlab.com/omnibus/README.html
+      - [Common installation problems](https://docs.gitlab.com/omnibus/common_installation_problems/README.html)
+      - [Maintainence commands](https://docs.gitlab.com/omnibus/maintenance/README.html#maintenance-commands)
+      - [Troubleshooting](https://docs.gitlab.com/omnibus/README.html#troubleshooting)
+    - architecture: https://docs.gitlab.com/omnibus/architecture/README.html
+      - [Global GitLab configuratino template](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template)
+      - [Templates for configurations of components](https://docs.gitlab.com/omnibus/architecture/README.html#templates-for-configuration-of-components)
+      - [`gitlab-reconfigure`](https://docs.gitlab.com/omnibus/architecture/README.html#what-happens-during-gitlab-ctl-reconfigure)
+    - source: https://gitlab.com/gitlab-org/omnibus-gitlab
+    - optional services:
+      - Mattermost (chat): https://docs.gitlab.com/omnibus/gitlab-mattermost/README.html
+      - Prometheus (monitoring): https://docs.gitlab.com/ce/administration/monitoring/prometheus/index.html
+      - GitLab Docker images: https://docs.gitlab.com/omnibus/docker/README.html
+  * vshn/gitlab component module:
+    * https://github.com/vshn/puppet-gitlab
+  - Security & compliance
+    - https://www.stigviewer.com/stig/web_server/
+
+
 ## Limitations
+
+### Omnibus syslog is limited to GitLab Enterprise Edition (TODO: see if we can ship the individual logs)
+  - [ ] `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
+  - [ ] [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
 
 **FIXME:** Ensure the *Limitations* section is correct and complete, then remove this message!
 

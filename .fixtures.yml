@@ -7,9 +7,15 @@ fixtures:
     concat:
       repo: https://github.com/simp/puppetlabs-concat
       ref: simp6.0.0-2.2.0
+    gitlab:
+      repo: https://github.com/simp/puppet-gitlab
+      ref: v1.13.3
     iptables:
       repo: https://github.com/simp/pupmod-simp-iptables
       ref: 6.0.1
+    logrotate:
+      repo: https://github.com/simp/pupmod-simp-logrotate
+      ref: 6.0.0
     ntpd:
       repo: https://github.com/simp/pupmod-simp-ntpd
       ref: 6.0.1
@@ -37,8 +43,8 @@ fixtures:
     svckill:
       repo: https://github.com/simp/pupmod-simp-svckill
       ref: 3.2.0
-    gitlab:
-      repo: https://github.com/simp/puppet-gitlab
-      ref: v1.13.3
+    tcpwrappers:
+      repo: https://github.com/simp/pupmod-simp-tcpwrappers
+      ref: 6.0.0
   symlinks:
     simp_gitlab: "#{source_dir}"

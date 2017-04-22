@@ -33,6 +33,7 @@ HOSTS:
     roles:
       - client
       - unknownclient
+      - logdest
     platform:   el-7-x86_64
     box:        centos/7
     hypervisor: vagrant
