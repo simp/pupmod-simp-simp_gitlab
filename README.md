@@ -71,15 +71,30 @@ https://simp-project.atlassian.net/.
 
 ## Setup
 
-### What simp_gitlab affects
+### What `simp_gitlab` affects
+
+As a profile module, `simp_gitlab` has a few functions:
+
+- [x] Integrate SIMP's global catalysts with GitLab Omnibus
+- [ ] Ensure that GitLab Omnibus can be installed without internet access
+- [ ] Simplify GitLab configuration for common scenarios
+   - [x] GitLab
+   - [x] GitLab + Omnibus version of NGINX
+   - [ ] Mattermost
+   - [ ] Prometheus
+   - [ ] GitLab CI runner
+   - [ ] GitLab CI Runner (docker)
+- [x] Permit customization of GitLab Omnibus
+- [x] Satisfy as many compliance profiles as possible
+
+Most of this is done by configuring the [`vshn/gitlab`](vshn_gitlab) component
+module, which in turn configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb`
+and runs `gitlab-ctl reconfigure`.
+
+TODO: diagram
 
 **FIXME:** Ensure the *What simp_gitlab affects* section is correct and complete, then remove this message!
 
-If it's obvious what your module touches, you can skip this section. For
-example, folks can probably figure out that your mysql_instance module affects
-their MySQL instances.
-
-If there's more that they should know about, though, this is the place to
 mention:
 
  * A list of files, packages, services, or operations that the module will
@@ -88,6 +103,8 @@ mention:
  * Warnings or other important notices.
 
 ### Setup Requirements **OPTIONAL**
+
+If using this module from an isolated network, ensure that package and repo management are disabled from the module and that the `gitlab-ce` or `gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::editon` parameter is set to the correct edition.
 
 **FIXME:** Ensure the *Setup Requirements* section is correct and complete, then remove this message!
 
