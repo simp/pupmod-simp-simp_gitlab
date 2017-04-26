@@ -1,6 +1,6 @@
 # Compile a hash of settings for the gitlab module's parameters, using SIMP settings
 # @return Hash of `vshn/gitlab` parameters
-function simp_gitlab::omnibus_config::gitlab() >> Hash {
+function simp_gitlab::omnibus_config::gitlab() {
   # Non-default HTTPS ports must be included in the external_url
   $_external_url = $simp_gitlab::external_url ? {
     /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ => "${1}:${simp_gitlab::tcp_listen_port}${2}",
