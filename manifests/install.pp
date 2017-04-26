@@ -14,15 +14,15 @@ class simp_gitlab::install {
 
   # If you need to configure the main NGINX server, you can use a `file`
   # resource to drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
-  file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
+  file {['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
     ensure => directory,
   }
 
-  file{ '/etc/gitlab/nginx/conf.d/http_access_list.conf':
+  file { '/etc/gitlab/nginx/conf.d/http_access_list.conf':
     content => $_http_access_list,
   }
 
   class { 'gitlab':
-    *             => deep_merge(simp_gitlab::omnibus_config::gitlab(), $::simp_gitlab::gitlab_options),
+    * => deep_merge(simp_gitlab::omnibus_config::gitlab(), $::simp_gitlab::gitlab_options),
   }
 }

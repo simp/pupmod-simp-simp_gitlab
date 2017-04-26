@@ -99,7 +99,7 @@ describe 'simp_gitlab pki tls with firewall' do
 
       class{ 'svckill': mode => 'enforcing' }
       EOM
-      apply_manifest_on(server,  test_prep_manifest, environment => :env_vars)
+      apply_manifest_on(server,  test_prep_manifest, :environment => :env_vars)
     end
 
     it 'should work with no errors' do

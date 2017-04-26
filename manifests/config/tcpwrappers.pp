@@ -13,4 +13,3 @@ class simp_gitlab::config::tcpwrappers {
   err( $msg )                                     # FIXME: remove this, add logic
 
 }
-
