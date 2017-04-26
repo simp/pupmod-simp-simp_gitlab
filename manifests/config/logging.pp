@@ -13,4 +13,3 @@ class simp_gitlab::config::logging {
   err( $msg )                                 # FIXME: remove this and add logic
 
 }
-

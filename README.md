@@ -64,10 +64,10 @@ As a profile module, `simp_gitlab` has a few functions:
     - [x] `tcpwrappers` (nothing in Omnibus is linked to TCP Wrapper)
     - [x] `auditing` (nothing in Omnibus needs special auditd logic)
     - [x] SELinux (so far, nothing in the acceptance test have broken when SELinux is `enforcing`.  However, that is not expected).
-  - [x] GitLab Omnibus's postfix is disabled and SIMP's postfix module is used.
+  - [x] GitLab Omnibus's postfix is disabled and SIMP's postfix module is used
     - [ ] TODO: This could use more robust testing
 - [ ] Ensure that GitLab Omnibus can be installed without internet access
-  - [ ] This requires
+  - [ ] This requires a local mirror of the Gitlab repositories
 - [ ] Simplify GitLab configuration for common scenarios
    - [x] GitLab
    - [x] GitLab + Omnibus version of NGINX

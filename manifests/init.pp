@@ -135,8 +135,8 @@ class simp_gitlab (
   String                 $ldap_base_dn            = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
   String                 $ldap_bind_dn            = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
   String                 $ldap_bind_pw            = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
-  Simp_gitlab::Strungdef $ldap_group_base         = undef,
-  Simp_gitlab::Strungdef $ldap_user_filter        = undef,
+  Optional[String]       $ldap_group_base         = undef,
+  Optional[String]       $ldap_user_filter        = undef,
   Hash                   $gitlab_options          = {},
 
   Stdlib::Absolutepath   $app_pki_external_source = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
@@ -163,10 +163,10 @@ class simp_gitlab (
   -> Class['simp_gitlab::install']
   -> Class['postfix']
 
-  svckill::ignore{ 'chronyd': } # On EL7, GitLab pulls in the chronyd service
+  svckill::ignore { 'chronyd': } # On EL7, GitLab pulls in the chronyd service
 
   if $pki {
-    pki::copy{ 'gitlab':
+    pki::copy { 'gitlab':
       pki    => $::simp_gitlab::pki,
       source => $::simp_gitlab::app_pki_external_source,
     }

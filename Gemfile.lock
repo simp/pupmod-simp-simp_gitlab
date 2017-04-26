@@ -7,7 +7,7 @@ GEM
       json (~> 1.4)
       nokogiri (~> 1)
     backports (3.7.0)
-    beaker (3.14.0)
+    beaker (3.15.0)
       aws-sdk-v1 (~> 1.57)
       beaker-hiera (~> 0.0)
       beaker-hostgenerator
@@ -159,7 +159,7 @@ GEM
     fog-profitbricks (3.0.0)
       fog-core (~> 1.42)
       fog-json (~> 1.0)
-    fog-rackspace (0.1.4)
+    fog-rackspace (0.1.5)
       fog-core (>= 1.35)
       fog-json (>= 1.0)
       fog-xml (>= 0.1)
@@ -206,7 +206,7 @@ GEM
     gettext (3.2.2)
       locale (>= 2.0.5)
       text (>= 1.3.0)
-    gettext-setup (0.21)
+    gettext-setup (0.24)
       fast_gettext (~> 1.1.0)
       gettext (>= 3.0.2)
       locale
@@ -330,7 +330,7 @@ GEM
       yard (~> 0.9.5)
     puppet-syntax (2.4.0)
       rake
-    puppet_forge (2.2.3)
+    puppet_forge (2.2.4)
       faraday (~> 0.9.0)
       faraday_middleware (>= 0.9.0, < 0.11.0)
       gettext-setup (~> 0.11)
@@ -362,7 +362,7 @@ GEM
       json (>= 1.8)
       nokogiri (~> 1.5)
       trollop (~> 2.1)
-    representable (3.0.3)
+    representable (3.0.4)
       declarative (< 0.1.0)
       declarative-option (< 0.2.0)
       uber (< 0.2.0)
@@ -407,7 +407,7 @@ GEM
       faraday (~> 0.9)
       jwt (~> 1.5)
       multi_json (~> 1.10)
-    simp-beaker-helpers (1.7.0)
+    simp-beaker-helpers (1.7.1)
       beaker (~> 3.14)
       beaker-puppet_install_helper (~> 0.6)
     simp-rake-helpers (3.5.0)
@@ -461,10 +461,10 @@ GEM
     uber (0.1.0)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.3)
+    unf_ext (0.0.7.4)
     websocket (1.2.4)
     xml-simple (1.1.5)
-    yard (0.9.8)
+    yard (0.9.9)
 
 PLATFORMS
   ruby
