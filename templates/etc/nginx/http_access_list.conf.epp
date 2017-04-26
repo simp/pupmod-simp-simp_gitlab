@@ -1,0 +1,18 @@
+<%- |
+Simplib::Netlist      $allowed_nets = ['127.0.0.1/32'],
+Simplib::Netlist      $denied_nets  = [],
+Variant[String,Undef] $module_name  = undef,
+| -%>
+# This file is managed by Puppet<%= if defined( '$module_name' ){ "(module '$module_name')" } %>
+
+<%- $allowed_nets.each |$net| { %>
+    allow <%= $net %>;
+<%- } %>
+<%- $denied_nets.each |$net| { %>
+    deny <%= $net %>;
+<%- } %>
+    deny all;
+
+    # See:
+    #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/27607
+    # proxy_pass http://gitlab-workhorse;
