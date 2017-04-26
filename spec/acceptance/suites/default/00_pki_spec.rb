@@ -7,6 +7,7 @@ describe 'simp_gitlab pki tls with firewall' do
   let(:server) {only_host_with_role( hosts, 'server' )}
   let(:permitted_client) {only_host_with_role( hosts, 'permittedclient' )}
   let(:denied_client) {only_host_with_role( hosts, 'unknownclient' )}
+  let(:env_vars){{ 'GITLAB_ROOT_PASSWORD' => 'yourpassword' }}
 
   let(:manifest) do
     <<-EOS
@@ -52,15 +53,15 @@ describe 'simp_gitlab pki tls with firewall' do
 
     it 'should work with no errors' do
       no_firewall_manifest = manifest.sub(/include 'iptables'/,"class {'iptables': enable => false }")
-      apply_manifest_on(server, no_firewall_manifest, :catch_failures => true)
+      apply_manifest_on(server, no_firewall_manifest, :catch_failures => true, :environment => env_vars)
 
       # FIXME: post fix creates the same files twice; why?
-      apply_manifest_on(server, no_firewall_manifest, :catch_failures => true)
+      apply_manifest_on(server, no_firewall_manifest, :catch_failures => true, :environment => env_vars)
     end
 
     it 'should be idempotent' do
       no_firewall_manifest = manifest.sub(/include 'iptables'/,"class {'iptables': enable => false }")
-      apply_manifest_on(server, no_firewall_manifest, :catch_changes => true)
+      apply_manifest_on(server, no_firewall_manifest, :catch_changes => true, :environment => env_vars)
     end
 
     it 'allows https connection on port 443 from permitted clients' do
@@ -82,7 +83,7 @@ describe 'simp_gitlab pki tls with firewall' do
 
   context 'with PKI + firewall + custom port 777' do
     let(:new_lines) do
-      '        firewall                => true,' + "\n"
+      '        firewall                => true,' + "\n" +
       '        tcp_listen_port         => 777,'
     end
 
@@ -98,17 +99,17 @@ describe 'simp_gitlab pki tls with firewall' do
 
       class{ 'svckill': mode => 'enforcing' }
       EOM
-      apply_manifest_on(server,  test_prep_manifest)
+      apply_manifest_on(server,  test_prep_manifest, environment => :env_vars)
     end
 
     it 'should work with no errors' do
       new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
-      apply_manifest_on(server, new_manifest, :catch_failures => true)
+      apply_manifest_on(server, new_manifest, :catch_failures => true,  :environment => env_vars)
     end
 
     it 'should be idempotent' do
       new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
-      apply_manifest_on(server, new_manifest, :catch_changes => true)
+      apply_manifest_on(server, new_manifest, :catch_changes => true, :environment => env_vars)
     end
 
     it 'allows https connection on port 777 from permitted clients' do

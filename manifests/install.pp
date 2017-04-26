@@ -13,7 +13,7 @@ class simp_gitlab::install {
   })
 
   # If you need to configure the main NGINX server, you can use a `file`
-  # resource to # drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
+  # resource to drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`
   file{['/etc/gitlab', '/etc/gitlab/nginx', '/etc/gitlab/nginx/conf.d']:
     ensure => directory,
   }
@@ -22,15 +22,7 @@ class simp_gitlab::install {
     content => $_http_access_list,
   }
 
-  # Non-default HTTPS ports must be included in the external_url
-  $_external_url = $simp_gitlab::external_url ? {
-    /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ => "${1}:${simp_gitlab::tcp_listen_port}${2}",
-    default => "${external_url}",
-  }
-
   class { 'gitlab':
-    external_url  => $_external_url,
-    external_port => $simp_gitlab::tcp_listen_port,
-    nginx         => simp_gitlab::omnibus_config::nginx(),
+    *             => deep_merge(simp_gitlab::omnibus_config::gitlab(), $::simp_gitlab::gitlab_options),
   }
 }

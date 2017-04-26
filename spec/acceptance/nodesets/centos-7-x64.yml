@@ -7,7 +7,8 @@ HOSTS:
     platform:   el-7-x86_64
     box:        centos/7
     hypervisor: vagrant
-    vagrant_memsize: 512
+    vagrant_memsize: 1024
+    vagrant_cpus: 2
     ip: 192.168.21.21
     forwarded_ports:
       nginx_http:
@@ -18,6 +19,11 @@ HOSTS:
       nginx_https:
         from: 8443
         to: 443
+        from_ip: '127.0.0.1'
+        to_ip: '0.0.0.0'
+      nginx_777:
+        from: 8777
+        to: 777
         from_ip: '127.0.0.1'
         to_ip: '0.0.0.0'
   client-1:

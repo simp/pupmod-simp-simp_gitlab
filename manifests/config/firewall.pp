@@ -6,7 +6,7 @@
 class simp_gitlab::config::firewall {
   assert_private()
 
-  iptables::listen::tcp_stateful { 'allow_gitlab_tcp_connections':
+  iptables::listen::tcp_stateful { 'allow_gitlab_nginx_tcp':
     trusted_nets => $::simp_gitlab::trusted_nets,
     dports       => $::simp_gitlab::tcp_listen_port
   }

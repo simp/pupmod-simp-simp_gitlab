@@ -28,6 +28,9 @@ fixtures:
     rsyslog:
       repo: https://github.com/simp/pupmod-simp-rsyslog
       ref: 7.0.2
+    simp_openldap:
+      repo: https://github.com/simp/pupmod-simp-simp_openldap
+      ref: 6.0.2
     simp_options:
       repo: https://github.com/simp/pupmod-simp-simp_options
       ref: 1.0.1
