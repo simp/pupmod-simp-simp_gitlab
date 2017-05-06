@@ -21,8 +21,16 @@ class simp_gitlab::install {
   file { '/etc/gitlab/nginx/conf.d/http_access_list.conf':
     content => $_http_access_list,
   }
+  ~> Class['gitlab']
+
 
   class { 'gitlab':
     * => deep_merge(simp_gitlab::omnibus_config::gitlab(), $::simp_gitlab::gitlab_options),
+  }
+
+  # This ill-advised hootenany is a hack until vshn/gitlab exposes ENV for the reconfigure
+  $gitlab_root_passwd = passgen( "simp_gitlab_${trusted['certname']}" )
+  Exec <| title == 'gitlab_reconfigure' |> {
+    environment => [ "GITLAB_ROOT_PASSWORD=${gitlab_root_passwd}" ],
   }
 }

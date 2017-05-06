@@ -5,7 +5,7 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
 $_servers = hash($simp_gitlab::ldap_uri.map |$server| {
 
   # We should also capture a port if it is specified at end of the URL, but
-  # simp_openldap doesn't even support that.
+  # even simp_openldap doesn't support that.
   $_port = $server ? {
     /^(ldap):/  => '389',
     /^(ldaps):/ => '636',
@@ -14,14 +14,16 @@ $_servers = hash($simp_gitlab::ldap_uri.map |$server| {
 
   $_method = $server ? {
     /^(ldap):/  => 'plain',
-    /^(ldaps):/ => 'tls',
+    /^(ldaps):/ => 'ssl',
     default     => fail("Cannot determine the LDAP method for '${server}'" ),
   }
 
-  [ $server,
+  [
+    # can't use underscores: https://gitlab.com/gitlab-org/gitlab-ee/issues/1863
+    regsubst($server, '[.-:/_]', '', 'G'),
     {
       'label'                         => 'LDAP',
-      'host'                          => $server,
+      'host'                          => regsubst($server,'^ldaps?://',''),
       'port'                          => $_port,
       'uid'                           => 'uid',
       'method'                        => $_method,
