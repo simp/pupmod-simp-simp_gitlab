@@ -123,9 +123,9 @@
 class simp_gitlab (
   Simplib::Netlist       $trusted_nets            = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
   Simp_gitlab::Stroolean $pki                     = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
-  Simplib::Uri           $external_url            = $pki ? { true => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
+  Simplib::Uri           $external_url            = $pki ? { true => "https://${facts['fqdn']}", 'simp' => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
   Simplib::Netlist       $denied_nets             = [],
-  Simplib::Port          $tcp_listen_port         = $pki ? { true => 443, default => 80},
+  Simplib::Port          $tcp_listen_port         = $pki ? { true => 443, 'simp' => 443, default => 80},
   Boolean                $auditing                = simplib::lookup('simp_options::auditd',        {'default_value' => false}),
   Boolean                $firewall                = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
   Boolean                $syslog                  = simplib::lookup('simp_options::syslog',        {'default_value' => false}),
