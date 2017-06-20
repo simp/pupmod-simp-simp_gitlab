@@ -1,14 +1,18 @@
 {
   "name": "simp-simp_gitlab",
   "version": "0.1.0",
-  "author": "simp",
+  "author": "SIMP Team",
   "summary": "SIMP profiles for GitLab",
   "license": "Apache-2.0",
   "source": "https://github.com/simp/pupmod-simp-simp_gitlab",
   "project_page": "https://github.com/simp/pupmod-simp-simp_gitlab",
   "issues_url": "https://simp-project.atlassian.net",
   "tags": [
-    "simp", "gitlab", "ci", "gitlab-ce", "gitlab-omnibus"
+    "simp",
+    "gitlab",
+    "ci",
+    "gitlab-ce",
+    "gitlab-omnibus"
   ],
   "dependencies": [
     {
