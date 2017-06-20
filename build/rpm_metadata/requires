@@ -5,3 +5,11 @@ Requires: pupmod-simp-simplib >= 3.3.1-0
 Requires: pupmod-simp-simplib < 4.0.0-0
 Requires: pupmod-simp-iptables >= 6.0.1-0
 Requires: pupmod-simp-iptables < 7.0.0-0
+Requires: pupmod-simp-ntpd >= 6.0.0-0
+Requires: pupmod-simp-ntpd < 7.0.0-0
+Requires: pupmod-simp-pam >= 6.0.0-0
+Requires: pupmod-simp-pam < 7.0.0-0
+Requires: pupmod-simp-postfix >= 5.0.0-0
+Requires: pupmod-simp-postfix < 6.0.0-0
+Requires: pupmod-simp-svckill >= 3.2.1-0
+Requires: pupmod-simp-svckill < 4.0.0-0
