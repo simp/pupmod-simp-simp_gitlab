@@ -19,6 +19,9 @@ fixtures:
     ntpd:
       repo: https://github.com/simp/pupmod-simp-ntpd
       ref: 6.0.1
+    pam:
+      repo: https://github.com/simp/pupmod-simp-pam
+      ref: 6.0.3
     pki:
       repo: https://github.com/simp/pupmod-simp-pki
       ref: 6.0.0

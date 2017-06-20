@@ -20,6 +20,10 @@
       "version_requirement": ">= 6.0.0 < 7.0.0"
     },
     {
+      "name": "simp/pam",
+      "version_requirement": ">= 6.0.0 < 7.0.0"
+    },
+    {
       "name": "simp/postfix",
       "version_requirement": ">= 5.0.0 < 6.0.0"
     },

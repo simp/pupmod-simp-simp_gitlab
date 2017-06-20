@@ -24,6 +24,7 @@ with SIMP.
 
 
 [gitlab_omnibus]: https://docs.gitlab.com/omnibus/ "GitLab Omnibus"
+[gitlab_rb_template]: https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
 [vshn_gitlab]: https://github.com/vshn/puppet-gitlab
 [simp_simp_options]: https://github.com/simp/pupmod-simp-simp_options
 
@@ -52,18 +53,29 @@ https://simp-project.atlassian.net/.
 
 ### What `simp_gitlab` affects
 
+This module is a profile that integrates Gitlab with SIMP.  It makes extensive
+use of the component module [`vshn/gitlab`][vshn_gitlab], which in turn
+configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb` and runs `gitlab-ctl
+reconfigure`.
+
+![](assets/simp_gitlab_components.png)
+
 As a profile module, `simp_gitlab` has a few functions:
 
 - [ ] Integrate SIMP and SIMP's global catalysts with GitLab Omnibus
-  - [x] `trusted_nets`
-  - [x] `firewall`
-  - [x] `pki`
-  - [ ] `ldap` (note: GitLab Omnibus has [significant limitations](https://docs.gitlab.com/ce/administration/auth/ldap.html#limitations) on TLS LDAP authentication for both servers and clients.)
+  - [x] Supported global catalysts:
+    - [x] `trusted_nets`
+    - [x] `firewall`
+    - [x] `pki`
+    - [x] `ldap`
+    - [x] SELinux (so far, nothing in the acceptance tests have broken)
   - [ ] Intentionally unimplemented:
     - [ ] `syslog` (deferred)
     - [x] `tcpwrappers` (nothing in Omnibus is linked to TCP Wrapper)
     - [x] `auditing` (nothing in Omnibus needs special auditd logic)
-    - [x] SELinux (so far, nothing in the acceptance test have broken when SELinux is `enforcing`.  However, that is not expected).
+  - [x] Open access for a local `git` SSH user
+    - set up a SIMP `pam::access::rule` permission for local `git` user
+    - configure GitLab's local `git` keep its SSH authorized keys file at the location of the first entry in `ssh::server::conf::authorizedkeysfile` (default: `/etc/ssh/local_keys/git`)
   - [x] GitLab Omnibus's postfix is disabled and SIMP's postfix module is used
     - [ ] TODO: This could use more robust testing
 - [ ] Ensure that GitLab Omnibus can be installed without internet access
@@ -80,15 +92,6 @@ As a profile module, `simp_gitlab` has a few functions:
 - [x] Permit customization of GitLab Omnibus
 - [x] Satisfy as many compliance profiles as possible
 
-
-
-The profile makes extensive use of the component module
-[`vshn/gitlab`][vshn_gitlab], which in turn configures the
-GitLab Omnibus's `/etc/gitlab/gitlab.rb` and runs `gitlab-ctl reconfigure`.
-
-The profiles makes extensive use of the component module
-[`vshn/gitlab`][vshn_gitlab]
-![](assets/simp_gitlab_components.png)
 
 **FIXME:** Ensure the *What simp_gitlab affects* section is correct and complete, then remove this message!
 
@@ -132,6 +135,31 @@ class { 'simp_gitlab':
                   ],
   pki          => true,
   firewall     => true,
+}
+```
+
+
+Parameters for [`vshn/gitlab`][vshn_gitlab] can be passed in directly using the
+`$simp_gitlab::gitlab_options` parameter.
+
+
+**Hint:** Many of the data structures used by [`vshn/gitlab`][vshn_gitlab]'s
+parameters are documented at
+https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
+
+```puppet
+
+# Name the local git user account `gitlab` (instead of the default `git`)
+class { 'simp_gitlab':
+  trusted_nets   => $simp_options::trusted_nets
+  pki            => true,
+  firewall       => true,
+  gitlab_options => {
+    'user' => {
+      'username' => 'gitlab',
+      'group'    => 'gitlab',
+    }
+  },
 }
 ```
 
