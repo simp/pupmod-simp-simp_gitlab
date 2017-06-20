@@ -1,3 +1,7 @@
-* Wed Apr 26 2017 SIMP Team <simp-project.com> - 0.0.1
+* Wed Apr 26 2017 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.2.0
+- Manage PAM access and SSH keys for local Git Omnibus `git` user
+- Update static assets
+
+* Wed Apr 26 2017 SIMP Team <simp-project.com> - 0.1.0
 - This is the initial code for a `simp_gitlab` module, which installs
   GitLab Omnibus and incorporates it into SIMP.
