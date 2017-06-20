@@ -34,10 +34,9 @@ class simp_gitlab::config {
     # If necessary, exempt the Gitlab authorized keys lock file from
     # `ssh::server::conf`'s hard-coded recursive permissions
     $simp_localkeys_path = '/etc/ssh/local_keys'
-    $_simp_localkeys_path = regexpescape( $simp_localkeys_path )
     if $simp_gitlab::gitlab_ssh_keyfile =~ regexpescape($simp_localkeys_path) {
-      $patt = basename("${simp_gitlab::gitlab_ssh_keyfile}\.lock")
-      File <| title == $simp_localkeys_path |> { ignore => $patt }
+      $_glob = basename("${simp_gitlab::gitlab_ssh_keyfile}.lock")
+      File <| title == $simp_localkeys_path |> { ignore => $_glob }
     }
   }
 }
