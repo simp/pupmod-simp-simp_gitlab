@@ -80,7 +80,7 @@ describe 'simp_gitlab' do
             end
           end
 
-          context 'using alternate ports 777' do
+          context 'using alternate port 777' do
             let(:params) {{
               :pki             => true,
               :firewall        => true,
