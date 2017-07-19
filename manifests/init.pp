@@ -30,10 +30,6 @@
 #   The port upon which to listen for regular TCP connections.  By default
 #   this will be ``'80'`` if HTTPS is disabled and ``'443'`` if HTTPS is enabled.
 #
-#
-# @param auditing
-#   If ``true``, manage auditing for **simp_gitlab**
-#
 # @param firewall
 #   If ``true``, manage firewall rules to acommodate **simp_gitlab**
 #
@@ -130,7 +126,6 @@ class simp_gitlab (
   Simplib::Uri           $external_url            = $pki ? { true => "https://${facts['fqdn']}", 'simp' => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
   Simplib::Netlist       $denied_nets             = [],
   Simplib::Port          $tcp_listen_port         = $pki ? { true => 443, 'simp' => 443, default => 80},
-  Boolean                $auditing                = simplib::lookup('simp_options::auditd',        {'default_value' => false}),
   Boolean                $firewall                = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
   Boolean                $syslog                  = simplib::lookup('simp_options::syslog',        {'default_value' => false}),
   Boolean                $ldap                    = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
