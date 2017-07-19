@@ -20,7 +20,7 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
 
     [
       # can't use underscores: https://gitlab.com/gitlab-org/gitlab-ee/issues/1863
-      regsubst($server, '[.-:/_]', '', 'G'),
+      regsubst($server, '\.|[-:/_]', '', 'G'),
       {
         ## label
         #
