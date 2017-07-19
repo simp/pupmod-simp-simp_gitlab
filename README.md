@@ -3,18 +3,18 @@
 #### Table of Contents
 
 * [Description](#description)
-	* [This is a SIMP module](#this-is-a-simp-module)
+  * [This is a SIMP module](#this-is-a-simp-module)
 * [Setup](#setup)
-	* [What simp_gitlab affects](#what-simp_gitlab-affects)
-	* [Setup Requirements](#setup-requirements-optional)
-	* [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
+  * [What simp_gitlab affects](#what-simp_gitlab-affects)
+  * [Setup Requirements](#setup-requirements-optional)
+  * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
 * [Usage](#usage)
 * [Reference](#reference)
-	* [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
+  * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
 * [Limitations](#limitations)
-  * [Omnibus syslog is limited to GitLab Enterprise Edition (TODO: see if we can ship the individual logs)](#omnibus-syslog-is-limited-to-gitlab-enterprise-edition-todo-see-if-we-can-ship-the-individual-logs)
+  * [Omnibus syslog is limited to GitLab Enterprise Edition](#omnibus-syslog-is-limited-to-gitlab-enterprise-edition-todo-see-if-we-can-ship-the-individual-logs)
 * [Development](#development)
-	* [Acceptance tests](#acceptance-tests)
+  * [Acceptance tests](#acceptance-tests)
 
 
 ## Description
@@ -54,30 +54,36 @@ https://simp-project.atlassian.net/.
 ### What `simp_gitlab` affects
 
 This module is a profile that integrates Gitlab with SIMP.  It makes extensive
-use of the component module [`vshn/gitlab`][vshn_gitlab], which in turn
-configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb` and runs `gitlab-ctl
-reconfigure`.
+use of the component module [`vshn/gitlab`][vshn_gitlab].  It is important to
+note that `vshn-gitlab` configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb`
+and runs `gitlab-ctl reconfigure`.
 
-![](assets/simp_gitlab_components.png)
+![Relationships between components](assets/simp_gitlab_components.png)
 
 As a profile module, `simp_gitlab` has a few functions:
 
-- [ ] Integrate SIMP and SIMP's global catalysts with GitLab Omnibus
-  - [x] Supported global catalysts:
-    - [x] `trusted_nets`
-    - [x] `firewall`
-    - [x] `pki`
-    - [x] `ldap`
-    - [x] SELinux (so far, nothing in the acceptance tests have broken)
-  - [ ] Intentionally unimplemented:
-    - [ ] `syslog` (deferred)
-    - [x] `tcpwrappers` (nothing in Omnibus is linked to TCP Wrapper)
-    - [x] `auditing` (nothing in Omnibus needs special auditd logic)
-  - [x] Open access for a local `git` SSH user
-    - set up a SIMP `pam::access::rule` permission for local `git` user
-    - configure GitLab's local `git` keep its SSH authorized keys file at the location of the first entry in `ssh::server::conf::authorizedkeysfile` (default: `/etc/ssh/local_keys/git`)
-  - [x] GitLab Omnibus's postfix is disabled and SIMP's postfix module is used
-    - [ ] TODO: This could use more robust testing
+- [x] Integrate SIMP and SIMP's global catalysts with GitLab Omnibus
+  - [x] Supported SIMP Options (global catalysts):
+    - [x] `simp_options::trusted_nets`
+    - [x] `simp_options::firewall`
+    - [x] `simp_options::pki`
+    - [x] `simp_options::ldap::*`
+  - Intentionally unimplemented:
+    - `simp_options::selinux` ― The GitLab Omnibus installer appears to handle SELinux correctly
+    - `simp_options::tcpwrappers` ― nothing in Omnibus is linked to TCP Wrapper
+    - `simp_options::auditing` ― nothing in Omnibus needs special auditd logic
+  - Deferred:
+    - `simp_options::fips` ― GitLab Omnibus ships with a version of OpenSSL that does not support FIPS mode
+    - `simp_options::syslog` (not clear that we want to support this outside of `ee`)
+  - SIMP integrations:
+    - Open access for a local `git` SSH user
+       - set up a SIMP `pam::access::rule` to permit GitLab's local `git` user
+       - configure the location of GitLab's local `git` user's SSH authorized
+         keys to be file at the location of the first entry in
+         `ssh::server::conf::authorizedkeysfile` (default:
+         `/etc/ssh/local_keys/git`)
+    - The postfix service that comes with GitLab Omnibus is disabled in favor
+      of the SIMP `postfix` module.
 - [ ] Ensure that GitLab Omnibus can be installed without internet access
   - [ ] This requires a local mirror of the Gitlab repositories
 - [ ] Simplify GitLab configuration for common scenarios
@@ -90,7 +96,7 @@ As a profile module, `simp_gitlab` has a few functions:
        - (Omnibus's integrated Prometheus app monitoring requires Gitlab Omnibus to be installed [_within_ a docker container](https://docs.gitlab.com/ce/user/project/integrations/prometheus.html#configuring-prometheus-to-collect-kubernetes-metrics))
      - [ ] GitLab CI Runner (docker)
 - [x] Permit customization of GitLab Omnibus
-- [x] Satisfy as many compliance profiles as possible
+- [x] Satisfy as many compliance-relevant criteria as possible
 
 
 **FIXME:** Ensure the *What simp_gitlab affects* section is correct and complete, then remove this message!
@@ -104,27 +110,27 @@ mention:
 
 ### Setup Requirements
 
-#### Notes on installing from an isolated network
 
-- If using this module from an isolated network, ensure that package and repo management are disabled from the module, and that the `gitlab-ce` or `gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::editon` parameter is set to the correct edition.
-
-**FIXME:** Ensure the *Setup Requirements* section is correct and complete, then remove this message!
+If using this module from an isolated network, ensure that package and repo
+management are disabled from the module, and that the `gitlab-ce` or
+`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::editon`
+parameter is set to the correct edition.
 
 ### Beginning with simp_gitlab
 
-**FIXME:** Ensure the *Beginning with simp_gitlab* section is correct and complete, then remove this message!
+The most basic GitLab usage within a SIMP-managed infrastructure where all
+`simp_options::` are present:
 
-The most basic GitLab usage within a fully-configured SIMP infrastructure is:
 ```puppet
 include 'simp_gitlab'
 ```
 
 
-
 ## Usage
 
 
-A basic GitLab setup using PKI:
+### A basic GitLab setup using PKI
+
 ```puppet
 class { 'simp_gitlab':
   trusted_nets => [
@@ -133,14 +139,19 @@ class { 'simp_gitlab':
                     '192.168.21.22',
                     '127.0.0.1/32',
                   ],
-  pki          => true,
+  pki          => 'simp',
   firewall     => true,
 }
 ```
 
 
+### Passing custom parameters to `vshn-gitlab`
+
 Parameters for [`vshn/gitlab`][vshn_gitlab] can be passed in directly using the
-`$simp_gitlab::gitlab_options` parameter.
+(Hash) `$simp_gitlab::gitlab_options` parameter.
+
+**Warning:**  `$simp_gitlab::gitlab_options` parameters that conflict with the
+rest of `simp_gitlab` may lead to undefined behavior / broken systems.
 
 
 **Hint:** Many of the data structures used by [`vshn/gitlab`][vshn_gitlab]'s
@@ -152,7 +163,7 @@ https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-tem
 # Name the local git user account `gitlab` (instead of the default `git`)
 class { 'simp_gitlab':
   trusted_nets   => $simp_options::trusted_nets
-  pki            => true,
+  pki            => 'simp',
   firewall       => true,
   gitlab_options => {
     'user' => {
@@ -164,10 +175,13 @@ class { 'simp_gitlab':
 ```
 
 
+### Configuring Nginx
 
-#### Configuring Nginx
+`simp_gitlab` configures the GitLab's internal Nginx server to look for
+additional `.conf` files under `/etc/gitlab/nginx/conf.d/`.
 
-If you need to configure the main Nginx server, use a `file` resource to drop a `.conf` file in `/etc/gitlab/nginx/conf.d/`.
+If you need to configure the main Nginx server, use a `file` resource from your
+own profiles to establish a new `.conf` file.
 
 
 ## Reference
@@ -203,11 +217,26 @@ module's generated YARD documentation for reference material.
 
 #### Puppet runs can fail if GitLab Omnibus's internal services don't start in time
 
+**Note:** These are limitations of upstream components
+
+* The Exec that runs `gitlab-ctl reconfigure` may take a long time start its
+  internal services, particularly during the first run that installs GitLab.
+  These services are internal to the GitLab Omnibus installation and are not
+  registered with the host OS or the Puppet providers for `service`.  It is
+  possible for the services to take so long to start in the background that
+  dependencies within `vshn-gitlab` will fail.
+  <!-- this line is indented to continue the preceding bullet -->
+  In these cases, it should be sufficient to simply run Puppet again after the
+  services finish starting (status with `gitlab-ctl status`).
+
+* If the GitLab Omnibus package is already installed but the `gitlab-runsvdir`
+  service is stopped, the service will not start and catalog compilation will
+  fail.
+
 #### Omnibus syslog is limited to GitLab Enterprise Edition
 
-  - [ ] `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
-  - [ ] [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
-  - [ ] TODO: look into configuring `simp-rsyslog` to see ship the individual omnibus logs
+  - `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
+  - [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
 
 #### Nessus scans may incorrectly report CRIME vulnerability in GitLab
 
@@ -249,8 +278,6 @@ tests run the following:
 bundle install
 bundle exec rake beaker:suites
 ```
-
-**FIXME:** Ensure the *Acceptance tests* section is correct and complete, including any module-specific instructions, and remove this message!
 
 Please refer to the [SIMP Beaker Helpers documentation](https://github.com/simp/rubygem-simp-beaker-helpers/blob/master/README.md)
 for more information.
