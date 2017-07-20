@@ -55,7 +55,7 @@ describe 'simp_gitlab pki tls with firewall' do
       no_firewall_manifest = manifest.sub(/include 'iptables'/,"class {'iptables': enable => false }")
       apply_manifest_on(server, no_firewall_manifest, :catch_failures => true, :environment => env_vars)
 
-      # FIXME: post fix creates the same files twice; why?
+      # FIXME: postfix creates the same files twice; why?
       apply_manifest_on(server, no_firewall_manifest, :catch_failures => true, :environment => env_vars)
     end
 
@@ -97,22 +97,26 @@ describe 'simp_gitlab pki tls with firewall' do
         trusted_nets => ['any'],
       }
 
-      class{ 'svckill': mode => 'enforcing' }
+      class{ 'svckill':
+        mode   => 'enforcing',
+        # Gitlab is still installed and running from the last test
+        ignore => ['gitlab-runsvdir', 'gitlab-runsvdir.service'],
+      }
       EOM
       apply_manifest_on(server,  test_prep_manifest, :environment => :env_vars)
     end
 
     it 'should work with no errors' do
-      new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
+      new_manifest = manifest.gsub(%r[(pki\s*=>\s*true),?], "\\1,\n#{new_lines}\n")
       apply_manifest_on(server, new_manifest, :catch_failures => true,  :environment => env_vars)
     end
 
     it 'should be idempotent' do
-      new_manifest = manifest.gsub(%r[pki\s*=>\s*true,], "\\0\n#{new_lines}\n")
+      new_manifest = manifest.gsub(%r[(pki\s*=>\s*true),?], "\\1,\n#{new_lines}\n")
       apply_manifest_on(server, new_manifest, :catch_changes => true, :environment => env_vars)
     end
 
-    it 'allows https connection on port 777 from permitted clients' do
+    it 'allows https connection on port 777 only from permitted clients' do
       fqdn = fact_on(server, 'fqdn')
       result = on(server, "#{curl_ssl_cmd(server)} -L https://#{fqdn}:777/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
@@ -120,8 +124,17 @@ describe 'simp_gitlab pki tls with firewall' do
       result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}:777/users/sign_in" )
       expect(result.stdout).to match(/GitLab|password/)
 
-      result = on(denied_client, "#{curl_ssl_cmd(denied_client)} -L https://#{fqdn}:777/users/sign_in" )
-      expect(result.stderr).to match(/Failed connect to #{fqdn}/)
+      # We are testing with firewall enabled, so we expect curl to fail
+      #
+      #  Curl exit codes:
+      #
+      #    7  = Failed connect to #{fqdn}
+      #    28 =  Connection timed out
+      #
+      #  Both exit codes have been encountered during testing, and I think it
+      #  depends on the whether the host system's network stack has been locked
+      #  down (ala SIMP) or not.
+      result = on( denied_client, "#{curl_ssl_cmd(denied_client)} -L https://#{fqdn}:777/users/sign_in", :acceptable_exit_codes => [7,28])
     end
   end
 

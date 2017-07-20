@@ -78,13 +78,21 @@ describe 'simp_gitlab' do
                 })
               end
             end
+
+            context 'and using alternate web server port 777' do
+              let(:params) {{
+                :pki             => true,
+                :firewall        => true,
+                :tcp_listen_port => 777,
+              }}
+              it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_nginx_tcp').with_dports(777) }
+              it { is_expected.to contain_class('gitlab').with_external_url(%r(^https://[^/]+?:777(/?.*)?))}
+            end
           end
 
-          context 'using alternate ports 777' do
+
+          context 'simp_gitlab class using multiple LDAP servers (NOTE: ee only)' do
             let(:params) {{
-              :pki             => true,
-              :firewall        => true,
-              :tcp_listen_port => 777,
               :ldap => true,
               :ldap_uri => [
                 'ldaps://ldapserver1.example.com',
@@ -96,8 +104,24 @@ describe 'simp_gitlab' do
               :ldap_bind_pw => 's00per sekr3t!',
               :ldap_active_directory => false,
             }}
-            it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_nginx_tcp').with_dports(777) }
-            it { is_expected.to contain_class('gitlab').with_external_url(%r(^https://[^/]+?:777(/?.*)?))}
+
+            it "should contain correct LDAP settings" do
+              _gitlab_rails = catalogue.resource('class','gitlab').send(:parameters)[:gitlab_rails]
+              expect( _gitlab_rails ).to include ({'ldap_enabled' => true})
+              expect( _gitlab_rails['ldap_servers'].size ).to eq 3
+              expect( _gitlab_rails['ldap_servers'].first.last ).to include ({'base'  => 'dc=bar,dc=baz'})
+              expect( _gitlab_rails['ldap_servers'].first.last ).to include ({'label' => 'LDAP'})
+            end
+
+            it "should mangle LDAP server names into valid and unique provider IDs" do
+              _gitlab_rails = catalogue.resource('class','gitlab').send(:parameters)[:gitlab_rails]
+              expect(_gitlab_rails['ldap_servers'].keys.sort ).to eql [
+                'ldapsldapserver1examplecom',
+                'ldapsldapserver2examplecom',
+                'ldapldapserver3examplecom'
+              ].sort
+            end
+
           end
         end
       end
