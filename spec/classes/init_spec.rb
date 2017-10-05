@@ -16,7 +16,7 @@ describe 'simp_gitlab' do
   [:permissive, :enforcing].each do |selinux_mode|
     context "when SELinux is `#{selinux_mode.to_s}`" do
       on_supported_os({
-        :selinux_mode   => :permissive,
+        :selinux_mode   => selinux_mode
       }).each do |os, os_facts|
         context "on #{os}" do
           let(:facts){
@@ -54,6 +54,7 @@ describe 'simp_gitlab' do
                 'ssl_certificate'     => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
                 'ssl_certificate_key' => '/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem',
                 'ssl_ciphers'         => 'DEFAULT:!MEDIUM',
+                'ssl_protocols'       => 'TLSv1 TLSv2 TLSv1.2',
               })
               expect( nginx ).not_to include('ssl_verify_client'=> 'on')
             end

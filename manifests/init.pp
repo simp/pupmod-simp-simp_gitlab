@@ -69,9 +69,6 @@
 # @param edition
 #   Edition of GitLab to manage (`'ce'` or `'ee'`)
 #
-# @param syslog
-#   Whether or not to use the SIMP Rsyslog module.
-#
 # @param two_way_ssl_validation
 #   When `true`, server and clients will require mutual TLS authentication.
 #
@@ -148,6 +145,7 @@ class simp_gitlab (
   Array[String]          $cipher_suite            = simplib::lookup('simp_options::openssl::cipher_suites', {
                                                                     'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
+  Array[String]          $ssl_protocols           = ['TLSv1','TLSv2','TLSv1.2'],
   String                 $ssh_authorized_keyfile  = simplib::lookup(  'ssh::server::conf::authorizedkeysfile' , {
                                                                       'default_value' => '%h/.ssh/authorized_keys'}
                                                                     ).split(/ +/)[0],
