@@ -22,6 +22,7 @@ class simp_gitlab::config {
     owner   => $simp_gitlab::gitlab_ssh_user,
     group   => $simp_gitlab::gitlab_ssh_group,
     seltype => 'sshd_key_t',
+    require => Class['gitlab'],
   }
 
   # SSH authorized_keys file permissions are different between home and
