@@ -72,6 +72,10 @@
 # @param two_way_ssl_validation
 #   When `true`, server and clients will require mutual TLS authentication.
 #
+# @param ldap_verify_certificates
+#   When `true`, SSL LDAP connections must use certificates signed by a known
+#   CA.  Defaults to `true`.
+#
 # @param ssl_verify_depth
 #   Sets the verification depth in the client certificates chain.
 #
@@ -121,38 +125,38 @@
 # @author simp
 #
 class simp_gitlab (
-  Simplib::Netlist       $trusted_nets            = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
-  Simp_gitlab::Stroolean $pki                     = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
-  Simplib::Uri           $external_url            = $pki ? { true => "https://${facts['fqdn']}", 'simp' => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
-  Simplib::Netlist       $denied_nets             = [],
-  Simplib::Port          $tcp_listen_port         = $pki ? { true => 443, 'simp' => 443, default => 80},
-  Boolean                $firewall                = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
-  Boolean                $ldap                    = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
-  Boolean                $ldap_active_directory   = false,
-  Array[Simplib::URI]    $ldap_uri                = simplib::lookup('simp_options::ldap::uri',     {'default_value' => []}),
-  String                 $ldap_base_dn            = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
-  String                 $ldap_bind_dn            = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
-  String                 $ldap_bind_pw            = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
-  Optional[String]       $ldap_group_base         = undef,
-  Optional[String]       $ldap_user_filter        = undef,
-  Hash                   $gitlab_options          = {},
+  Simplib::Netlist       $trusted_nets             = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
+  Simp_gitlab::Stroolean $pki                      = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
+  Simplib::Uri           $external_url             = $pki ? { true => "https://${facts['fqdn']}", 'simp' => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
+  Simplib::Netlist       $denied_nets              = [],
+  Simplib::Port          $tcp_listen_port          = $pki ? { true => 443, 'simp' => 443, default => 80},
+  Boolean                $firewall                 = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
+  Boolean                $ldap                     = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
+  Boolean                $ldap_active_directory    = false,
+  Array[Simplib::URI]    $ldap_uri                 = simplib::lookup('simp_options::ldap::uri',     {'default_value' => []}),
+  String                 $ldap_base_dn             = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
+  String                 $ldap_bind_dn             = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
+  String                 $ldap_bind_pw             = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
+  Optional[String]       $ldap_group_base          = undef,
+  Optional[String]       $ldap_user_filter         = undef,
+  Hash                   $gitlab_options           = {},
 
-  Stdlib::Absolutepath   $app_pki_external_source = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
-  Stdlib::Absolutepath   $app_pki_dir             = '/etc/pki/simp_apps/gitlab/x509',
-  Stdlib::Absolutepath   $app_pki_key             = "${app_pki_dir}/private/${facts['fqdn']}.pem",
-  Stdlib::Absolutepath   $app_pki_cert            = "${app_pki_dir}/public/${facts['fqdn']}.pub",
-  Stdlib::Absolutepath   $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
-  Boolean                $two_way_ssl_validation  = false,
+  Stdlib::Absolutepath   $app_pki_external_source  = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
+  Stdlib::Absolutepath   $app_pki_dir              = '/etc/pki/simp_apps/gitlab/x509',
+  Stdlib::Absolutepath   $app_pki_key              = "${app_pki_dir}/private/${facts['fqdn']}.pem",
+  Stdlib::Absolutepath   $app_pki_cert             = "${app_pki_dir}/public/${facts['fqdn']}.pub",
+  Stdlib::Absolutepath   $app_pki_ca               = "${app_pki_dir}/cacerts/cacerts.pem",
+  Boolean                $two_way_ssl_validation   = false,
   Boolean                $ldap_verify_certificates = true,
-  Integer                $ssl_verify_depth        = 2,
-  Array[String]          $ssl_protocols           = ['TLSv1','TLSv1.1','TLSv1.2'],
-  Array[String]          $cipher_suite            = simplib::lookup('simp_options::openssl::cipher_suites', {
-                                                                    'default_value'  => ['DEFAULT', '!MEDIUM']
-                                                                    }),
-  String                 $ssh_authorized_keyfile  = simplib::lookup(  'ssh::server::conf::authorizedkeysfile' , {
-                                                                      'default_value' => '%h/.ssh/authorized_keys'}
-                                                                    ).split(/ +/)[0],
-  Enum['ce','ee']        $edition                 = 'ce',
+  Integer                $ssl_verify_depth         = 2,
+  Array[String]          $ssl_protocols            = ['TLSv1','TLSv1.1','TLSv1.2'],
+  Array[String]          $cipher_suite             = simplib::lookup('simp_options::openssl::cipher_suites', {
+                                                                     'default_value'  => ['DEFAULT', '!MEDIUM']
+                                                                     }),
+  String                 $ssh_authorized_keyfile   = simplib::lookup(  'ssh::server::conf::authorizedkeysfile' , {
+                                                                       'default_value' => '%h/.ssh/authorized_keys'}
+                                                                     ).split(/ +/)[0],
+  Enum['ce','ee']        $edition                  = 'ce',
 ) {
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
