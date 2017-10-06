@@ -75,6 +75,9 @@
 # @param ssl_verify_depth
 #   Sets the verification depth in the client certificates chain.
 #
+# @param ssl_protocols
+#   Array of Nginx-comptaible SSL/TLS protocols for the web server to accept.
+#
 # @param gitlab_options
 #   Hash of manually-customized parameters for `vshn/gitlab`.
 #
@@ -142,10 +145,10 @@ class simp_gitlab (
   Stdlib::Absolutepath   $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
   Boolean                $two_way_ssl_validation  = false,
   Integer                $ssl_verify_depth        = 2,
+  Array[String]          $ssl_protocols           = ['TLSv1','TLSv2','TLSv1.2'],
   Array[String]          $cipher_suite            = simplib::lookup('simp_options::openssl::cipher_suites', {
                                                                     'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
-  Array[String]          $ssl_protocols           = ['TLSv1','TLSv2','TLSv1.2'],
   String                 $ssh_authorized_keyfile  = simplib::lookup(  'ssh::server::conf::authorizedkeysfile' , {
                                                                       'default_value' => '%h/.ssh/authorized_keys'}
                                                                     ).split(/ +/)[0],
