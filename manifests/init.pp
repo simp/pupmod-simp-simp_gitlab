@@ -127,7 +127,6 @@ class simp_gitlab (
   Simplib::Netlist       $denied_nets             = [],
   Simplib::Port          $tcp_listen_port         = $pki ? { true => 443, 'simp' => 443, default => 80},
   Boolean                $firewall                = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
-  Boolean                $syslog                  = simplib::lookup('simp_options::syslog',        {'default_value' => false}),
   Boolean                $ldap                    = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
   Boolean                $ldap_active_directory   = false,
   Array[Simplib::URI]    $ldap_uri                = simplib::lookup('simp_options::ldap::uri',     {'default_value' => []}),
@@ -144,8 +143,9 @@ class simp_gitlab (
   Stdlib::Absolutepath   $app_pki_cert            = "${app_pki_dir}/public/${facts['fqdn']}.pub",
   Stdlib::Absolutepath   $app_pki_ca              = "${app_pki_dir}/cacerts/cacerts.pem",
   Boolean                $two_way_ssl_validation  = false,
+  Boolean                $ldap_verify_certificates = true,
   Integer                $ssl_verify_depth        = 2,
-  Array[String]          $ssl_protocols           = ['TLSv1','TLSv2','TLSv1.2'],
+  Array[String]          $ssl_protocols           = ['TLSv1','TLSv1.1','TLSv1.2'],
   Array[String]          $cipher_suite            = simplib::lookup('simp_options::openssl::cipher_suites', {
                                                                     'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
