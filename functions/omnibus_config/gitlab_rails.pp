@@ -7,15 +7,15 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
     # We should also capture a port if it is specified at end of the URL, but
     # even simp_openldap doesn't support that.
     $_port = $server ? {
-      /^(ldap):/  => '389',
-      /^(ldaps):/ => '636',
+      /^(ldap):/  => '389', # 'plain' or 'start_tls'
+      /^(ldaps):/ => '636', # 'simple_tls'
       default     => fail("Cannot determine the LDAP port for '${server}'" ),
     }
 
-    $_method = $server ? {
-      /^(ldap):/  => 'plain',
-      /^(ldaps):/ => 'ssl',
-      default     => fail("Cannot determine the LDAP method for '${server}'" ),
+    $_encryption = $server ? {
+      /^(ldap):/  => 'start_tls',  # starts at 'plain' and negotiates up
+      /^(ldaps):/ => 'simple_tls', # ldaps is more secure, but deprecated
+      default     => fail("Cannot determine the LDAP encryption for '${server}'" ),
     }
 
     [
@@ -32,7 +32,7 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
         'host'                          => regsubst($server,'^ldaps?://',''),
         'port'                          => $_port,
         'uid'                           => 'uid',
-        'method'                        => $_method,
+        'encryption'                    => $_encryption,
         'bind_dn'                       => $simp_gitlab::ldap_bind_dn,
         'password'                      => $simp_gitlab::ldap_bind_pw,
         'active_directory'              => $simp_gitlab::ldap_active_directory,
