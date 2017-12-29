@@ -20,6 +20,11 @@ HOSTS:
         to: 443
         from_ip: '127.0.0.1'
         to_ip: '0.0.0.0'
+      nginx_777:
+        from: 8777
+        to: 777
+        from_ip: '127.0.0.1'
+        to_ip: '0.0.0.0'
   client-1:
     roles:
       - client
@@ -34,6 +39,7 @@ HOSTS:
       - client
       - unknownclient
       - logdest
+      - ldapserver
     platform:   el-6-x86_64
     box:        centos/6
     hypervisor: vagrant

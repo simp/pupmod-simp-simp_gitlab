@@ -1,3 +1,9 @@
+* Fri Nov 17 2017 Chris Tessmern <chris.tessmer@onyxpoint.com> - 0.3.0
+- Corrected corrections
+- Add ldap_verify_certificates parameter
+- Update deprecated LDAP encryption configurations for GitLab 9.4+
+- Add LDAP acceptance tests
+
 * Thu Sep 28 2017 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.2.1
 - Build and test corrections
 

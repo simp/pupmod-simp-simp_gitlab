@@ -33,22 +33,25 @@ fixtures:
       ref: 7.0.2
     simp_openldap:
       repo: https://github.com/simp/pupmod-simp-simp_openldap
-      ref: 6.0.2
+      ref: 6.1.2
+    haveged:
+      repo: https://github.com/simp/pupmod-simp-haveged
+      ref: 0.4.4
     simp_options:
       repo: https://github.com/simp/pupmod-simp-simp_options
       ref: 1.0.1
     simpcat:
       repo: https://github.com/simp/pupmod-simp-simpcat
-      ref: 6.0.0-pre1
+      ref: 6.0.1
     simplib:
       repo: https://github.com/simp/pupmod-simp-simplib
-      ref: 3.3.1
+      ref: 3.8.0
     stdlib:
       repo: https://github.com/simp/puppetlabs-stdlib
       ref: 4.13.1
     svckill:
       repo: https://github.com/simp/pupmod-simp-svckill
-      ref: 3.2.0
+      ref: 3.2.1
     tcpwrappers:
       repo: https://github.com/simp/pupmod-simp-tcpwrappers
       ref: 6.0.0
