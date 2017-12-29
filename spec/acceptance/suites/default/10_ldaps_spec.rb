@@ -1,4 +1,6 @@
 require 'spec_helper_acceptance'
+require 'json'
+require 'nokogiri'
 
 test_name 'simp_gitlab ldap tls'
 
@@ -15,7 +17,6 @@ describe 'simp_gitlab using ldap over tls' do
       class{'simp_openldap':
         is_server => true,
       }
-      #include 'simp::server::ldap'
       include 'svckill'
       include 'iptables'
 
@@ -65,7 +66,7 @@ describe 'simp_gitlab using ldap over tls' do
   end
 
   context 'with PKI enabled' do
-    it 'should prep the test enviornment' do
+    it 'should prep the test environment' do
       test_prep_manifest = <<-EOM
       # clean up Vagrant's dingleberries
       class{ 'svckill': mode => 'enforcing' }
@@ -79,20 +80,26 @@ describe 'simp_gitlab using ldap over tls' do
 
       # Add users and groups to LDAP
       files_dir      = File.expand_path('../files', __FILE__)
-      ldif_file      = File.expand_path('ldap_test_user.ldif',files_dir)
       hieradata_file = File.expand_path('ldap_tls_default.yaml',files_dir)
-
-      ldif_text      = File.read(ldif_file)
-                         .gsub('LDAP_BASE_DN',domains)
-      create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
 
       ldap_server_hieradata = File.read(hieradata_file)
                                 .gsub('LDAP_BASE_DN',domains)
                                 .gsub('LDAP_URI', ldap_server.node_name )
-      # share trusted_nets, etc
-      set_hieradata_on(hosts, ldap_server_hieradata, 'default')
 
+      # distribute common LDAP & trusted_nets settings
+      hosts.each do |h|
+        set_hieradata_on(h, ldap_server_hieradata, 'default')
+      end
+
+      # install LDAP service
       apply_manifest_on(ldap_server, ldap_server_manifest)
+
+      # add accounts
+      ldif_file      = File.expand_path('ldap_test_user.ldif',files_dir)
+      ldif_text      = File.read(ldif_file)
+                         .gsub('LDAP_BASE_DN',domains)
+      create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
+      on(ldap_server,"ldapadd -x -ZZ -D cn=LDAPAdmin,ou=People,#{domains} -H ldap://#{ldap_server.node_name} -w 'suP3rP@ssw0r!' -f /root/user_ldif.ldif")
     end
 
 
@@ -120,6 +127,28 @@ describe 'simp_gitlab using ldap over tls' do
     end
 
     it 'authenticates via StartTLS-encrypted LDAP' do
+      oauth_json_pp= <<-PP
+        $pw = passgen( "simp_gitlab_${trusted['certname']}" )
+        $json = "{\\"grant_type\\": \\"password\\", \\"username\\": \\"root\\", \\"password\\": \\"${pw}\\"}"
+        file{ '/root/ouath_json.template':  
+          content => $json 
+        }
+      PP
+      apply_manifest_on(server, oauth_json_pp, :catch_failures => true, :environment => env_vars)
+      _r = on(server, "curl https://#{server.node_name}/oauth/token --capath /etc/pki/simp-testing/pki/cacerts/ -d @/root/ouath_json.template  --header 'Content-Type: application/json' ")
+
+      expect(_r.exit_code_in? [0,2]).to be true
+      token_data = JSON.parse(_r.stdout)
+warn 'REMINDER: Impersonate users to log in'
+
+      # This is stupid, but tests the first login (for now--tested on 10.3)
+      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}/users/sign_in" )
+      doc = Nokogiri::HTML(result.stdout)
+      form = doc.at_css 'form#new_ldap_user'
+      input_data = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
+
+
+
 require 'pry'; binding.pry
     end
   end

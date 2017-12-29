@@ -3,6 +3,8 @@ simp_options::trusted_nets:   ['any']
 simp_options::puppet::server: there.is.no.puppet.server
 simp_options::puppet::ca:     there.is.no.puppet.ca
 simp_options::pki:            true
+simp_options::pki::source:    '/etc/pki/simp-testing/pki/'
+
 pki::private_key_source: "/etc/pki/simp-testing/pki/private/%{facts.fqdn}.pem"
 pki::public_key_source:  "/etc/pki/simp-testing/pki/public/%{facts.fqdn}.pub"
 pki::cacerts_sources:
@@ -19,10 +21,22 @@ simp_options::ldap::uri:
 simp_options::ldap::master:   ldap://LDAP_URI
 simp_options::ldap::base_dn:  LDAP_BASE_DN
 simp_options::ldap::bind_dn:  cn=hostAuth,ou=Hosts,LDAP_BASE_DN
+
+simp_openldap::app_pki_dir: /etc/pki/simp_apps/openldap/x509
+simp_openldap::app_pki_external_source: /etc/pki/simp-testing/pki
 simp_openldap::server::conf::rootpw: "{SSHA}TghZyHW6r8/NL4fo0Q8BnihxVb7A7af5"
-simp_openldap::app_pki_dir: /etc/pki/simp-testing/pki
 simp_openldap::server::use_ppolicy: false
 simp_openldap::server::conf::tls_cipher_suite:
-- 'HIGH:-SSLv2'
+- 'HIGH'
+- '-SSLv2'
 simp_openldap::server::conf::tls_protocol_min: 3.3
-simp_openldap::app_pki_external_source: /etc/pki/simp-testing/pki
+
+simp_openldap::client::tls_cipher_suite:
+- 'HIGH'
+- '-SSLv2'
+simp_openldap::server::conf::slapd_log_level:
+- 'stats'
+- 'sync'
+- 'trace'
+- 'args'
+- 'BER'

@@ -15,7 +15,7 @@ uidNumber: 10001
 gidNumber: 10001
 # suP3rP@ssw0r!
 userPassword: {SSHA}yOdnVOQYXOEc0Gjv4RRY5BnnFfIKLI3/
-pwdReset: FALSE
+#pwdReset: FALSE
 mail: ldapuser1@someurl.tld
 givenName: User1
 sn: Userino1
@@ -60,7 +60,7 @@ uidNumber: 10002
 gidNumber: 10002
 # suP3rP@ssw0r!
 userPassword: {SSHA}yOdnVOQYXOEc0Gjv4RRY5BnnFfIKLI3/
-pwdReset: FALSE
+#pwdReset: FALSE
 mail: ldapuser2@someurl.tld
 givenName: User2
 sn: Userrato2
