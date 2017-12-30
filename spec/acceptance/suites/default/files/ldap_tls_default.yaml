@@ -3,7 +3,7 @@ simp_options::trusted_nets:   ['any']
 simp_options::puppet::server: there.is.no.puppet.server
 simp_options::puppet::ca:     there.is.no.puppet.ca
 simp_options::pki:            true
-simp_options::pki::source:    '/etc/pki/simp-testing/pki/'
+simp_options::pki::source:    '/etc/pki/simp-testing/pki'
 
 pki::private_key_source: "/etc/pki/simp-testing/pki/private/%{facts.fqdn}.pem"
 pki::public_key_source:  "/etc/pki/simp-testing/pki/public/%{facts.fqdn}.pub"

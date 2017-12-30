@@ -127,11 +127,12 @@ describe 'simp_gitlab using ldap over tls' do
     end
 
     it 'authenticates via StartTLS-encrypted LDAP' do
+      gitlab_fqdn = fact_on(server, 'fqdn')
       oauth_json_pp= <<-PP
         $pw = passgen( "simp_gitlab_${trusted['certname']}" )
         $json = "{\\"grant_type\\": \\"password\\", \\"username\\": \\"root\\", \\"password\\": \\"${pw}\\"}"
-        file{ '/root/ouath_json.template':  
-          content => $json 
+        file{ '/root/ouath_json.template':
+          content => $json
         }
       PP
       apply_manifest_on(server, oauth_json_pp, :catch_failures => true, :environment => env_vars)
@@ -141,15 +142,32 @@ describe 'simp_gitlab using ldap over tls' do
       token_data = JSON.parse(_r.stdout)
 warn 'REMINDER: Impersonate users to log in'
 
-      # This is stupid, but tests the first login (for now--tested on 10.3)
-      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -L https://#{fqdn}/users/sign_in" )
+      # This is stupid, but we need to test the LDAP user's first login--
+      # **via the web form** (for now--tested on 10.3)
+      #
+      #
+      # The following ridiculous procedure was adapted from the noble souls at
+      #
+      #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
+      #
+      cookie_file = "/tmp/cookies_#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}.txt"
+      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file} -L https://#{gitlab_fqdn}/users/sign_in" )
+      cookies = on(permitted_client, "cat #{cookie_file}")
       doc = Nokogiri::HTML(result.stdout)
       form = doc.at_css 'form#new_ldap_user'
-      input_data = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
-
+      form.css('input#username').first['value'] = 'ldapuser1'
+      form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
+      input_data_hash = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
+      action_uri = "https://#{gitlab_fqdn + form['action']}"
+#      require 'net/http'
+      require 'uri'
+      post_data = URI.encode_www_form(Hash[input_data_hash.map{ |x| [x[:name], x[:value]] }])
+      _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -L '#{action_uri}' -d '#{post_data}' -i"
+      _r = on(permitted_client,_curl_cmd)
 
 
 require 'pry'; binding.pry
+
     end
   end
 

@@ -3,43 +3,43 @@ fixtures:
   repositories:
     auditd:
       repo: https://github.com/simp/pupmod-simp-auditd
-      ref: 7.0.1
+      ref: 7.1.2
     concat:
       repo: https://github.com/simp/puppetlabs-concat
-      ref: simp6.0.0-2.2.0
+      ref: 3.0.0
     gitlab:
-      repo: https://github.com/simp/puppet-gitlab
+      repo: https://github.com/simp/puppet-gitlab.git
       ref: v1.13.3
     iptables:
       repo: https://github.com/simp/pupmod-simp-iptables
-      ref: 6.0.1
+      ref: 6.0.3
     logrotate:
       repo: https://github.com/simp/pupmod-simp-logrotate
-      ref: 6.0.0
+      ref: 6.1.1
     ntpd:
       repo: https://github.com/simp/pupmod-simp-ntpd
-      ref: 6.0.1
+      ref: 6.0.3
     pam:
       repo: https://github.com/simp/pupmod-simp-pam
-      ref: 6.0.3
+      ref: 6.1.0
     pki:
       repo: https://github.com/simp/pupmod-simp-pki
-      ref: 6.0.0
+      ref: 6.0.1
     postfix:
       repo: https://github.com/simp/pupmod-simp-postfix
-      ref: 5.0.1
+      ref: 5.0.2
     rsyslog:
       repo: https://github.com/simp/pupmod-simp-rsyslog
-      ref: 7.0.2
+      ref: 7.1.0
     simp_openldap:
       repo: https://github.com/simp/pupmod-simp-simp_openldap
       ref: 6.1.2
     haveged:
-      repo: https://github.com/simp/pupmod-simp-haveged
+      repo: https://github.com/simp/puppet-haveged
       ref: 0.4.4
     simp_options:
       repo: https://github.com/simp/pupmod-simp-simp_options
-      ref: 1.0.1
+      ref: 1.0.4
     simpcat:
       repo: https://github.com/simp/pupmod-simp-simpcat
       ref: 6.0.1
@@ -48,12 +48,12 @@ fixtures:
       ref: 3.8.0
     stdlib:
       repo: https://github.com/simp/puppetlabs-stdlib
-      ref: 4.13.1
+      ref: 4.19.0
     svckill:
       repo: https://github.com/simp/pupmod-simp-svckill
-      ref: 3.2.1
+      ref: 3.2.4
     tcpwrappers:
       repo: https://github.com/simp/pupmod-simp-tcpwrappers
-      ref: 6.0.0
+      ref: 6.0.2
   symlinks:
     simp_gitlab: "#{source_dir}"
