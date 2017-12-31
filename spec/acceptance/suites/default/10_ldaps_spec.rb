@@ -1,10 +1,11 @@
 require 'spec_helper_acceptance'
+require 'json'
 require 'nokogiri'
 require 'uri'
 
 test_name 'simp_gitlab ldap tls'
 
-describe 'simp_gitlab using ldap over tls' do
+describe 'simp_gitlab using ldap' do
 
   let(:gitlab_server) {only_host_with_role( hosts, 'server' )}
   let(:ldap_server) {only_host_with_role( hosts, 'ldapserver' )}
@@ -63,6 +64,14 @@ describe 'simp_gitlab using ldap over tls' do
     EOS
   end
 
+  let(:ldap_hieradata) do
+    files_dir = File.expand_path('../files', __FILE__)
+    hieradata_file = File.expand_path('../files/ldap_tls_default.yaml',__FILE__)
+    File.read(hieradata_file)
+      .gsub('LDAP_BASE_DN',ldap_domains)
+      .gsub('LDAP_URI', ldap_server.node_name )
+  end
+
   # helper to build up curl command strings
   def curl_ssl_cmd( host )
     fqdn   = fact_on(host, 'fqdn')
@@ -70,14 +79,6 @@ describe 'simp_gitlab using ldap over tls' do
          ' --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
          " --cert /etc/pki/simp-testing/pki/public/#{fqdn}.pub" +
          " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
-  end
-
-  let(:ldap_hieradata) do
-    files_dir = File.expand_path('../files', __FILE__)
-    hieradata_file = File.expand_path('../files/ldap_tls_default.yaml',__FILE__)
-    File.read(hieradata_file)
-      .gsub('LDAP_BASE_DN',ldap_domains)
-      .gsub('LDAP_URI', ldap_server.node_name )
   end
 
 
@@ -88,24 +89,52 @@ describe 'simp_gitlab using ldap over tls' do
       class{ 'svckill': mode => 'enforcing' }
       EOM
       apply_manifest_on(gitlab_server,  test_prep_manifest)
-
-      # distribute common LDAP & trusted_nets settings
-      hosts.each do |h|
-        set_hieradata_on(h, ldap_hieradata, 'default')
-      end
-
-      # install LDAP service
-      apply_manifest_on(ldap_server, ldap_server_manifest)
-
-      # add accounts
-      ldif_file = File.expand_path('../files/ldap_test_user.ldif',__FILE__)
-      ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',ldap_domains)
-      create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
-      on(ldap_server,"ldapadd -x -ZZ -D cn=LDAPAdmin,ou=People,#{ldap_domains} -H ldap://#{ldap_server.node_name} -w 'suP3rP@ssw0r!' -f /root/user_ldif.ldif")
     end
 
 
     shared_examples_for 'a web login for LDAP users' do
+      let(:gitlab_type){ 'ce' }
+
+      it 'should clean out earlier test environments' do
+        on(gitlab_server,
+           'which gitlab-rake && ' +
+             'echo yes | gitlab-rake gitlab:setup ' +
+             'gitlab-rake gitlab:cleanup:dirs &&' +
+             'gitlab-rake gitlab:git:prune',
+           :environment => env_vars
+          )
+
+        on(ldap_server,
+           'systemctl status slapd > /dev/null && ' +
+             'systemctl stop slapd && ' +
+             'rm -rf /var/lib/ldap /etc/openldap && ' +
+             'yum erase -y openldap-{servers,clients}',
+           :environment => env_vars
+          )
+      end
+
+      it 'should prep the test ldap server' do
+
+        # distribute common LDAP & trusted_nets settings
+        hosts.each do |h|
+          set_hieradata_on(h, ldap_hieradata, 'default')
+        end
+
+        # install LDAP service
+        apply_manifest_on(ldap_server, ldap_server_manifest)
+
+        # add accounts
+        ldif_file = File.expand_path('../files/ldap_test_user.ldif',__FILE__)
+        ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',ldap_domains)
+        create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
+        on(ldap_server, 'ldapadd -x -ZZ ' +
+                        "-D cn=LDAPAdmin,ou=People,#{ldap_domains} " +
+                        "-H ldap://#{ldap_server.node_name} " +
+                        "-w 'suP3rP@ssw0r!' " +
+                        '-f /root/user_ldif.ldif'
+          )
+      end
+
       it 'should prep the test hiera data' do
         gitlab_hieradata = ldap_hieradata.gsub('ldap://',ldap_proto)
         set_hieradata_on(gitlab_server, gitlab_hieradata, 'default')
@@ -184,13 +213,13 @@ describe 'simp_gitlab using ldap over tls' do
       end
     end
 
-    context 'authenticates over StartTLS-encrypted LDAP' do
+    context 'authenticates over StartTLS (ldap://)' do
       it_behaves_like 'a web login for LDAP users' do
         let(:ldap_proto){ 'ldap://' }
       end
     end
 
-    context 'authenticates over Simple-encrypted LDAP' do
+    context 'authenticates over Simple TLS (ldaps://)' do
       it_behaves_like 'a web login for LDAP users' do
         let(:ldap_proto){ 'ldaps://' }
       end
