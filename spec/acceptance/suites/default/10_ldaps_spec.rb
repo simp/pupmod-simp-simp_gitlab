@@ -184,13 +184,13 @@ describe 'simp_gitlab using ldap over tls' do
       expect(noko_alert_text).to_not match(/^Could not authenticate/)
     end
 
-    it 'authenticates over StartTLS-encrypted LDAP' do
+    context 'authenticates over StartTLS-encrypted LDAP' do
       it_behaves_like 'a web login for LDAP users' do
         let(:ldap_proto){ 'ldap://' }
       end
     end
 
-    it 'authenticates over Simple-encrypted LDAP' do
+    context 'authenticates over Simple-encrypted LDAP' do
       it_behaves_like 'a web login for LDAP users' do
         let(:ldap_proto){ 'ldaps://' }
       end
