@@ -1,6 +1,7 @@
 require 'spec_helper_acceptance'
-require 'json'
+###require 'json'
 require 'nokogiri'
+require 'uri'
 
 test_name 'simp_gitlab ldap tls'
 
@@ -128,18 +129,18 @@ describe 'simp_gitlab using ldap over tls' do
 
     it 'authenticates via StartTLS-encrypted LDAP' do
       gitlab_fqdn = fact_on(server, 'fqdn')
-      oauth_json_pp= <<-PP
-        $pw = passgen( "simp_gitlab_${trusted['certname']}" )
-        $json = "{\\"grant_type\\": \\"password\\", \\"username\\": \\"root\\", \\"password\\": \\"${pw}\\"}"
-        file{ '/root/ouath_json.template':
-          content => $json
-        }
-      PP
-      apply_manifest_on(server, oauth_json_pp, :catch_failures => true, :environment => env_vars)
-      _r = on(server, "curl https://#{server.node_name}/oauth/token --capath /etc/pki/simp-testing/pki/cacerts/ -d @/root/ouath_json.template  --header 'Content-Type: application/json' ")
-
-      expect(_r.exit_code_in? [0,2]).to be true
-      token_data = JSON.parse(_r.stdout)
+###      oauth_json_pp= <<-PP
+###        $pw = passgen( "simp_gitlab_${trusted['certname']}" )
+###        $json = "{\\"grant_type\\": \\"password\\", \\"username\\": \\"root\\", \\"password\\": \\"${pw}\\"}"
+###        file{ '/root/ouath_json.template':
+###          content => $json
+###        }
+###      PP
+###      apply_manifest_on(server, oauth_json_pp, :catch_failures => true, :environment => env_vars)
+###      _r = on(server, "curl https://#{server.node_name}/oauth/token --capath /etc/pki/simp-testing/pki/cacerts/ -d @/root/ouath_json.template  --header 'Content-Type: application/json' ")
+###
+###      expect(_r.exit_code_in? [0,2]).to be true
+###      token_data = JSON.parse(_r.stdout)
 warn 'REMINDER: Impersonate users to log in'
 
       # This is stupid, but we need to test the LDAP user's first login--
@@ -150,21 +151,39 @@ warn 'REMINDER: Impersonate users to log in'
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
-      cookie_file = "/tmp/cookies_#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}.txt"
-      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file} -L https://#{gitlab_fqdn}/users/sign_in" )
-      cookies = on(permitted_client, "cat #{cookie_file}")
+      _unique_str = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
+      cookie_file = "/tmp/cookies_#{_unique_str}.txt"
+      header_file = "/tmp/headers_#{_unique_str}.txt"
+
+      signin_url =  "https://#{gitlab_fqdn}/users/sign_in"
+      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file} -D #{header_file} -L '#{signin_url}'" )
+      cookies = on(permitted_client, "cat #{cookie_file}").stdout
+      headers = on(permitted_client, "cat #{header_file}").stdout
+
       doc = Nokogiri::HTML(result.stdout)
+      header_csrf_token = doc.at("meta[name='csrf-token']")['content']
       form = doc.at_css 'form#new_ldap_user'
       form.css('input#username').first['value'] = 'ldapuser1'
       form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
       input_data_hash = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
+      _old_authenticity_token = input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] 
+      input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = header_csrf_token
+
       action_uri = "https://#{gitlab_fqdn + form['action']}"
-#      require 'net/http'
-      require 'uri'
       post_data = URI.encode_www_form(Hash[input_data_hash.map{ |x| [x[:name], x[:value]] }])
       _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -L '#{action_uri}' -d '#{post_data}' -i"
-      _r = on(permitted_client,_curl_cmd)
+      _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -b #{cookie_file} -c #{cookie_file} -D #{header_file} -L '#{action_uri}' -d '#{post_data}' --referer '#{signin_url}'"
+      result  = on(permitted_client,_curl_cmd)
+      cookies = on(permitted_client, "cat #{cookie_file}").stdout
+      headers = on(permitted_client, "cat #{header_file}").stdout
 
+      noko_alert_text = ''
+      noko_alerts = doc.css("div[class='flash-alert']")
+      if !noko_alerts.empty?
+        noko_alert_text = noko_alerts.text.strip
+      end
+require 'pry'; binding.pry
+      expect(noko_alert_text).to_not match(/^Could not authenticate/
 
 require 'pry'; binding.pry
 
