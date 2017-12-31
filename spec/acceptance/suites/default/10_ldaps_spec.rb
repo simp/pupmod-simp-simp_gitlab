@@ -12,6 +12,13 @@ describe 'simp_gitlab using ldap over tls' do
   let(:permitted_client) {only_host_with_role( hosts, 'permittedclient' )}
   let(:denied_client) {only_host_with_role( hosts, 'unknownclient' )}
   let(:env_vars){{ 'GITLAB_ROOT_PASSWORD' => 'yourpassword' }}
+  let(:ldap_domains){
+    ldap_server = only_host_with_role( hosts, 'ldapserver' )
+    # Determine what your domain is, in dn form
+    _domains = fact_on(ldap_server, 'domain').split('.')
+    _domains.map! { |d| "dc=#{d}" }
+    ldap_domains = _domains.join(',')
+  }
 
   let(:ldap_server_manifest) do
     <<-EOS_LDAP
@@ -66,14 +73,11 @@ describe 'simp_gitlab using ldap over tls' do
          " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
   end
 
-  def files_dir
-    File.expand_path('../files', __FILE__)
-  end
-
-  def ldap_server_hieradata
-    hieradata_file = File.expand_path('ldap_tls_default.yaml',files_dir)
+  let(:ldap_hieradata) do
+    files_dir = File.expand_path('../files', __FILE__)
+    hieradata_file = File.expand_path('../files/ldap_tls_default.yaml',__FILE__)
     File.read(hieradata_file)
-      .gsub('LDAP_BASE_DN',domains)
+      .gsub('LDAP_BASE_DN',ldap_domains)
       .gsub('LDAP_URI', ldap_server.node_name )
   end
 
@@ -86,34 +90,25 @@ describe 'simp_gitlab using ldap over tls' do
       EOM
       apply_manifest_on(gitlab_server,  test_prep_manifest)
 
-      # Determine what your domain is, in dn form
-      _domains = fact_on(gitlab_server, 'domain').split('.')
-      _domains.map! { |d| "dc=#{d}" }
-      domains = _domains.join(',')
-
-      # Add users and groups to LDAP
-
-
       # distribute common LDAP & trusted_nets settings
       hosts.each do |h|
-        set_hieradata_on(h, ldap_server_hieradata, 'default')
+        set_hieradata_on(h, ldap_hieradata, 'default')
       end
 
       # install LDAP service
       apply_manifest_on(ldap_server, ldap_server_manifest)
 
       # add accounts
-      ldif_file      = File.expand_path('ldap_test_user.ldif',files_dir)
-      ldif_text      = File.read(ldif_file)
-                         .gsub('LDAP_BASE_DN',domains)
+      ldif_file = File.expand_path('../files/ldap_test_user.ldif',__FILE__)
+      ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',ldap_domains)
       create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
-      on(ldap_server,"ldapadd -x -ZZ -D cn=LDAPAdmin,ou=People,#{domains} -H ldap://#{ldap_server.node_name} -w 'suP3rP@ssw0r!' -f /root/user_ldif.ldif")
+      on(ldap_server,"ldapadd -x -ZZ -D cn=LDAPAdmin,ou=People,#{ldap_domains} -H ldap://#{ldap_server.node_name} -w 'suP3rP@ssw0r!' -f /root/user_ldif.ldif")
     end
 
 
     shared_examples_for 'a web login for LDAP users' do
       it 'should prep the test hiera data' do
-        gitlab_hieradata = ldap_server_hieradata.gsub('ldap://',ldap_proto)
+        gitlab_hieradata = ldap_hieradata.gsub('ldap://',ldap_proto)
         set_hieradata_on(gitlab_server, gitlab_hieradata, 'default')
       end
 
@@ -146,7 +141,7 @@ describe 'simp_gitlab using ldap over tls' do
       # **via the web form** (for now--tested on 10.3)
       #
       #
-      # The following ridiculous procedure was adapted from the noble souls at
+      # The following ridiculous procedure were informed by the noble work at
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
