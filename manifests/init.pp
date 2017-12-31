@@ -184,10 +184,25 @@ class simp_gitlab (
 
   if $pki {
     pki::copy { 'gitlab':
-      pki    => $::simp_gitlab::pki,
-      source => $::simp_gitlab::app_pki_external_source,
+      pki         => $pki,
+      source      => $app_pki_external_source,
     }
-    Pki::Copy['gitlab'] -> Class['::simp_gitlab::install']
+
+    file{ '/etc/gitlab/trusted-certs':
+      ensure => directory,
+      mode   => '0755',
+      owner  => 'root',
+      group  => 'root',
+    }
+
+    pki_cert_sync{ '/etc/gitlab/trusted-certs':
+      source  => "${app_pki_dir}/cacerts",
+      purge   => true,
+      notify  => Class['gitlab'],
+    }
+
+    Pki::Copy['gitlab'] -> Pki_cert_sync['/etc/gitlab/trusted-certs']
+    File['/etc/gitlab/trusted-certs'] -> Pki_cert_sync['/etc/gitlab/trusted-certs']
   }
 
   if $firewall {

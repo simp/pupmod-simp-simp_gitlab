@@ -41,7 +41,8 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
         'base'                          => $simp_gitlab::ldap_base_dn,
         'group_base'                    => pick_default($simp_gitlab::ldap_group_base,''),
         'user_filter'                   => pick_default($simp_gitlab::ldap_user_filter,''),
-        'ca_file'                       => $simp_gitlab::app_pki_ca,
+        # using the Omnibus trusted_certs instead: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254
+        #'ca_file'                       => $simp_gitlab::app_pki_ca,
         'verify_certificates'           => $simp_gitlab::ldap_verify_certificates,
       }
     ]
