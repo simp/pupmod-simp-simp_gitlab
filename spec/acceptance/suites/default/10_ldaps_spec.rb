@@ -1,5 +1,4 @@
 require 'spec_helper_acceptance'
-###require 'json'
 require 'nokogiri'
 require 'uri'
 
@@ -43,7 +42,7 @@ describe 'simp_gitlab using ldap over tls' do
     <<-EOS
       include 'svckill'
       include 'iptables'
-      tables::listen::tcp_stateful { 'ssh':
+      iptables::listen::tcp_stateful { 'ssh':
         dports       => 22,
         trusted_nets => ['any'],
       }
@@ -135,53 +134,54 @@ describe 'simp_gitlab using ldap over tls' do
         expect(result.stdout).to match(/GitLab|password/)
       end
 
-      gitlab_fqdn = fact_on(gitlab_server, 'fqdn')
+      it 'permits an LDAP user to log in via the web page' do
+        gitlab_fqdn = fact_on(gitlab_server, 'fqdn')
 
-      # This is stupid, but we need to test the LDAP user's first login--
-      # **via the web form** (for now--tested on 10.3)
-      #
-      #
-      # The following ridiculous procedure were informed by the noble work at
-      #
-      #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
-      #
-      _unique_str = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
-      cookie_file = "/tmp/cookies_#{_unique_str}.txt"
-      header_file = "/tmp/headers_#{_unique_str}.txt"
+        # This is probably fragile, but we need to test that LDAP users
+        # can log in **via the web form** (last tested on 10.3)
+        #
+        # The following ridiculous procedure were informed by the noble work at
+        #
+        #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
+        #
+        _unique_str = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
+        cookie_file = "/tmp/cookies_#{_unique_str}.txt"
+        header_file = "/tmp/headers_#{_unique_str}.txt"
 
-      signin_url =  "https://#{gitlab_fqdn}/users/sign_in"
-      result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file} -D #{header_file} -L '#{signin_url}'" )
-      cookies = on(permitted_client, "cat #{cookie_file}").stdout
-      headers = on(permitted_client, "cat #{header_file}").stdout
+        signin_url =  "https://#{gitlab_fqdn}/users/sign_in"
+        result = on(permitted_client, "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file} -D #{header_file} -L '#{signin_url}'" )
+        cookies = on(permitted_client, "cat #{cookie_file}").stdout
+        headers = on(permitted_client, "cat #{header_file}").stdout
 
-      doc = Nokogiri::HTML(result.stdout)
-      header_csrf_token = doc.at("meta[name='csrf-token']")['content']
-      form = doc.at_css 'form#new_ldap_user'
-      form.css('input#username').first['value'] = 'ldapuser1'
-      form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
-      input_data_hash = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
-      input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = header_csrf_token
+        doc = Nokogiri::HTML(result.stdout)
+        header_csrf_token = doc.at("meta[name='csrf-token']")['content']
+        form = doc.at_css 'form#new_ldap_user'
+        form.css('input#username').first['value'] = 'ldapuser1'
+        form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
+        input_data_hash = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
+        input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = header_csrf_token
 
-      # Check for login errors in /var/log/gitlab/unicorn/unicorn_stdout.log
-      #
-      # Common errors:
-      # E, [2017-12-31T02:46:34.658511 #9101] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! ldap_error: Net::LDAP::Error, SSL_connect returned=1 errno=0 state=error: certificate verify failed
-      # E, [2017-12-31T03:58:35.041377 #3521] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError, Invalid credentials for ldapuser1
+        # Check for login errors in /var/log/gitlab/unicorn/unicorn_stdout.log
+        #
+        # Common errors:
+        # E, [2017-12-31T02:46:34.658511 #9101] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! ldap_error: Net::LDAP::Error, SSL_connect returned=1 errno=0 state=error: certificate verify failed
+        # E, [2017-12-31T03:58:35.041377 #3521] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError, Invalid credentials for ldapuser1
 
-      action_uri = "https://#{gitlab_fqdn + form['action']}"
-      post_data = URI.encode_www_form(Hash[input_data_hash.map{ |x| [x[:name], x[:value]] }])
-      _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -b #{cookie_file} -c #{cookie_file} -D #{header_file} -L '#{action_uri}' -d '#{post_data}' --referer '#{signin_url}'"
-      result  = on(permitted_client,_curl_cmd)
-      doc = Nokogiri::HTML(result.stdout)
-      cookies = on(permitted_client, "cat #{cookie_file}").stdout
-      headers = on(permitted_client, "cat #{header_file}").stdout
+        action_uri = "https://#{gitlab_fqdn + form['action']}"
+        post_data = URI.encode_www_form(Hash[input_data_hash.map{ |x| [x[:name], x[:value]] }])
+        _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -b #{cookie_file} -c #{cookie_file} -D #{header_file} -L '#{action_uri}' -d '#{post_data}' --referer '#{signin_url}'"
+        result  = on(permitted_client,_curl_cmd)
+        doc = Nokogiri::HTML(result.stdout)
+        cookies = on(permitted_client, "cat #{cookie_file}").stdout
+        headers = on(permitted_client, "cat #{header_file}").stdout
 
-      noko_alert_text = ''
-      noko_alerts = doc.css("div[class='flash-alert']")
-      if !noko_alerts.empty?
-        noko_alert_text = noko_alerts.text.strip
+        noko_alert_text = ''
+        noko_alerts = doc.css("div[class='flash-alert']")
+        if !noko_alerts.empty?
+          noko_alert_text = noko_alerts.text.strip
+        end
+        expect(noko_alert_text).to_not match(/^Could not authenticate/)
       end
-      expect(noko_alert_text).to_not match(/^Could not authenticate/)
     end
 
     context 'authenticates over StartTLS-encrypted LDAP' do
@@ -199,6 +199,8 @@ describe 'simp_gitlab using ldap over tls' do
   end
 end
 ### # Here is an example of how to grab a token under the new (10.0+ v4 API):
+###
+###require 'json'
 ###
 ###      oauth_json_pp= <<-PP
 ###        $pw = passgen( "simp_gitlab_${trusted['certname']}" )
