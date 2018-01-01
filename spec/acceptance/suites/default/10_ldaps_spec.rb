@@ -108,7 +108,7 @@ describe 'simp_gitlab using ldap' do
            'systemctl status slapd > /dev/null && ' +
              'systemctl stop slapd && ' +
              'rm -rf /var/lib/ldap /etc/openldap && ' +
-             'yum erase -y openldap-{servers,clients}',
+             'yum erase -y openldap-{servers,clients}; :',
            :environment => env_vars
           )
       end
