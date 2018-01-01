@@ -105,6 +105,7 @@ describe 'simp_gitlab using ldap' do
                 '/opt/gitlab/bin/gitlab-ctl remove-accounts',
                 ]:
             tag => 'before_uninstall',
+            onlyif => '/bin/test -f /opt/gitlab/bin/gitlab-ctl',
           }
           exec{'/bin/rm -rf /opt/gitlab*':
             tag => 'after_install'
