@@ -88,21 +88,39 @@ describe 'simp_gitlab using ldap' do
       # clean up Vagrant's dingleberries
       class{ 'svckill': mode => 'enforcing' }
       EOM
-      apply_manifest_on(gitlab_server,  test_prep_manifest)
+      apply_manifest_on(gitlab_server,  test_prep_manifest, :environment => env_vars)
     end
 
 
     shared_examples_for 'a web login for LDAP users' do
-      let(:gitlab_type){ 'ce' }
-
       it 'should clean out earlier test environments' do
-        on(gitlab_server,
-           'which gitlab-rake && ' +
-             'echo yes | gitlab-rake gitlab:setup && ' +
-             'gitlab-rake gitlab:cleanup:dirs && ' +
-             'gitlab-rake gitlab:git:prune ;:',
-           :environment => env_vars
-          )
+        remove_gitlab_manifest = <<-PP
+          service{'gitlab-runsvdir':
+            ensure => stopped,
+            enable => false,
+          }
+          package{'gitlab-ce': ensure=>absent}
+          package{'gitlab-ee': ensure=>absent}
+          exec{['/opt/gitlab/bin/gitlab-ctl cleanse',
+                '/opt/gitlab/bin/gitlab-ctl remove-accounts',
+                ]:
+            tag => 'before_uninstall',
+          }
+          exec{'/bin/rm -rf /opt/gitlab*':
+            tag => 'after_install'
+          }
+          file{'/usr/lib/systemd/system/gitlab-runsvdir.service': ensure=>absent}
+          Service <||>
+          ->
+          Exec<| tag == 'before_uninstall' |>
+          ->
+          Package<||>
+          ->
+          Exec<| tag == 'after_install' |>
+				PP
+
+        # NOTE: it _might_ be enough to run `gitlabctl cleanse`
+        apply_manifest_on(gitlab_server, remove_gitlab_manifest, :catch_failures => true)
 
         on(ldap_server,
            'systemctl status slapd > /dev/null && ' +
@@ -185,6 +203,10 @@ describe 'simp_gitlab using ldap' do
         doc = Nokogiri::HTML(result.stdout)
         header_csrf_token = doc.at("meta[name='csrf-token']")['content']
         form = doc.at_css 'form#new_ldap_user'
+        if form.nil?
+          warn "REMINDER: During Simple TLS: Failure/Error: form.css('input#username').first['value'] = 'ldapuser1': undefined method `css' for nil:NilClass", '-'*80, ''
+          require 'pry'; binding.pry
+        end
         form.css('input#username').first['value'] = 'ldapuser1'
         form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
         input_data_hash = form.css('input').map{|x| { :name => x['name'], :type => x['type'], :value => (x['value'] || nil) }}
@@ -204,11 +226,21 @@ describe 'simp_gitlab using ldap' do
         cookies = on(permitted_client, "cat #{cookie_file}").stdout
         headers = on(permitted_client, "cat #{header_file}").stdout
 
+        failed_response_codes = headers.scan(%r[HTTP/1\.\d (\d\d\d) .*$])
+                                       .flatten
+                                       .select{|x| x !~ /^[23]\d\d/ }
+        unless failed_response_codes.empty?
+          warn '','-'*80,"REMINDER: found response codes (#{failed_response_codes.join(',')}) during login", '-'*80, ''
+          require 'pry'; binding.pry
+        end
+
+
         noko_alert_text = ''
         noko_alerts = doc.css("div[class='flash-alert']")
         if !noko_alerts.empty?
           noko_alert_text = noko_alerts.text.strip
         end
+        warn '='*80,"== noko alert text: '#{noko_alert_text}'",'='*80
         expect(noko_alert_text).to_not match(/^Could not authenticate/)
       end
     end
