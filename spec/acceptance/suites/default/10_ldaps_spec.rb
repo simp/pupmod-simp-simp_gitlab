@@ -98,9 +98,9 @@ describe 'simp_gitlab using ldap' do
       it 'should clean out earlier test environments' do
         on(gitlab_server,
            'which gitlab-rake && ' +
-             'echo yes | gitlab-rake gitlab:setup ' +
-             'gitlab-rake gitlab:cleanup:dirs &&' +
-             'gitlab-rake gitlab:git:prune',
+             'echo yes | gitlab-rake gitlab:setup && ' +
+             'gitlab-rake gitlab:cleanup:dirs && ' +
+             'gitlab-rake gitlab:git:prune ;:',
            :environment => env_vars
           )
 
