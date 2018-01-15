@@ -1,3 +1,4 @@
+---
 HOSTS:
   server:
     roles:
@@ -49,4 +50,7 @@ HOSTS:
 CONFIG:
   log_level: verbose
   type:      aio
+  run_in_parallel:
+    - install
+    - config
   ## vb_gui: true

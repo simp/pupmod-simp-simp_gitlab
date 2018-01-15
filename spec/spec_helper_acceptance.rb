@@ -16,6 +16,16 @@ unless ENV['BEAKER_provision'] == 'no'
 end
 
 
+# helper to build up curl command strings
+def curl_ssl_cmd( host )
+  fqdn   = fact_on(host, 'fqdn')
+  'curl  --connect-timeout 30'+
+       ' --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
+       " --cert /etc/pki/simp-testing/pki/public/#{fqdn}.pub" +
+       " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
+end
+
+
 RSpec.configure do |c|
   # ensure that environment OS is ready on each host
   fix_errata_on hosts

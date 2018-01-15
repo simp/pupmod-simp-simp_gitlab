@@ -32,20 +32,11 @@ describe 'simp_gitlab pki tls with firewall' do
     EOS
   end
 
-  # helper to build up curl command strings
-  def curl_ssl_cmd( host )
-    fqdn   = fact_on(host, 'fqdn')
-    'curl  --connect-timeout 30'+
-         ' --cacert /etc/pki/simp-testing/pki/cacerts/cacerts.pem' +
-         " --cert /etc/pki/simp-testing/pki/public/#{fqdn}.pub" +
-         " --key /etc/pki/simp-testing/pki/private/#{fqdn}.pem"
-  end
-
 
   context 'with PKI enabled' do
     it 'should prep the test enviornment' do
       test_prep_manifest = <<-EOM
-      # clean up Vagrant's dingleberries
+      # clean up Vagrant's leftovers
       class{ 'svckill': mode => 'enforcing' }
       EOM
       apply_manifest_on(server,  test_prep_manifest)
