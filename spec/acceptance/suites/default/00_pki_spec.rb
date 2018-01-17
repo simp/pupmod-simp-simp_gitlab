@@ -7,7 +7,7 @@ describe 'simp_gitlab pki tls with firewall' do
   let(:server) {only_host_with_role( hosts, 'server' )}
   let(:permitted_client) {only_host_with_role( hosts, 'permittedclient' )}
   let(:denied_client) {only_host_with_role( hosts, 'unknownclient' )}
-  let(:env_vars){{ 'GITLAB_ROOT_PASSWORD' => 'yourpassword' }}
+  let(:env_vars){}
 
   let(:manifest) do
     <<-EOS
