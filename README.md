@@ -2,19 +2,30 @@
 
 #### Table of Contents
 
+<!-- vim-markdown-toc GFM -->
+
 * [Description](#description)
   * [This is a SIMP module](#this-is-a-simp-module)
 * [Setup](#setup)
-  * [What simp_gitlab affects](#what-simp_gitlab-affects)
-  * [Setup Requirements](#setup-requirements-optional)
+  * [What `simp_gitlab` affects](#what-simp_gitlab-affects)
+  * [Setup Requirements](#setup-requirements)
   * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
 * [Usage](#usage)
+  * [A basic GitLab setup using PKI](#a-basic-gitlab-setup-using-pki)
+  * [Passing custom parameters to `vshn-gitlab`](#passing-custom-parameters-to-vshn-gitlab)
+  * [Configuring Nginx](#configuring-nginx)
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
 * [Limitations](#limitations)
-  * [Omnibus syslog is limited to GitLab Enterprise Edition](#omnibus-syslog-is-limited-to-gitlab-enterprise-edition-todo-see-if-we-can-ship-the-individual-logs)
+  * [Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`](#gitlabs-ldap-tls-is-configured-to-re-use-omnibus-trusted-certs-instead-of-ca_file)
+  * [GitLab](#gitlab)
+    * [Puppet runs can fail if GitLab Omnibus's internal services don't start in time](#puppet-runs-can-fail-if-gitlab-omnibuss-internal-services-dont-start-in-time)
+    * [Nessus scans may incorrectly report CRIME vulnerability in GitLab](#nessus-scans-may-incorrectly-report-crime-vulnerability-in-gitlab)
+    * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
   * [Acceptance tests](#acceptance-tests)
+
+<!-- vim-markdown-toc -->
 
 
 ## Description
@@ -213,6 +224,30 @@ module's generated YARD documentation for reference material.
 
 ## Limitations
 
+### Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`
+
+`simp_gitlab` configures the GitLab Rails server LDAP TLS settings to use the
+Omnibus trusted_certs (built from `/etc/gitlab/trusted-certs`) instead of its
+own `ca_file` option.
+
+The LDAP `ca_file` setting is known to [cause problems elsewhere in GitLab
+SSL][ldap_ca_file_problems].  There is a [(currently undocumented)
+workaround][ce37254_workarounds] to these issues: GitLab's LDAP TLS will re-use
+the GitLab Omnibus `trusted-certificates/ ` directory―but [_only_ when the LDAP
+`ca_file` option has **not** been set][ce37254_trusted_wo_ca_file]
+
+The drawback to this solution is that GitLab's LDAP client must share the same
+TLS settings as GitLab's web server―which is something that [we try to keep
+distinct][distinct_tls], as there could be situations in which their
+configurations legitimately vary.
+
+[ldap_ca_file_problems]: https://gitlab.com/gitlab-org/gitlab-ce/issues/40003
+[ce37254_workarounds]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_45543716
+[ce37254_trusted_wo_ca_file]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_3894021
+[distinct_tls]: https://github.com/simp/pupmod-simp-simp_openldap/blob/master/manifests/client.pp#L15-L18
+
+
+
 ### GitLab
 
 #### Puppet runs can fail if GitLab Omnibus's internal services don't start in time
@@ -233,14 +268,9 @@ module's generated YARD documentation for reference material.
   service is stopped, the service will not start and catalog compilation will
   fail.
 
-#### Omnibus syslog is limited to GitLab Enterprise Edition
-
-  - `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
-  - [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
-
 #### Nessus scans may incorrectly report CRIME vulnerability in GitLab
 
-This is almost certainly a false positive, as GitLab configures compression to `0` when HTTPS is enabled.
+This is almost certainly a false positive―GitLab configures compression to `0` when HTTPS is enabled.
 
 - See https://docs.gitlab.com/ce/security/crime_vulnerability.html for details.
 
