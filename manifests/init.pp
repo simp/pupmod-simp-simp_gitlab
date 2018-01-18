@@ -184,8 +184,8 @@ class simp_gitlab (
 
   if $pki {
     pki::copy { 'gitlab':
-      pki         => $pki,
-      source      => $app_pki_external_source,
+      pki    => $pki,
+      source => $app_pki_external_source,
     }
 
     file{ '/etc/gitlab/trusted-certs':
@@ -196,9 +196,9 @@ class simp_gitlab (
     }
 
     pki_cert_sync{ '/etc/gitlab/trusted-certs':
-      source  => "${app_pki_dir}/cacerts",
-      purge   => true,
-      notify  => Class['gitlab'],
+      source => "${app_pki_dir}/cacerts",
+      purge  => true,
+      notify => Class['gitlab'],
     }
 
     Pki::Copy['gitlab'] -> Pki_cert_sync['/etc/gitlab/trusted-certs']
