@@ -10,23 +10,22 @@ HOSTS:
     hypervisor: vagrant
     vagrant_memsize: 1024
     vagrant_cpus: 2
-    ip: 192.168.21.21
-    forwarded_ports:
-      nginx_http:
-        from: 8080
-        to: 80
-        from_ip: '127.0.0.1'
-        to_ip: '0.0.0.0'
-      nginx_https:
-        from: 8443
-        to: 443
-        from_ip: '127.0.0.1'
-        to_ip: '0.0.0.0'
-      nginx_777:
-        from: 8777
-        to: 777
-        from_ip: '127.0.0.1'
-        to_ip: '0.0.0.0'
+###    forwarded_ports:
+###      nginx_http:
+###        from: 8080
+###        to: 80
+###        from_ip: '127.0.0.1'
+###        to_ip: '0.0.0.0'
+###      nginx_https:
+###        from: 8443
+###        to: 443
+###        from_ip: '127.0.0.1'
+###        to_ip: '0.0.0.0'
+###      nginx_777:
+###        from: 8777
+###        to: 777
+###        from_ip: '127.0.0.1'
+###        to_ip: '0.0.0.0'
   client-1:
     roles:
       - client
@@ -34,7 +33,6 @@ HOSTS:
     platform:   el-7-x86_64
     box:        centos/7
     hypervisor: vagrant
-    ip: 192.168.21.22
     vagrant_memsize: 192
   client-2:
     roles:
@@ -45,7 +43,6 @@ HOSTS:
     platform:   el-7-x86_64
     box:        centos/7
     hypervisor: vagrant
-    ip: 192.168.21.31
     vagrant_memsize: 192
 CONFIG:
   log_level: verbose
