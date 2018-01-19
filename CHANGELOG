@@ -1,11 +1,11 @@
-* Fri Nov 17 2017 Chris Tessmern <chris.tessmer@onyxpoint.com> - 0.3.0
-- Corrected corrections
-- Add ldap_verify_certificates parameter
+* Fri Dec 29 2017 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.0
+- Configure LDAP TLS to use the Omnibus' `trusted-certs/` instead of the LDAP
+  `ca_file` setting
+  (see https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_3894021)
+- Add `ldap_verify_certificates` parameter
+- Fixed LDAP provider name sanitation
 - Update deprecated LDAP encryption configurations for GitLab 9.4+
-- Add LDAP acceptance tests
-
-* Thu Sep 28 2017 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.2.1
-- Build and test corrections
+- Add acceptance tests for LDAP authentication
 
 * Wed Apr 26 2017 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.2.0
 - Manage PAM access and SSH keys for local Git Omnibus `git` user
