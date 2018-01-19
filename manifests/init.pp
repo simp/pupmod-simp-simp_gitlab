@@ -150,12 +150,12 @@ class simp_gitlab (
   Boolean                $ldap_verify_certificates = true,
   Integer                $ssl_verify_depth         = 2,
   Array[String]          $ssl_protocols            = ['TLSv1','TLSv1.1','TLSv1.2'],
-  Array[String]          $cipher_suite             = simplib::lookup('simp_options::openssl::cipher_suites', {
-                                                                     'default_value'  => ['DEFAULT', '!MEDIUM']
-                                                                     }),
-  String                 $ssh_authorized_keyfile   = simplib::lookup(  'ssh::server::conf::authorizedkeysfile' , {
-                                                                       'default_value' => '%h/.ssh/authorized_keys'}
-                                                                     ).split(/ +/)[0],
+  Array[String]          $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suites', {
+                                                                      'default_value'  => ['DEFAULT', '!MEDIUM']
+                                                                    }),
+  String                 $ssh_authorized_keyfile   = simplib::lookup( 'ssh::server::conf::authorizedkeysfile' , {
+                                                                      'default_value' => '%h/.ssh/authorized_keys'}
+                                                                    ).split(/ +/)[0],
   Enum['ce','ee']        $edition                  = 'ce',
 ) {
 
