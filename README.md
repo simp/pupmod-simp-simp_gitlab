@@ -24,6 +24,9 @@
     * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
   * [Acceptance tests](#acceptance-tests)
+    * [Environment variable `TRUSTED_NETS`](#environment-variable-trusted_nets)
+    * [Manually inspecting the SUT GitLab server with a web browser](#manually-inspecting-the-sut-gitlab-server-with-a-web-browser)
+    * [Interactive debugging using pry](#interactive-debugging-using-pry)
 
 <!-- vim-markdown-toc -->
 
@@ -311,3 +314,35 @@ bundle exec rake beaker:suites
 
 Please refer to the [SIMP Beaker Helpers documentation](https://github.com/simp/rubygem-simp-beaker-helpers/blob/master/README.md)
 for more information.
+
+#### Environment variable `TRUSTED_NETS`
+
+`TRUSTED_NETS` is an environment variable that may contain a comma-delimited
+list of trusted networks to add to the gitlab SUT's firewall.
+
+```shell
+TRUSTED_NETS=192.168.11.0/24,10.10.10.10 bundle exec rake beaker:suites
+```
+
+**Note:** if the `TRUSTED_NETS` configuration is too broad, it may cause
+some acceptance tests (for denied clients) to fail.
+
+#### Manually inspecting the SUT GitLab server with a web browser
+
+Each nodeset in `spec/acceptance/nodesets/` contains a commented-out
+`forwarded_ports:` section.  If you want to use a web browser to manually
+inspect the SUT GitLab server during any of the tests, uncomment this section
+and add your machine's (non-local) IP address to the `TRUSTED_NETS` variable.
+
+```shell
+# Remember to uncomment the `forwarded_ports:` section in the nodeset file and
+# add a pause in the acceptance tests where you want to inspect:
+TRUSTED_NETS=10.10.10.10 BEAKER_destroy=no PRY=yes bundle exec rake beaker:suites
+```
+
+#### Interactive debugging using pry
+
+Setting the environment variable `PRY=yes` will cause the acceptance tests to
+drop into a pry console under certain (usually just before failures in examples
+with complex or hard-to-debug state)
+
