@@ -127,3 +127,6 @@ acceptance-default-fips:
   <<: *setup_bundler_env
   script:
     - BEAKER_fips=yes bundle exec rake beaker:suites[default]
+  # GitLab is expected to not support FIPS:
+  #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/41463
+  allow_failure: true
