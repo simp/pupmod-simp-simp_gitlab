@@ -17,8 +17,7 @@ describe 'simp_gitlab using ldap' do
       }
 
       class { 'simp_gitlab':
-        trusted_nets => [
-                          '10.0.0.0/8',
+        trusted_nets => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*26}'#{x}',"}.join}
                           '#{gitlab_server.get_ip}',
                           '#{permitted_client.get_ip}',
                           '127.0.0.1/32',
