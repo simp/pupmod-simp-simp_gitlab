@@ -119,7 +119,7 @@ acceptance-default:
   script:
     - bundle exec rake beaker:suites[default]
 
-acceptance-default-fips:
+acceptance-fips-default:
   stage: acceptance
   tags:
     - beaker
