@@ -50,7 +50,7 @@ stages:
 # Puppet 4.7 for PE 2016.4 LTS Support (EOL: 2018-10-21)
 # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 # --------------------------------------
-pup4.7-validate:
+pup4.7-validation:
   stage: validation
   tags:
     - docker
