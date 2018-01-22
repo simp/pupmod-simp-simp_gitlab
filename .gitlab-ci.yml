@@ -50,7 +50,7 @@ stages:
 # Puppet 4.7 for PE 2016.4 LTS Support (EOL: 2018-10-21)
 # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 # --------------------------------------
-validation-puppet4.7:
+pup4.7-validate:
   stage: validation
   tags:
     - docker
@@ -61,7 +61,7 @@ validation-puppet4.7:
   <<: *setup_bundler_env
   <<: *validation_checks
 
-unit-puppet4.7:
+pup4.7-unit:
   stage: unit
   tags:
     - docker
@@ -75,7 +75,7 @@ unit-puppet4.7:
 
 # Puppet 4.8 for SIMP 6.0 + 6.1 support
 # --------------------------------------
-validation-puppet4.8:
+pup4.8-validation:
   stage: validation
   tags:
     - docker
@@ -86,7 +86,7 @@ validation-puppet4.8:
   <<: *setup_bundler_env
   <<: *validation_checks
 
-unit-puppet4.8:
+pup4.8-unit:
   stage: unit
   tags:
     - docker
@@ -101,7 +101,7 @@ unit-puppet4.8:
 # Puppet 4.10 for PE 2017.2 support (EOL:2018-02-21)
 # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 # --------------------------------------
-validation-puppet4.10:
+pup4.10-validation:
   stage: validation
   tags:
     - docker
@@ -112,7 +112,7 @@ validation-puppet4.10:
   <<: *setup_bundler_env
   <<: *validation_checks
 
-unit-puppet4.10:
+pup4.10-unit:
   stage: unit
   tags:
     - docker
@@ -127,7 +127,7 @@ unit-puppet4.10:
 # Puppet 5.3 for PE 2017.3 support (EOL: 2018-07)
 # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 # --------------------------------------
-puppet5.3-validation:
+pup5.3-validation:
   stage: validation
   tags:
     - docker
@@ -138,7 +138,7 @@ puppet5.3-validation:
   <<: *setup_bundler_env
   <<: *validation_checks
 
-unit-puppet5.3:
+pup5.3-unit:
   stage: unit
   tags:
     - docker
@@ -152,7 +152,7 @@ unit-puppet5.3:
 
 # Keep an eye on the latest puppet 5
 # ----------------------------------
-validation-puppet5.latest:
+pup5.latesti-validation:
   stage: validation
   tags:
     - docker
@@ -164,7 +164,7 @@ validation-puppet5.latest:
   <<: *validation_checks
   allow_failure: true
 
-unit-puppet5.latest:
+pup5.latest-unit:
   stage: unit
   tags:
     - docker
