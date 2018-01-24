@@ -4,9 +4,10 @@ include Simp::BeakerHelpers
 require 'tmpdir'
 require 'pry' if ENV['PRY'] == 'yes'
 
-$LOAD_PATH.unshift(File.expand_path('../acceptance/support/lib',__FILE__))
+_path = File.expand_path('../acceptance/support/lib',__FILE__)
+$LOAD_PATH.unshift(_path)
 
-fail "supportlib path doesn't exist!" unless File.directory? File.expand_path('../acceptance/support/lib',__FILE__)
+fail "supportlib path '#{_path}' doesn't exist!" unless File.directory?(_path)
 
 require 'simp_gitlab_beaker_helpers'
 
