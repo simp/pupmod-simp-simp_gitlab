@@ -1,8 +1,8 @@
 require 'spec_helper_acceptance'
 require 'pry' if ENV['PRY'] == 'yes'
 require 'nokogiri'
-require 'sut_web_session'
-require 'gitlab_signin_form'
+require 'helpers/sut_web_session'
+require 'helpers/gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
   let(:manifest__gitlab) do
