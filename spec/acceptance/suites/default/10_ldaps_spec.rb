@@ -55,20 +55,110 @@ describe 'simp_gitlab using ldap' do
     "https://#{gitlab_server_fqdn}/users/sign_in"
   end
 
-  context 'with TLS & PKI enabled' do
-    it 'should prep the test environment' do
-      test_prep_manifest = "class{ 'svckill': mode => 'enforcing' }"
-      apply_manifest_on(gitlab_server,  test_prep_manifest)
+  # Provides a persistent web browsing session using curl from a SUT client
+
+        #
+  class SutWebSession
+    attr_reader   :client, :cookie_file, :header_file, :gitlab_signin_url
+    attr_accessor :previous_url
+
+    def initialize(client)
+      @unique_str   = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
+      @cookie_file  = "/tmp/cookies_#{@unique_str}.txt"
+      @header_file  = "/tmp/headers_#{@unique_str}.txt"
+      @client       = client
+      @curl_cmd     = curl_ssl_cmd(@client)
+      @previous_url = nil
     end
 
+    def curl_get(url)
+      curl_args      = "-c #{@cookie_file} -D #{@header_file} -L '#{url}'"
+      result         = curl_on_client(curl_args)
+      @previous_url  = url if result
+      result
+    end
+
+    def curl_post(url, post_data_hash)
+      post_data = URI.encode_www_form(Hash[post_data_hash.map{ |x| [x[:name], x[:value]] }])
+      curl_args     = "-b #{@cookie_file} -c #{@cookie_file} -D #{@header_file}" +
+                      " -L '#{url}' -d '#{post_data}'"
+      result        = curl_on_client(curl_args)
+      @previous_url = url if result
+      result
+    end
+
+    def curl_on_client(curl_args)
+      # I don't know if referer is necessary to avoid XSS (the authenticity
+      # token should be enough for logins),
+      curl_args            += " --referer '#{@previous_url}'" if @previous_url
+      result                = on(@client, "#{@curl_cmd} #{curl_args}")
+      failed_response_codes = headers.scan(%r[HTTP/1\.\d (\d\d\d) .*$])
+                                     .flatten
+                                     .select{|x| x !~ /^[23]\d\d/ }
+      unless failed_response_codes.empty?
+        warn '', '-'*80, "REMINDER: web server returned response codes " +
+             "(#{failed_response_codes.join(',')}) during login", '-'*80, ''
+        if ENV['PRY'] == 'yes'
+          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
+          binding.pry
+        end
+      end
+      result.stdout
+    end
+
+    def cookies
+      on(@client, "cat #{@cookie_file}").stdout
+    end
+
+    def headers
+      on(@client, "cat #{@header_file}").stdout
+    end
+  end
+
+
+  class GitlabSigninForm
+    attr_reader :form, :header_csrf_token, :action
+
+    def initialize(html)
+      doc = Nokogiri::HTML(html)
+      @form = parse_form(doc)
+      @header_csrf_token = doc.at("meta[name='csrf-token']")['content']
+      @action = @form['action']
+    end
+
+    # Returns a hash of all input elements in a completed signin form
+    def signin_post_data(username, password)
+        @form.css('input#username').first['value'] = username
+        @form.css('input#password').first['value'] = password
+        input_data_hash = form.css('input').map do |x|
+          {
+            :name  => x['name'],
+            :type  => x['type'],
+            :value => (x['value'] || nil)
+          }
+        end
+        input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = @header_csrf_token
+        input_data_hash
+    end
+
+    private
+
+    def parse_form(doc)
+      form = doc.at_css 'form#new_ldap_user'
+      if form.nil?
+        warn "WARNING: Nokogiri didn't find the expected `form#new_ldap_user`", '-'*80, ''
+        if ENV['PRY'] == 'yes'
+          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
+          binding.pry
+        end
+      end
+      form
+    end
+  end
+
+  context 'with TLS & PKI enabled' do
 
     shared_examples_for 'a web login for LDAP users' do |ldap_proto|
-      let :unique_str do
-        "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
-      end
-      let(:cookie_file){ "/tmp/cookies_#{unique_str}.txt" }
-      let(:header_file){ "/tmp/headers_#{unique_str}.txt" }
-
       it 'should clean out earlier test environments' do
         apply_manifest_on(gitlab_server, manifest__remove_gitlab, catch_failures: true)
         on(ldap_server,
@@ -133,65 +223,42 @@ describe 'simp_gitlab using ldap' do
 
       # The acceptance criteria for this test is that the user can log in
       # from a permitted client **using the GitLab web interface**
+      # ------------------------------------------------------------------------
+      #
+      # Troubleshooting:
+      #
+      #   - Check for login errors on the gitlab_sever in
+      #     /var/log/gitlab/unicorn/unicorn_stdout.log
+      #
+      # Common errors:
+      #
+      #   ERROR -- omniauth: (ldapldapclient2hosttld) Authentication failure!
+      #     ldap_error: Net::LDAP::Error,
+      #     SSL_connect returned=1 errno=0 state=error: certificate verify failed
+      #   ERROR -- omniauth: (ldapldapclient2hosttld) Authentication failure!
+      #     invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError,
+      #     Invalid credentials for ldapuser1
+      #
+      # The following ridiculous procedure was informed by the noble work at:
+      #
+      #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
+      #
       it 'permits an LDAP user to log in via the web page' do
-        # The following ridiculous procedure was informed by the noble work at
-        #
-        #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
-        #
-        _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -c #{cookie_file}" +
-                    " -D #{header_file} -L '#{gitlab_signin_url}'"
-        result  = on(permitted_client, _curl_cmd )
 
-        doc = Nokogiri::HTML(result.stdout)
-        header_csrf_token = doc.at("meta[name='csrf-token']")['content']
-        form = doc.at_css 'form#new_ldap_user'
-        if form.nil?
-          warn "WARNING: Nokogiri didn't find the expected `form#new_ldap_user`", '-'*80, ''
-          if ENV['PRY'] == 'yes'
-            warn "WARNING: PRY: switching to pry console"
-            binding.pry
-          end
-        end
-        form.css('input#username').first['value'] = 'ldapuser1'
-        form.css('input#password').first['value'] = 'suP3rP@ssw0r!'
-        input_data_hash = form.css('input').map do |x|
-          {
-            :name  => x['name'],
-            :type  => x['type'],
-            :value => (x['value'] || nil)
-          }
-        end
-        input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = header_csrf_token
+        user1_session = SutWebSession.new(permitted_client)
+        html    = user1_session.curl_get(gitlab_signin_url)
+        gl_form = GitlabSigninForm.new(html)
 
-        # Check for login errors in /var/log/gitlab/unicorn/unicorn_stdout.log
-        #
-        # Common errors:
-        # E, [2017-12-31T02:46:34.658511 #9101] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! ldap_error: Net::LDAP::Error, SSL_connect returned=1 errno=0 state=error: certificate verify failed
-        # E, [2017-12-31T03:58:35.041377 #3521] ERROR -- omniauth: (ldapldapclient2onyxpointnet) Authentication failure! invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError, Invalid credentials for ldapuser1
+        html = user1_session.curl_post(
+          "https://#{gitlab_server_fqdn + gl_form.action}",
+          gl_form.signin_post_data('ldapuser1','suP3rP@ssw0r!')
+        )
+        doc     = Nokogiri::HTML(html)
 
-        action_uri = "https://#{gitlab_server_fqdn + form['action']}"
-        post_data = URI.encode_www_form(Hash[input_data_hash.map{ |x| [x[:name], x[:value]] }])
-        _curl_cmd = "#{curl_ssl_cmd(permitted_client)} -b #{cookie_file}" +
-                    " -c #{cookie_file} -D #{header_file} -L '#{action_uri}'" +
-                    " -d '#{post_data}' --referer '#{gitlab_signin_url}'"
-        result  = on(permitted_client,_curl_cmd)
-        doc     = Nokogiri::HTML(result.stdout)
-        cookies = on(permitted_client, "cat #{cookie_file}").stdout
-        headers = on(permitted_client, "cat #{header_file}").stdout
-
-        failed_response_codes = headers.scan(%r[HTTP/1\.\d (\d\d\d) .*$])
-                                       .flatten
-                                       .select{|x| x !~ /^[23]\d\d/ }
-        unless failed_response_codes.empty?
-          warn '','-'*80,"REMINDER: found response codes (#{failed_response_codes.join(',')}) during login", '-'*80, ''
-          if ENV['PRY'] == 'yes'
-            binding.pry
-          end
-        end
-
+        noko_alerts     = doc.css("div[class='flash-alert']")
+        profile_link    = doc.css("a[class='profile-link']")
         noko_alert_text = ''
-        noko_alerts = doc.css("div[class='flash-alert']")
-        if !noko_alerts.empty?
+        unless noko_alerts.empty?
           noko_alert_text = noko_alerts.text.strip
           warn '='*80,"== noko alert text: '#{noko_alert_text}'",'='*80
         end
@@ -200,7 +267,6 @@ describe 'simp_gitlab using ldap' do
         expect(noko_alert_text).to_not match(/^Could not authenticate/)
 
         # Test for success
-        profile_link = doc.css("a[class='profile-link']")
         expect(profile_link).not_to be_empty
         expect(profile_link.first['data-user']).to eq('ldapuser1')
       end

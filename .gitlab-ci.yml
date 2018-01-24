@@ -152,7 +152,7 @@ pup5.3-unit:
 
 # Keep an eye on the latest puppet 5
 # ----------------------------------
-pup5.latesti-validation:
+pup5.latest-validation:
   stage: validation
   tags:
     - docker
