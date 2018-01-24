@@ -1,41 +1,14 @@
 require 'beaker-rspec'
-require 'tmpdir'
-require 'yaml'
 require 'simp/beaker_helpers'
 include Simp::BeakerHelpers
+require 'tmpdir'
+require 'pry' if ENV['PRY'] == 'yes'
 
-# memoized variables to share across examples
-module SimpGitlabHelpers
-  module SutVariables
-    def gitlab_server
-      @gitlab_server ||= only_host_with_role( hosts, 'server' )
-    end
+$LOAD_PATH.unshift(File.expand_path('../acceptance/support/lib',__FILE__))
 
-    def ldap_server
-      @ldap_server ||= only_host_with_role( hosts, 'ldapserver' )
-    end
+fail "supportlib path doesn't exist!" unless File.directory? File.expand_path('../acceptance/support/lib',__FILE__)
 
-    def permitted_client
-      @permitted_client ||= only_host_with_role( hosts, 'permittedclient' )
-    end
-
-    def denied_client
-      @denied_client ||= only_host_with_role( hosts, 'unknownclient' )
-    end
-
-    def gitlab_server_fqdn
-      @gitlab_server_fqdn ||= fact_on(gitlab_server, 'fqdn')
-    end
-
-    def permitted_client_fqdn
-      @permitted_client_fqdn ||= fact_on(permitted_client, 'fqdn')
-    end
-
-    def denied_client_fqdn
-      @denied_client_fqdn ||= fact_on(denied_client, 'fqdn')
-    end
-  end
-end
+require 'simp_gitlab_beaker_helpers'
 
 shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
   it "serves GitLab web content to local client" do
@@ -103,8 +76,8 @@ end
 
 RSpec.configure do |c|
   # provide SUT variables to individual examples AND example groups
-  c.include SimpGitlabHelpers::SutVariables
-  c.extend SimpGitlabHelpers::SutVariables
+  c.include SimpGitlabBeakerHelpers::SutVariables
+  c.extend SimpGitlabBeakerHelpers::SutVariables
 
   # ensure that environment OS is ready on each host
   fix_errata_on hosts
@@ -133,3 +106,4 @@ RSpec.configure do |c|
     end
   end
 end
+

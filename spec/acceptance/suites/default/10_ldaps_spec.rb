@@ -1,10 +1,8 @@
 require 'spec_helper_acceptance'
-require 'json'
-require 'nokogiri'
-require 'uri'
 require 'pry' if ENV['PRY'] == 'yes'
-
-test_name 'simp_gitlab ldap tls'
+require 'nokogiri'
+require 'sut_web_session'
+require 'gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
   let(:manifest__gitlab) do
@@ -53,107 +51,6 @@ describe 'simp_gitlab using ldap' do
 
   let(:gitlab_signin_url) do
     "https://#{gitlab_server_fqdn}/users/sign_in"
-  end
-
-  # Provides a persistent web browsing session using curl from a SUT client
-
-        #
-  class SutWebSession
-    attr_reader   :client, :cookie_file, :header_file, :gitlab_signin_url
-    attr_accessor :previous_url
-
-    def initialize(client)
-      @unique_str   = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
-      @cookie_file  = "/tmp/cookies_#{@unique_str}.txt"
-      @header_file  = "/tmp/headers_#{@unique_str}.txt"
-      @client       = client
-      @curl_cmd     = curl_ssl_cmd(@client)
-      @previous_url = nil
-    end
-
-    def curl_get(url)
-      curl_args      = "-c #{@cookie_file} -D #{@header_file} -L '#{url}'"
-      result         = curl_on_client(curl_args)
-      @previous_url  = url if result
-      result
-    end
-
-    def curl_post(url, post_data_hash)
-      post_data = URI.encode_www_form(Hash[post_data_hash.map{ |x| [x[:name], x[:value]] }])
-      curl_args     = "-b #{@cookie_file} -c #{@cookie_file} -D #{@header_file}" +
-                      " -L '#{url}' -d '#{post_data}'"
-      result        = curl_on_client(curl_args)
-      @previous_url = url if result
-      result
-    end
-
-    def curl_on_client(curl_args)
-      # I don't know if referer is necessary to avoid XSS (the authenticity
-      # token should be enough for logins),
-      curl_args            += " --referer '#{@previous_url}'" if @previous_url
-      result                = on(@client, "#{@curl_cmd} #{curl_args}")
-      failed_response_codes = headers.scan(%r[HTTP/1\.\d (\d\d\d) .*$])
-                                     .flatten
-                                     .select{|x| x !~ /^[23]\d\d/ }
-      unless failed_response_codes.empty?
-        warn '', '-'*80, "REMINDER: web server returned response codes " +
-             "(#{failed_response_codes.join(',')}) during login", '-'*80, ''
-        if ENV['PRY'] == 'yes'
-          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
-          binding.pry
-        end
-      end
-      result.stdout
-    end
-
-    def cookies
-      on(@client, "cat #{@cookie_file}").stdout
-    end
-
-    def headers
-      on(@client, "cat #{@header_file}").stdout
-    end
-  end
-
-
-  class GitlabSigninForm
-    attr_reader :form, :header_csrf_token, :action
-
-    def initialize(html)
-      doc = Nokogiri::HTML(html)
-      @form = parse_form(doc)
-      @header_csrf_token = doc.at("meta[name='csrf-token']")['content']
-      @action = @form['action']
-    end
-
-    # Returns a hash of all input elements in a completed signin form
-    def signin_post_data(username, password)
-        @form.css('input#username').first['value'] = username
-        @form.css('input#password').first['value'] = password
-        input_data_hash = form.css('input').map do |x|
-          {
-            :name  => x['name'],
-            :type  => x['type'],
-            :value => (x['value'] || nil)
-          }
-        end
-        input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = @header_csrf_token
-        input_data_hash
-    end
-
-    private
-
-    def parse_form(doc)
-      form = doc.at_css 'form#new_ldap_user'
-      if form.nil?
-        warn "WARNING: Nokogiri didn't find the expected `form#new_ldap_user`", '-'*80, ''
-        if ENV['PRY'] == 'yes'
-          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
-          binding.pry
-        end
-      end
-      form
-    end
   end
 
   context 'with TLS & PKI enabled' do
@@ -273,10 +170,12 @@ describe 'simp_gitlab using ldap' do
     end
 
     context 'authenticates over StartTLS (ldap://)' do
+      test_name 'simp_gitlab ldap startls'
       it_behaves_like 'a web login for LDAP users', 'ldap://'
     end
 
     context 'authenticates over Simple TLS (ldaps://)' do
+      test_name 'simp_gitlab ldap simple tls'
       it_behaves_like 'a web login for LDAP users', 'ldaps://'
     end
 
