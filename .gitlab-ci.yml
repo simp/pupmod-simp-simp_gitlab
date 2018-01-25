@@ -60,7 +60,7 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *validation_checks
-#### 
+####
 #### pup4.7-unit:
 ####   stage: unit
 ####   tags:
@@ -71,8 +71,8 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *spec_tests
-#### 
-#### 
+####
+####
 #### # Puppet 4.8 for SIMP 6.0 + 6.1 support
 #### # --------------------------------------
 #### pup4.8-validation:
@@ -85,7 +85,7 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *validation_checks
-#### 
+####
 #### pup4.8-unit:
 ####   stage: unit
 ####   tags:
@@ -96,8 +96,8 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *spec_tests
-#### 
-#### 
+####
+####
 #### # Puppet 4.10 for PE 2017.2 support (EOL:2018-02-21)
 #### # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 #### # --------------------------------------
@@ -111,7 +111,7 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *validation_checks
-#### 
+####
 #### pup4.10-unit:
 ####   stage: unit
 ####   tags:
@@ -122,8 +122,8 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *spec_tests
-#### 
-#### 
+####
+####
 #### # Puppet 5.3 for PE 2017.3 support (EOL: 2018-07)
 #### # See: https://puppet.com/misc/puppet-enterprise-lifecycle
 #### # --------------------------------------
@@ -137,7 +137,7 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *validation_checks
-#### 
+####
 #### pup5.3-unit:
 ####   stage: unit
 ####   tags:
@@ -148,8 +148,8 @@ stages:
 ####   <<: *cache_bundler
 ####   <<: *setup_bundler_env
 ####   <<: *spec_tests
-#### 
-#### 
+####
+####
 #### # Keep an eye on the latest puppet 5
 #### # ----------------------------------
 #### pup5.latest-validation:
@@ -163,7 +163,7 @@ stages:
 ####   <<: *setup_bundler_env
 ####   <<: *validation_checks
 ####   allow_failure: true
-#### 
+####
 #### pup5.latest-unit:
 ####   stage: unit
 ####   tags:
@@ -191,17 +191,17 @@ acceptance-default:
   script:
     - bundle exec rake beaker:suites[default]
 
-acceptance-fips-default:
-  stage: acceptance
-  tags:
-    - beaker
-  <<: *cache_bundler
-  <<: *setup_bundler_env
-  variables:
-    PUPPET_VERSION: '4.10'
-    BEAKER_fips: 'yes'
-  script:
-    - bundle exec rake beaker:suites[default]
-  # GitLab is expected to not support FIPS:
-  #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/41463
-  allow_failure: true
+###acceptance-fips-default:
+###  stage: acceptance
+###  tags:
+###    - beaker
+###  <<: *cache_bundler
+###  <<: *setup_bundler_env
+###  variables:
+###    PUPPET_VERSION: '4.10'
+###    BEAKER_fips: 'yes'
+###  script:
+###    - bundle exec rake beaker:suites[default]
+###  # GitLab is expected to not support FIPS:
+###  #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/41463
+###  allow_failure: true

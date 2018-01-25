@@ -7,7 +7,7 @@ shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
     result = on(
       gitlab_server,
       "#{curl_ssl_cmd(gitlab_server)} --retry 6 --retry-delay 15 -L " +
-      gitlab_signin_url
+      (gitlab_signin_url || "https://#{gitlab_server_fqdn}/users/sign_in")
     )
     expect(result.stdout).to match(/GitLab|password/)
   end
