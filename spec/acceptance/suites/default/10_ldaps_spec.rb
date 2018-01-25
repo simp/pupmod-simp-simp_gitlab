@@ -5,6 +5,8 @@ require 'helpers/sut_web_session'
 require 'helpers/gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
+
+  # We're using instances variables instead of `let()` blocks before Setting expensive ops up front to keep beaker log chatter focused on the tests
   before(:all) do
     _domains     = fact_on(ldap_server, 'domain').split('.')
     _domains.map! { |d| "dc=#{d}" }
@@ -115,7 +117,7 @@ describe 'simp_gitlab using ldap' do
       #     invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError,
       #     Invalid credentials for ldapuser1
       #
-      # The following ridiculous procedure was informed by the noble work at:
+      # This procedure was informed by the noble work at:
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
