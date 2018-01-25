@@ -5,8 +5,23 @@ require 'helpers/sut_web_session'
 require 'helpers/gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
-  let(:manifest__gitlab) do
-    <<-EOS
+  before(:all) do
+    _domains     = fact_on(ldap_server, 'domain').split('.')
+    _domains.map! { |d| "dc=#{d}" }
+    @ldap_domains = _domains.join(',')
+
+    hieradata_file = File.expand_path('../support/files/ldap_tls_default.yaml',__FILE__)
+    @ldap_hieradata = File.read(hieradata_file)
+                        .gsub('LDAP_BASE_DN',@ldap_domains)
+                        .gsub('LDAP_URI', ldap_server.node_name )
+
+    @manifest__remove_gitlab = File.read(
+      File.expand_path('../support/manifests/remove_gitlab.pp',__FILE__)
+    )
+    @manifest__ldap_server   = File.read(
+      File.expand_path('../support/manifests/install_ldap_server.pp',__FILE__)
+    )
+    @manifest__gitlab = <<-EOS
       include 'svckill'
       include 'iptables'
       iptables::listen::tcp_stateful { 'ssh':
@@ -28,32 +43,13 @@ describe 'simp_gitlab using ldap' do
     EOS
   end
 
-  let(:manifest__remove_gitlab) do
-    File.read(File.expand_path('../support/manifests/remove_gitlab.pp',__FILE__))
-  end
-
-  let(:manifest__ldap_server) do
-    File.read(File.expand_path('../support/manifests/install_ldap_server.pp',__FILE__))
-  end
-
-  let(:ldap_domains) do
-    _domains     = fact_on(ldap_server, 'domain').split('.')
-    _domains.map! { |d| "dc=#{d}" }
-    ldap_domains = _domains.join(',')
-  end
-
-  let(:ldap_hieradata) do
-    hieradata_file = File.expand_path('../support/files/ldap_tls_default.yaml',__FILE__)
-    File.read(hieradata_file)
-      .gsub('LDAP_BASE_DN',ldap_domains)
-      .gsub('LDAP_URI', ldap_server.node_name )
-  end
 
   context 'with TLS & PKI enabled' do
     shared_examples_for 'a web login for LDAP users' do |ldap_proto|
       before :all do
+
         # clean out earlier gitlab environments
-        apply_manifest_on(gitlab_server, manifest__remove_gitlab, catch_failures: true)
+        apply_manifest_on(gitlab_server, @manifest__remove_gitlab, catch_failures: true)
 
         # clean out earlier ldap environments
         on(ldap_server,
@@ -66,17 +62,17 @@ describe 'simp_gitlab using ldap' do
         # set up the ldap server
         # ------------------------------
         # distribute common LDAP & trusted_nets settings
-        hosts.each { |h| set_hieradata_on(h, ldap_hieradata, 'default') }
+        hosts.each { |h| set_hieradata_on(h, @ldap_hieradata, 'default') }
 
         # install LDAP service
-        apply_manifest_on(ldap_server, manifest__ldap_server)
+        apply_manifest_on(ldap_server, @manifest__ldap_server)
 
         # add LDAP accounts
         ldif_file = File.expand_path('../support/files/ldap_test_user.ldif',__FILE__)
-        ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',ldap_domains)
+        ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',@ldap_domains)
         create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
         on(ldap_server, 'ldapadd -x -ZZ ' +
-                        "-D cn=LDAPAdmin,ou=People,#{ldap_domains} " +
+                        "-D cn=LDAPAdmin,ou=People,#{@ldap_domains} " +
                         "-H ldap://#{ldap_server.node_name} " +
                         "-w 'suP3rP@ssw0r!' " +
                         '-f /root/user_ldif.ldif'
@@ -84,19 +80,19 @@ describe 'simp_gitlab using ldap' do
       end
 
       it 'should be configured with the test hiera data' do
-        gitlab_hieradata = ldap_hieradata.gsub('ldap://',ldap_proto)
+        gitlab_hieradata = @ldap_hieradata.gsub('ldap://',ldap_proto)
         set_hieradata_on(gitlab_server, gitlab_hieradata, 'default')
       end
 
       it 'should apply with no errors' do
-        apply_manifest_on(gitlab_server,manifest__gitlab,catch_failures: true)
+        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
 
         # FIXME: postfix creates the same files twice... is this an ordering issue?
-        apply_manifest_on(gitlab_server,manifest__gitlab,catch_failures: true)
+        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
       end
 
       it 'should be idempotent' do
-        apply_manifest_on(gitlab_server,manifest__gitlab,catch_changes: true)
+        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_changes: true)
       end
 
       it_behaves_like('a GitLab web service', gitlab_signin_url, firewall: true)
