@@ -16,10 +16,9 @@ simp_options::ldap::uri:
 simp_options::ldap::base_dn:  LDAP_BASE_DN
 simp_options::ldap::bind_dn:  cn=hostAuth,ou=Hosts,LDAP_BASE_DN
 simp_options::ldap::bind_pw: 'foobarbaz'
+# suP3rP@ssw0r!
 simp_options::ldap::bind_hash: '{SSHA}BNPDR0qqE6HyLTSlg13T0e/+yZnSgYQz'
 simp_options::ldap::sync_pw: 'foobarbaz'
-simp_options::ldap::bind_dn:  cn=hostAuth,ou=Hosts,LDAP_BASE_DN
-# suP3rP@ssw0r!
 simp_options::ldap::sync_hash: '{SSHA}BNPDR0qqE6HyLTSlg13T0e/+yZnSgYQz'
 simp_options::ldap::master:  ldap://LDAP_URI
 simp_options::ldap::root_dn: cn=LDAPAdmin,ou=People,LDAP_BASE_DN

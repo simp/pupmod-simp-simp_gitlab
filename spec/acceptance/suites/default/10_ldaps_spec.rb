@@ -49,24 +49,22 @@ describe 'simp_gitlab using ldap' do
       .gsub('LDAP_URI', ldap_server.node_name )
   end
 
-  let(:gitlab_signin_url) do
-    "https://#{gitlab_server_fqdn}/users/sign_in"
-  end
-
   context 'with TLS & PKI enabled' do
-
     shared_examples_for 'a web login for LDAP users' do |ldap_proto|
-      it 'should clean out earlier test environments' do
+      before :all do
+        # clean out earlier gitlab environments
         apply_manifest_on(gitlab_server, manifest__remove_gitlab, catch_failures: true)
+
+        # clean out earlier ldap environments
         on(ldap_server,
            'systemctl status slapd > /dev/null && ' +
              'systemctl stop slapd && ' +
              'rm -rf /var/lib/ldap /etc/openldap && ' +
              'yum erase -y openldap-{servers,clients}; :'
           )
-      end
 
-      it 'should prep the test ldap server' do
+        # set up the ldap server
+        # ------------------------------
         # distribute common LDAP & trusted_nets settings
         hosts.each { |h| set_hieradata_on(h, ldap_hieradata, 'default') }
 
@@ -101,22 +99,7 @@ describe 'simp_gitlab using ldap' do
         apply_manifest_on(gitlab_server,manifest__gitlab,catch_changes: true)
       end
 
-      it 'serves the GitLab content on port 443' do
-        # The delays and retries give the web interface time to start
-        shell 'sleep 30'
-        result = on(gitlab_server,
-          "#{curl_ssl_cmd(gitlab_server)} --retry 3" +
-          " --retry-delay 30 -L #{gitlab_signin_url}"
-        )
-        expect(result.stdout).to match(/GitLab|password/)
-      end
-
-      it 'allows https access from permitted clients on port 443' do
-        result = on(permitted_client,
-          "#{curl_ssl_cmd(permitted_client)} -L #{gitlab_signin_url}"
-        )
-        expect(result.stdout).to match(/GitLab|password/)
-      end
+      it_behaves_like('a GitLab web service', gitlab_signin_url, firewall: true)
 
       # The acceptance criteria for this test is that the user can log in
       # from a permitted client **using the GitLab web interface**
@@ -145,7 +128,7 @@ describe 'simp_gitlab using ldap' do
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)
         gl_form = GitlabSigninForm.new(html)
-
+binding.pry if ENV['PRY'] == 'yes'
         html = user1_session.curl_post(
           "https://#{gitlab_server_fqdn + gl_form.action}",
           gl_form.signin_post_data('ldapuser1','suP3rP@ssw0r!')

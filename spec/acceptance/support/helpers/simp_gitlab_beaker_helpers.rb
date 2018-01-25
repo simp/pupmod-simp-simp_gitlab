@@ -28,5 +28,10 @@ module SimpGitlabBeakerHelpers
     def denied_client_fqdn
       @denied_client_fqdn ||= fact_on(denied_client, 'fqdn')
     end
+
+    def gitlab_signin_url(proto='https',port=nil)
+      "#{proto}://#{gitlab_server_fqdn}#{port ? ":#{port.to_s}" : ''}/users/sign_in"
+    end
+
   end
 end
