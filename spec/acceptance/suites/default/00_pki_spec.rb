@@ -25,7 +25,7 @@ describe 'simp_gitlab pki tls with firewall' do
   end
 
   context 'with PKI enabled' do
-    it 'should prep the test enviornment' do
+    it 'should prep the test environment' do
       test_prep_manifest = <<-EOM
       # clean up Vagrant's leftovers
       class{ 'svckill': mode => 'enforcing' }
@@ -61,16 +61,12 @@ describe 'simp_gitlab pki tls with firewall' do
 
 
   context 'with PKI + firewall + custom port 777' do
-    let(:gitlab_signin_url) do
-      "https://#{gitlab_server_fqdn}:777/users/sign_in"
-    end
-
     let(:new_lines) do
       '        firewall                => true,' + "\n" +
       '        tcp_listen_port         => 777,'
     end
 
-    it 'should prep the test enviornment' do
+    it 'should prep the test environment' do
       test_prep_manifest = <<-EOM
       # Turns off firewalld in EL7.  Presumably this would already be done.
       include 'iptables'

@@ -149,7 +149,7 @@ class simp_gitlab (
   Boolean                $two_way_ssl_validation   = false,
   Boolean                $ldap_verify_certificates = true,
   Integer                $ssl_verify_depth         = 2,
-  Array[String]          $ssl_protocols            = ['TLSv1','TLSv1.1','TLSv1.2'],
+  Array[String]          $ssl_protocols            = ['TLSv1.1','TLSv1.2'],
   Array[String]          $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suites', {
                                                                       'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),

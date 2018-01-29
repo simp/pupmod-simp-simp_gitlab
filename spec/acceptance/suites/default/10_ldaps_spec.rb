@@ -1,12 +1,12 @@
 require 'spec_helper_acceptance'
-require 'pry' if ENV['PRY'] == 'yes'
 require 'nokogiri'
 require 'helpers/sut_web_session'
 require 'helpers/gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
 
-  # We're using instances variables instead of `let()` blocks before Setting expensive ops up front to keep beaker log chatter focused on the tests
+  # We're using instances variables instead of `let()` blocks to run expensive
+  # ops up front and keep beaker log chatter focused on the tests
   before(:all) do
     _domains     = fact_on(ldap_server, 'domain').split('.')
     _domains.map! { |d| "dc=#{d}" }
@@ -73,9 +73,9 @@ describe 'simp_gitlab using ldap' do
         ldif_file = File.expand_path('../support/files/ldap_test_user.ldif',__FILE__)
         ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',@ldap_domains)
         create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
-        on(ldap_server, 'ldapadd -x -ZZ ' +
+        result = on(ldap_server, 'ldapadd -x -ZZ ' +
                         "-D cn=LDAPAdmin,ou=People,#{@ldap_domains} " +
-                        "-H ldap://#{ldap_server.node_name} " +
+                        "-H ldap://#{ldap_server_fqdn} " +
                         "-w 'suP3rP@ssw0r!' " +
                         '-f /root/user_ldif.ldif'
         )
@@ -126,7 +126,6 @@ describe 'simp_gitlab using ldap' do
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)
         gl_form = GitlabSigninForm.new(html)
-binding.pry if ENV['PRY'] == 'yes'
         html = user1_session.curl_post(
           "https://#{gitlab_server_fqdn + gl_form.action}",
           gl_form.signin_post_data('ldapuser1','suP3rP@ssw0r!')
@@ -147,6 +146,31 @@ binding.pry if ENV['PRY'] == 'yes'
         # Test for success
         expect(profile_link).not_to be_empty
         expect(profile_link.first['data-user']).to eq('ldapuser1')
+      end
+
+
+      it 'does not permit an unauthorized LDAP user to log in via the web page' do
+        user2_session = SutWebSession.new(permitted_client)
+        html    = user2_session.curl_get(gitlab_signin_url)
+        gl_form = GitlabSigninForm.new(html)
+
+        html = user2_session.curl_post(
+          "https://#{gitlab_server_fqdn + gl_form.action}",
+          gl_form.signin_post_data('ldapuser2','suP3rP@ssw0r!')
+        )
+        doc     = Nokogiri::HTML(html)
+
+        noko_alerts     = doc.css("div[class='flash-alert']")
+        profile_link    = doc.css("a[class='profile-link']")
+        noko_alert_text = ''
+        unless noko_alerts.empty?
+          noko_alert_text = noko_alerts.text.strip
+          warn '='*80,"== noko alert text: '#{noko_alert_text}'",'='*80
+        end
+
+        expect(noko_alerts).to_not be_empty
+        expect(noko_alert_text).to_not match(/^Could not authenticate/)
+        expect(profile_link).to be_empty
       end
     end
 

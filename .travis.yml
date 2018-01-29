@@ -35,7 +35,7 @@ jobs:
         - bundle exec rake metadata_lint
         - bundle exec rake lint
         - bundle exec puppet module build
-        - bundle exec rake compare_latest_tag
+        - bundle exec rake pkg:compare_latest_tag
 
     - stage: spec
       rvm: 2.4.1

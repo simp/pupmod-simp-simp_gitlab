@@ -21,6 +21,10 @@ module SimpGitlabBeakerHelpers
       @gitlab_server_fqdn ||= fact_on(gitlab_server, 'fqdn')
     end
 
+    def ldap_server_fqdn
+      @ldap_server_fqdn ||= fact_on(ldap_server, 'fqdn')
+    end
+
     def permitted_client_fqdn
       @permitted_client_fqdn ||= fact_on(permitted_client, 'fqdn')
     end
@@ -32,6 +36,5 @@ module SimpGitlabBeakerHelpers
     def gitlab_signin_url(proto='https',port=nil)
       "#{proto}://#{gitlab_server_fqdn}#{port ? ":#{port.to_s}" : ''}/users/sign_in"
     end
-
   end
 end

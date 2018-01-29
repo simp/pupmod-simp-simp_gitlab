@@ -127,7 +127,7 @@ mention:
 
 If using this module from an isolated network, ensure that package and repo
 management are disabled from the module, and that the `gitlab-ce` or
-`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::editon`
+`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::edition`
 parameter is set to the correct edition.
 
 ### Beginning with simp_gitlab
