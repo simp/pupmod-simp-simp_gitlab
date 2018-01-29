@@ -54,7 +54,7 @@ describe 'simp_gitlab' do
                 'ssl_certificate'     => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
                 'ssl_certificate_key' => '/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem',
                 'ssl_ciphers'         => 'DEFAULT:!MEDIUM',
-                'ssl_protocols'       => 'TLSv1 TLSv1.1 TLSv1.2',
+                'ssl_protocols'       => 'TLSv1.1 TLSv1.2',
               })
               expect( nginx ).not_to include('ssl_verify_client'=> 'on')
             end
