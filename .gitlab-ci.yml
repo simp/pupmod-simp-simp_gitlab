@@ -182,7 +182,7 @@ pup5.latest-unit:
 
 # Acceptance tests
 # ==============================================================================
-acceptance-default:
+el7-acceptance:
   stage: acceptance
   tags:
     - beaker
@@ -191,11 +191,21 @@ acceptance-default:
   variables:
     PUPPET_VERSION: '4.10'
   script:
-    - bundle exec rake beaker:suites[default]
+    - bundle exec rake beaker:suites[default,centos-7-x64]
 
+el6-acceptance:
+  stage: acceptance
+  tags:
+    - beaker
+  <<: *cache_bundler
+  <<: *setup_bundler_env
+  variables:
+    PUPPET_VERSION: '4.10'
+  script:
+    - bundle exec rake beaker:suites[default,centos-6-x64]
 # GitLab does not support FIPS (yet):
 #   ref: https://gitlab.com/gitlab-org/gitlab-ce/issues/41463
-### acceptance-fips-default:
+### fips-default:
 ###   stage: acceptance
 ###   tags:
 ###     - beaker

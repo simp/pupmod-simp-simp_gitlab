@@ -28,13 +28,21 @@ class GitlabSigninForm
   private
 
   def parse_form(doc)
-    form = doc.at_css 'form#new_ldap_user'
+    form = doc.at_css('form#new_ldap_user')
+    msg = ''
     if form.nil?
-      warn "WARNING: Nokogiri didn't find the expected `form#new_ldap_user`", '-'*80, ''
+      msg = "Nokogiri didn't find the expected `form#new_ldap_user`"
+    elsif form.at_css('input#username').nil?
+      msg = "Nokogiri didn't find the expected `input#username`"
+    end
+
+    unless msg.empty?
+      warn "WARNING: #{msg}", '-'*80, ''
       if ENV['PRY'] == 'yes'
         warn "ENV['PRY'] is set to 'yes'; switching to pry console"
         binding.pry
       end
+      fail "ERROR: Not a recognizable signin form"
     end
     form
   end
