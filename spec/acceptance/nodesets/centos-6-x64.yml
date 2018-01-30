@@ -7,19 +7,33 @@ HOSTS:
     platform:   el-6-x86_64
     box:        centos/6
     hypervisor: vagrant
-    vagrant_memsize: 512
-    ip: 192.168.21.21
-    forwarded_ports:
-      nginx_http:
-        from: 8080
-        to: 80
-        from_ip: '127.0.0.1'
-        to_ip: '0.0.0.0'
-      nginx_https:
-        from: 8443
-        to: 443
-        from_ip: '127.0.0.1'
-        to_ip: '0.0.0.0'
+    vagrant_memsize: 1024
+    vagrant_cpus: 2
+#-------------------------------------------------------------------------------
+# If you want to use a web browser to manually inspect the SUT GitLab server
+# during any of the tests, uncomment the section below and add your host's
+# (non-local) IP address to the `TRUSTED_NETS` environment variable before
+# running beaker.
+#
+# See README.md for more details and environment variables
+#-------------------------------------------------------------------------------
+#    forwarded_ports:
+#      nginx_http:
+#        from: 8080
+#        to: 80
+#        from_ip: '127.0.0.1'
+#        to_ip: '0.0.0.0'
+#      nginx_https:
+#        from: 8443
+#        to: 443
+#        from_ip: '127.0.0.1'
+#        to_ip: '0.0.0.0'
+#      nginx_777:
+#        from: 8777
+#        to: 777
+#        from_ip: '127.0.0.1'
+#        to_ip: '0.0.0.0'
+#-------------------------------------------------------------------------------
   client-1:
     roles:
       - client
@@ -27,20 +41,22 @@ HOSTS:
     platform:   el-6-x86_64
     box:        centos/6
     hypervisor: vagrant
-    ip: 192.168.21.22
     vagrant_memsize: 192
   client-2:
     roles:
       - client
       - unknownclient
       - logdest
+      - ldapserver
     platform:   el-6-x86_64
     box:        centos/6
     hypervisor: vagrant
-    ip: 192.168.21.31
     vagrant_memsize: 192
 CONFIG:
   log_level: verbose
   type:      aio
+  run_in_parallel:
+    - install
+    - config
   ## vb_gui: true
 

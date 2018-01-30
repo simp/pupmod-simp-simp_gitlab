@@ -1,8 +1,14 @@
 require 'beaker-rspec'
-require 'tmpdir'
-require 'yaml'
 require 'simp/beaker_helpers'
 include Simp::BeakerHelpers
+require 'tmpdir'
+require 'pry' if ENV['PRY'] == 'yes'
+
+$LOAD_PATH.unshift(File.expand_path('../acceptance/support',__FILE__))
+
+require 'helpers/simp_gitlab_beaker_helpers'
+require 'helpers/curl_ssl_cmd'
+require 'shared_examples/gitlab_web_service'
 
 unless ENV['BEAKER_provision'] == 'no'
   hosts.each do |host|
@@ -15,8 +21,11 @@ unless ENV['BEAKER_provision'] == 'no'
   end
 end
 
-
 RSpec.configure do |c|
+  # provide SUT variables to individual examples AND example groups
+  c.include SimpGitlabBeakerHelpers::SutVariables
+  c.extend SimpGitlabBeakerHelpers::SutVariables
+
   # ensure that environment OS is ready on each host
   fix_errata_on hosts
 
@@ -34,6 +43,7 @@ RSpec.configure do |c|
         run_fake_pki_ca_on( default, hosts, cert_dir )
         hosts.each{ |sut| copy_pki_to( sut, cert_dir, '/etc/pki/simp-testing' )}
       end
+
     rescue StandardError, ScriptError => e
       if ENV['PRY']
         require 'pry'; binding.pry
@@ -43,3 +53,4 @@ RSpec.configure do |c|
     end
   end
 end
+

@@ -2,19 +2,33 @@
 
 #### Table of Contents
 
+<!-- vim-markdown-toc GFM -->
+
 * [Description](#description)
   * [This is a SIMP module](#this-is-a-simp-module)
 * [Setup](#setup)
-  * [What simp_gitlab affects](#what-simp_gitlab-affects)
-  * [Setup Requirements](#setup-requirements-optional)
+  * [What `simp_gitlab` affects](#what-simp_gitlab-affects)
+  * [Setup Requirements](#setup-requirements)
   * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
 * [Usage](#usage)
+  * [A basic GitLab setup using PKI](#a-basic-gitlab-setup-using-pki)
+  * [Passing custom parameters to `vshn-gitlab`](#passing-custom-parameters-to-vshn-gitlab)
+  * [Configuring Nginx](#configuring-nginx)
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
 * [Limitations](#limitations)
-  * [Omnibus syslog is limited to GitLab Enterprise Edition](#omnibus-syslog-is-limited-to-gitlab-enterprise-edition-todo-see-if-we-can-ship-the-individual-logs)
+  * [Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`](#gitlabs-ldap-tls-is-configured-to-re-use-omnibus-trusted-certs-instead-of-ca_file)
+  * [GitLab](#gitlab)
+    * [Puppet runs can fail if GitLab Omnibus's internal services don't start in time](#puppet-runs-can-fail-if-gitlab-omnibuss-internal-services-dont-start-in-time)
+    * [Nessus scans may incorrectly report CRIME vulnerability in GitLab](#nessus-scans-may-incorrectly-report-crime-vulnerability-in-gitlab)
+    * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
   * [Acceptance tests](#acceptance-tests)
+    * [Environment variable `TRUSTED_NETS`](#environment-variable-trusted_nets)
+    * [Manually inspecting the SUT GitLab server with a web browser](#manually-inspecting-the-sut-gitlab-server-with-a-web-browser)
+    * [Interactive debugging using pry](#interactive-debugging-using-pry)
+
+<!-- vim-markdown-toc -->
 
 
 ## Description
@@ -113,7 +127,7 @@ mention:
 
 If using this module from an isolated network, ensure that package and repo
 management are disabled from the module, and that the `gitlab-ce` or
-`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::editon`
+`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::edition`
 parameter is set to the correct edition.
 
 ### Beginning with simp_gitlab
@@ -213,6 +227,30 @@ module's generated YARD documentation for reference material.
 
 ## Limitations
 
+### Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`
+
+`simp_gitlab` configures the GitLab Rails server LDAP TLS settings to use the
+Omnibus trusted_certs (built from `/etc/gitlab/trusted-certs`) instead of its
+own `ca_file` option.
+
+The LDAP `ca_file` setting is known to [cause problems elsewhere in GitLab
+SSL][ldap_ca_file_problems].  There is a [(currently undocumented)
+workaround][ce37254_workarounds] to these issues: GitLab's LDAP TLS will re-use
+the GitLab Omnibus `trusted-certificates/ ` directory―but [_only_ when the LDAP
+`ca_file` option has **not** been set][ce37254_trusted_wo_ca_file]
+
+The drawback to this solution is that GitLab's LDAP client must share the same
+TLS settings as GitLab's web server―which is something that [we try to keep
+distinct][distinct_tls], as there could be situations in which their
+configurations legitimately vary.
+
+[ldap_ca_file_problems]: https://gitlab.com/gitlab-org/gitlab-ce/issues/40003
+[ce37254_workarounds]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_45543716
+[ce37254_trusted_wo_ca_file]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_3894021
+[distinct_tls]: https://github.com/simp/pupmod-simp-simp_openldap/blob/master/manifests/client.pp#L15-L18
+
+
+
 ### GitLab
 
 #### Puppet runs can fail if GitLab Omnibus's internal services don't start in time
@@ -233,14 +271,9 @@ module's generated YARD documentation for reference material.
   service is stopped, the service will not start and catalog compilation will
   fail.
 
-#### Omnibus syslog is limited to GitLab Enterprise Edition
-
-  - `remote-syslog` is only packaged with the `ee` version, according to https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/config/projects/gitlab.rb#L84
-  - [UDP log shipping](https://docs.gitlab.com/omnibus/settings/logs.html#udp-log-shipping-gitlab-enterprise-edition-only)
-
 #### Nessus scans may incorrectly report CRIME vulnerability in GitLab
 
-This is almost certainly a false positive, as GitLab configures compression to `0` when HTTPS is enabled.
+This is almost certainly a false positive―GitLab configures compression to `0` when HTTPS is enabled.
 
 - See https://docs.gitlab.com/ce/security/crime_vulnerability.html for details.
 
@@ -281,3 +314,35 @@ bundle exec rake beaker:suites
 
 Please refer to the [SIMP Beaker Helpers documentation](https://github.com/simp/rubygem-simp-beaker-helpers/blob/master/README.md)
 for more information.
+
+#### Environment variable `TRUSTED_NETS`
+
+`TRUSTED_NETS` is an environment variable that may contain a comma-delimited
+list of trusted networks to add to the gitlab SUT's firewall.
+
+```shell
+TRUSTED_NETS=192.168.11.0/24,10.10.10.10 bundle exec rake beaker:suites
+```
+
+**Note:** if the `TRUSTED_NETS` configuration is too broad, it may cause
+some acceptance tests (for denied clients) to fail.
+
+#### Manually inspecting the SUT GitLab server with a web browser
+
+Each nodeset in `spec/acceptance/nodesets/` contains a commented-out
+`forwarded_ports:` section.  If you want to use a web browser to manually
+inspect the SUT GitLab server during any of the tests, uncomment this section
+and add your machine's (non-local) IP address to the `TRUSTED_NETS` variable.
+
+```shell
+# Remember to uncomment the `forwarded_ports:` section in the nodeset file and
+# add a pause in the acceptance tests where you want to inspect:
+TRUSTED_NETS=10.10.10.10 BEAKER_destroy=no PRY=yes bundle exec rake beaker:suites
+```
+
+#### Interactive debugging using pry
+
+Setting the environment variable `PRY=yes` will cause the acceptance tests to
+drop into a pry console under certain (usually just before failures in examples
+with complex or hard-to-debug state)
+

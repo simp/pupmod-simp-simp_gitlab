@@ -22,7 +22,7 @@ function simp_gitlab::omnibus_config::nginx() {
       'ssl_certificate_key'       => $::simp_gitlab::app_pki_key,
       'ssl_ciphers'               => join($::simp_gitlab::cipher_suite, ':'),
       # TODO: there doesn't appear to be a SIMP global catalyst for SSL protocols
-      'ssl_protocols'             => 'TLSv1 TLSv1.1 TLSv1.2',
+      'ssl_protocols'             => join($::simp_gitlab::ssl_protocols,' '),
       'ssl_prefer_server_ciphers' => 'on',
       'ssl_session_timeout'       => '5m',
 

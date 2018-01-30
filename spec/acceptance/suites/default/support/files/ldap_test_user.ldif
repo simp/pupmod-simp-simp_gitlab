@@ -1,0 +1,76 @@
+# This LDIF creates users and groups needed to test GitLab's LDAP configuration
+
+# ------------------------------------------------------------------------------
+# ldapuser1 should be able to log into gitlab
+# ------------------------------------------------------------------------------
+dn: cn=ldapuser1,ou=Group,LDAP_BASE_DN
+objectClass: posixGroup
+objectClass: top
+cn: ldapuser1
+gidNumber: 10001
+description: 'Test user 1'
+
+dn: uid=ldapuser1,ou=People,LDAP_BASE_DN
+uid: ldapuser1
+cn: ldapuser1
+uidNumber: 10001
+gidNumber: 10001
+# suP3rP@ssw0r!
+userPassword: {SSHA}yOdnVOQYXOEc0Gjv4RRY5BnnFfIKLI3/
+mail: ldapuser1@someurl.tld
+givenName: User1
+sn: Userino1
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+objectClass: ldapPublicKey
+loginShell: /bin/bash
+homeDirectory: /home/ldapuser1
+
+# ------------------------------------------------------------------------------
+# ldapuser2 does *not* belong to the gitlab group
+# ------------------------------------------------------------------------------
+dn: cn=ldapuser2,ou=Group,LDAP_BASE_DN
+objectClass: posixGroup
+objectClass: top
+cn: ldapuser2
+gidNumber: 10002
+description: 'Test user 2 (no GitLab)'
+
+dn: uid=ldapuser2,ou=People,LDAP_BASE_DN
+uid: ldapuser2
+cn: ldapuser2
+uidNumber: 10002
+gidNumber: 10002
+# suP3rP@ssw0r!
+userPassword: {SSHA}yOdnVOQYXOEc0Gjv4RRY5BnnFfIKLI3/
+mail: ldapuser2@someurl.tld
+givenName: User2
+sn: Userrato2
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+objectClass: ldapPublicKey
+loginShell: /bin/bash
+homeDirectory: /home/ldapuser2
+
+
+
+
+# ------------------------------------------------------------------------------
+# (As of 10.4) LDAP group membership is only considered by GitLab EE
+# ------------------------------------------------------------------------------
+dn: cn=gitlab,ou=Group,LDAP_BASE_DN
+objectClass: posixGroup
+objectClass: top
+cn: gitlab
+gidNumber: 19999
+description: 'Users who can log into GitLab'
+
+dn: cn=gitlab,ou=Group,LDAP_BASE_DN
+changetype: modify
+add: memberUid
+memberUid: ldapuser1
+
