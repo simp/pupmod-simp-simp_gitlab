@@ -126,7 +126,7 @@
 #
 class simp_gitlab (
   Simplib::Netlist       $trusted_nets             = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
-  Simp_gitlab::Stroolean $pki                      = simplib::lookup('simp_options::pki', { 'default_value'         => false }),
+  Simp_gitlab::Stroolean $pki                      = simplib::lookup('simp_options::pki', { 'default_value' => false }),
   Simplib::Uri           $external_url             = $pki ? { true => "https://${facts['fqdn']}", 'simp' => "https://${facts['fqdn']}", default => "http://${facts['fqdn']}" },
   Simplib::Netlist       $denied_nets              = [],
   Simplib::Port          $tcp_listen_port          = $pki ? { true => 443, 'simp' => 443, default => 80},
@@ -134,11 +134,11 @@ class simp_gitlab (
   Boolean                $ldap                     = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
   Boolean                $ldap_active_directory    = false,
   Array[Simplib::URI]    $ldap_uri                 = simplib::lookup('simp_options::ldap::uri',     {'default_value' => []}),
-  String                 $ldap_base_dn             = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
-  String                 $ldap_bind_dn             = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
-  String                 $ldap_bind_pw             = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
-  Optional[String]       $ldap_group_base          = undef,
-  Optional[String]       $ldap_user_filter         = undef,
+  String[3]              $ldap_base_dn             = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
+  String[3]              $ldap_bind_dn             = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
+  String[1]              $ldap_bind_pw             = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
+  Optional[String[3]]    $ldap_group_base          = undef,
+  Optional[String[1]]    $ldap_user_filter         = undef,
   Hash                   $gitlab_options           = {},
 
   Stdlib::Absolutepath   $app_pki_external_source  = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
@@ -148,12 +148,12 @@ class simp_gitlab (
   Stdlib::Absolutepath   $app_pki_ca               = "${app_pki_dir}/cacerts/cacerts.pem",
   Boolean                $two_way_ssl_validation   = false,
   Boolean                $ldap_verify_certificates = true,
-  Integer                $ssl_verify_depth         = 2,
-  Array[String]          $ssl_protocols            = ['TLSv1.1','TLSv1.2'],
-  Array[String]          $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suite', {
+  Integer[1]             $ssl_verify_depth         = 2,
+  Array[String[1]]       $ssl_protocols            = ['TLSv1.1','TLSv1.2'],
+  Array[String[1]]       $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suite', {
                                                                       'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
-  String                 $ssh_authorized_keyfile   = simplib::lookup( 'ssh::server::conf::authorizedkeysfile' , {
+  String[1]              $ssh_authorized_keyfile   = simplib::lookup( 'ssh::server::conf::authorizedkeysfile' , {
                                                                       'default_value' => '%h/.ssh/authorized_keys'}
                                                                     ).split(/ +/)[0],
   Enum['ce','ee']        $edition                  = 'ce',
