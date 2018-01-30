@@ -31,7 +31,7 @@
 #   this will be ``'80'`` if HTTPS is disabled and ``'443'`` if HTTPS is enabled.
 #
 # @param firewall
-#   If ``true``, manage firewall rules to acommodate **simp_gitlab**
+#   If ``true``, manage firewall rules to accommodate **simp_gitlab**
 #
 # @param pki
 #   * If ``'simp'``, include SIMP's pki module and use pki::copy to manage
@@ -150,7 +150,7 @@ class simp_gitlab (
   Boolean                $ldap_verify_certificates = true,
   Integer                $ssl_verify_depth         = 2,
   Array[String]          $ssl_protocols            = ['TLSv1.1','TLSv1.2'],
-  Array[String]          $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suites', {
+  Array[String]          $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suite', {
                                                                       'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
   String                 $ssh_authorized_keyfile   = simplib::lookup( 'ssh::server::conf::authorizedkeysfile' , {
