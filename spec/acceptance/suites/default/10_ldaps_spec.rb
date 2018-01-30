@@ -55,8 +55,7 @@ describe 'simp_gitlab using ldap' do
 
         # clean out earlier ldap environments
         on(ldap_server,
-           'systemctl status slapd > /dev/null && ' +
-             'systemctl stop slapd && ' +
+           'puppet resource service slapd ensure=stopped > /dev/null && ' +
              'rm -rf /var/lib/ldap /etc/openldap && ' +
              'yum erase -y openldap-{servers,clients}; :'
           )
