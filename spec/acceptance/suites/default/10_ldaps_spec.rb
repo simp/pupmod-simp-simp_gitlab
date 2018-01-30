@@ -138,7 +138,10 @@ describe 'simp_gitlab using ldap' do
         unless noko_alerts.empty?
           noko_alert_text = noko_alerts.text.strip
           warn '='*80,"== noko alert text: '#{noko_alert_text}'",'='*80
-        else
+        end
+
+        if(noko_alert_text =~ /^Could not authenticate/ || profile_link.empty?)
+          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
           binding.pry if ENV['PRY'] == 'yes'
         end
 
