@@ -1,6 +1,6 @@
 # _Description_
 #
-# Return the username of the gitlab-shell user
+# Return the username of the GitLab user.
 #
 # Returns nil if
 # * /var/opt/gitlab/gitlab-shell/config.yml does not exist
@@ -16,21 +16,24 @@ Facter.add(:gitlab_user) do
   confine { File.exist?(gitlab_shell_conf) }
 
   setcode do
+    require 'etc'
     require 'yaml'
-    gitlab_shell_user = nil
+    gitlab_user = nil
     begin
       gitlab_shell_yaml = YAML.load_file(gitlab_shell_conf)
       # YAML.load_file can return nil or raise Psych::SyntaxError
       # when YAML is malformed
       if gitlab_shell_yaml and gitlab_shell_yaml['user']
-        local_users = File.read('/etc/passwd')
-        unless local_users.match(%r{^#{gitlab_shell_yaml['user']}:}).nil?
-          gitlab_shell_user = gitlab_shell_yaml['user']
+        begin
+          Etc.getpwnam(gitlab_shell_yaml['user'])
+          gitlab_user = gitlab_shell_yaml['user']
+        rescue ArgumentError
+          # user does not exist
         end
       end
     rescue Psych::SyntaxError
     end
-    gitlab_shell_user
+    gitlab_user
   end
 end
 
