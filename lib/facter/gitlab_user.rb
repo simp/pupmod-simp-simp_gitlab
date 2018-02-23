@@ -13,7 +13,11 @@ Facter.add(:gitlab_user) do
   confine :kernel => 'Linux'
 
   gitlab_shell_conf = '/var/opt/gitlab/gitlab-shell/config.yml'
-  confine { File.exist?(gitlab_shell_conf) }
+  confine {
+    File.exist?(gitlab_shell_conf) &&
+    File.file?(gitlab_shell_conf) &&
+    File.readable?(gitlab_shell_conf)
+  }
 
   setcode do
     require 'etc'
