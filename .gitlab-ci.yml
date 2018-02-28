@@ -193,6 +193,19 @@ el7-acceptance:
   script:
     - bundle exec rake beaker:suites[default,centos-7-x64]
 
+el7-acceptance-latest-gitlab:
+  stage: acceptance
+  tags:
+    - beaker
+  <<: *cache_bundler
+  <<: *setup_bundler_env
+  variables:
+    PUPPET_VERSION: '4.10'
+    TEST_GITLAB_CE_VERSION: 'latest'
+  script:
+    - bundle exec rake beaker:suites[default,centos-7-x64]
+   allow_failure: true
+
 el6-acceptance:
   stage: acceptance
   tags:

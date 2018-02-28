@@ -1,6 +1,19 @@
 module SimpGitlabBeakerHelpers
   # memoized variables to share across examples
   module SutVariables
+    def gitlab_ce_version
+      unless @gitlab_ce_version
+        if ENV['TEST_GITLAB_CE_VERSION'] and !ENV['TEST_GITLAB_CE_VERSION'].strip.empty?
+          # explicit version or latest
+          @gitlab_ce_version = ENV['TEST_GITLAB_CE_VERSION']
+        else
+        # NOTE:  Known to fail with 10.5.2
+          @gitlab_ce_version = '10.5.1'
+        end
+      end
+      @gitlab_ce_version
+    end
+
     def gitlab_server
       @gitlab_server ||= only_host_with_role( hosts, 'server' )
     end

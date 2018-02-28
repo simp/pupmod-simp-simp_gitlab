@@ -21,6 +21,7 @@ describe 'simp_gitlab class' do
                         ],
         pki      => false,
         firewall => true,
+        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
       }
     EOS
   end

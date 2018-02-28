@@ -41,6 +41,7 @@ describe 'simp_gitlab using ldap' do
         firewall => true,
         ldap     => true,
         app_pki_external_source => '/etc/pki/simp-testing/pki',
+        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
       }
     EOS
   end
