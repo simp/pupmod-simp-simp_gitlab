@@ -315,6 +315,16 @@ bundle exec rake beaker:suites
 Please refer to the [SIMP Beaker Helpers documentation](https://github.com/simp/rubygem-simp-beaker-helpers/blob/master/README.md)
 for more information.
 
+#### Environment variable `TEST_GITLAB_CE_VERSION`
+
+`TEST_GITLAB_CE_VERSION` is an environment variable that can be used
+to specify the version of gitlab-ce to use in the acceptance tests.
+When set, it must either a version string for a specific gitlab-ce
+package version or 'latest' to indicate the latest available version.
+
+```shell
+TEST_GITLAB_CE_VERSION=latest bundle exec rake beaker:suites
+```
 #### Environment variable `TRUSTED_NETS`
 
 `TRUSTED_NETS` is an environment variable that may contain a comma-delimited

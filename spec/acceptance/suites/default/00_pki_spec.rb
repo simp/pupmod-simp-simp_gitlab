@@ -21,6 +21,7 @@ describe 'simp_gitlab pki tls with firewall' do
                         ],
         pki                     => true,
         app_pki_external_source => '/etc/pki/simp-testing/pki',
+        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
       }
     EOS
   end
@@ -56,6 +57,7 @@ describe 'simp_gitlab pki tls with firewall' do
         "class {'iptables': enable => false }"
       )
       apply_manifest_on(gitlab_server, no_firewall_manifest, catch_changes: true)
+      on(gitlab_server, 'rpm -q gitlab-ce')
     end
 
     it_behaves_like(
@@ -75,7 +77,6 @@ describe 'simp_gitlab pki tls with firewall' do
       expect(results['values']['gitlab_user']).to eq 'git'
     end
   end
-
 
   context 'with PKI + firewall + custom port 777' do
     let(:new_lines) do
