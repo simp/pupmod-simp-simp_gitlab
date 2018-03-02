@@ -20,10 +20,17 @@
       - '.vendor'
       - 'vendor'
 
-.setup_bundler_env: &setup_bundler_env
+.setup_env: &setup_env
   before_script:
     - '(find .vendor | wc -l) || :'
-    - gem install bundler --no-rdoc --no-ri
+    - bundle || gem install bundler --no-rdoc --no-ri
+    - rm -f Gemfile.lock
+    - rm -rf pkg/
+    - bundle install --no-binstubs --jobs $(nproc) --path=.vendor "${FLAGS[@]}"
+
+.setup_env_beaker: &setup_env_beaker
+  before_script:
+    - '(find .vendor | wc -l) || :'
     - rm -f Gemfile.lock
     - rm -rf pkg/
     - bundle install --no-binstubs --jobs $(nproc) --path=.vendor "${FLAGS[@]}"
@@ -60,7 +67,7 @@ pup4.7-validation:
   variables:
     PUPPET_VERSION: '~> 4.7.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *validation_checks
 
 pup4.7-unit:
@@ -71,7 +78,7 @@ pup4.7-unit:
   variables:
     PUPPET_VERSION: '~> 4.7.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *spec_tests
 
 
@@ -85,7 +92,7 @@ pup4.8-validation:
   variables:
     PUPPET_VERSION: '~> 4.8.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *validation_checks
 
 pup4.8-unit:
@@ -96,7 +103,7 @@ pup4.8-unit:
   variables:
     PUPPET_VERSION: '~> 4.8.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *spec_tests
 
 
@@ -111,7 +118,7 @@ pup4.10-validation:
   variables:
     PUPPET_VERSION: '~> 4.10.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *validation_checks
 
 pup4.10-unit:
@@ -122,7 +129,7 @@ pup4.10-unit:
   variables:
     PUPPET_VERSION: '~> 4.10.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *spec_tests
 
 
@@ -137,7 +144,7 @@ pup5.3-validation:
   variables:
     PUPPET_VERSION: '~> 5.3.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *validation_checks
 
 pup5.3-unit:
@@ -148,8 +155,9 @@ pup5.3-unit:
   variables:
     PUPPET_VERSION: '~> 5.3.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *spec_tests
+  allow_failure: true
 
 
 # Keep an eye on the latest puppet 5
@@ -162,7 +170,7 @@ pup5.latest-validation:
   variables:
     PUPPET_VERSION: '~> 5.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *validation_checks
   allow_failure: true
 
@@ -174,7 +182,7 @@ pup5.latest-unit:
   variables:
     PUPPET_VERSION: '~> 5.0'
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env
   <<: *spec_tests
   allow_failure: true
 
@@ -187,7 +195,7 @@ el7-acceptance:
   tags:
     - beaker
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env_beaker
   variables:
     PUPPET_VERSION: '4.10'
   script:
@@ -198,20 +206,20 @@ el7-acceptance-latest-gitlab:
   tags:
     - beaker
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env_beaker
   variables:
     PUPPET_VERSION: '4.10'
     TEST_GITLAB_CE_VERSION: 'latest'
   script:
     - bundle exec rake beaker:suites[default,centos-7-x64]
-   allow_failure: true
+  allow_failure: true
 
 el6-acceptance:
   stage: acceptance
   tags:
     - beaker
   <<: *cache_bundler
-  <<: *setup_bundler_env
+  <<: *setup_env_beaker
   variables:
     PUPPET_VERSION: '4.10'
   script:
