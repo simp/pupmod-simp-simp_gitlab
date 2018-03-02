@@ -1,3 +1,17 @@
+* Wed Feb 28 2018 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.0
+- Drop support for CentOS 6 in order to cleanly solve an intermittent
+  problem in which the GitLab local user's authorized keys lock file
+  could not be created.
+- Modify sshd authorized keys file configuration so that the GitLab
+  installer can manage the GitLab local user's authorized keys file
+  and the directory in which it resides, independent of Puppet.
+  Prior to this, both the GitLab installer (via Chef) and Puppet
+  were simultaneously, but independently, managing the ownership,
+  permissions, and selinux contexts of that authorized keys file
+  and its directory.  Since the desired settings for the directory
+  were different, intermittent problems such as the GitLab user
+  not being able to create its authorized keys lock file arose.
+
 * Fri Dec 29 2017 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.0
 - Configure LDAP TLS to use the Omnibus' `trusted-certs/` instead of the LDAP
   `ca_file` setting

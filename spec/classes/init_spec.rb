@@ -5,6 +5,10 @@ describe 'simp_gitlab' do
     it { is_expected.to compile.with_all_deps }
     it { is_expected.to create_class('simp_gitlab') }
     it { is_expected.to contain_class('simp_gitlab') }
+    it { is_expected.to contain_class('postfix') }
+    it { is_expected.to contain_class('ntpd') }
+    it { is_expected.to contain_class('ssh') }
+    it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user') }
     it { is_expected.to contain_class('gitlab') }
 
     # These resources are provided by the gitlab component module
@@ -136,7 +140,7 @@ describe 'simp_gitlab' do
         :operatingsystem => 'Nexenta',
       }}
 
-      it { expect { is_expected.to contain_package('simp_gitlab') }.to raise_error(Puppet::Error, /Nexenta not supported/) }
+      it { is_expected.to_not compile }
     end
   end
 end

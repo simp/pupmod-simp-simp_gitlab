@@ -2,7 +2,7 @@
 # @return Hash of settings for the 'gitlab::shell' parameter
 function simp_gitlab::omnibus_config::gitlab_shell() {
   $_shell_base_options = {
-    'auth_file' => simp_gitlab::authorizedkeyfile_path(),
+    'auth_file' => $simp_gitlab::gitlab_ssh_keyfile,
   }
 }
 

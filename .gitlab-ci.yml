@@ -214,16 +214,6 @@ el7-acceptance-latest-gitlab:
     - bundle exec rake beaker:suites[default,centos-7-x64]
   allow_failure: true
 
-el6-acceptance:
-  stage: acceptance
-  tags:
-    - beaker
-  <<: *cache_bundler
-  <<: *setup_env_beaker
-  variables:
-    PUPPET_VERSION: '4.10'
-  script:
-    - bundle exec rake beaker:suites[default,centos-6-x64]
 # GitLab does not support FIPS (yet):
 #   ref: https://gitlab.com/gitlab-org/gitlab-ce/issues/41463
 ### fips-default:

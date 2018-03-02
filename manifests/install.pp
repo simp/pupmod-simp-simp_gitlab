@@ -23,6 +23,22 @@ class simp_gitlab::install {
     notify  => Class['gitlab'],
   }
 
+  # Make sure the standard authorized keys file path is used for the
+  # the GitLab local user, not the non-standard path set by SIMP. We
+  # do this because ssh configuration managed by GitLab via Chef
+  # (including ownership, permissions and selinux context of
+  # directory in which ssh authorized keys file exists) cannot be
+  # simultaneously, but independently, managed by Puppet.
+  sshd_config { 'AuthorizedKeysFile GitLab user':
+    ensure    => present,
+    key       => 'AuthorizedKeysFile',
+    condition => "User ${simp_gitlab::gitlab_ssh_user}",
+    value     => $simp_gitlab::gitlab_ssh_keyfile,
+    before    => Class['gitlab']
+  }
+
+  Sshd_config['AuthorizedKeysFile GitLab user'] ~> Service['sshd']
+
   class { 'gitlab':
     * => deep_merge(simp_gitlab::omnibus_config::gitlab(), $::simp_gitlab::gitlab_options),
   }
