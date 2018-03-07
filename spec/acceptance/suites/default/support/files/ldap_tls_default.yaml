@@ -1,6 +1,6 @@
 ---
-# FIXME:  Hacky workaround for a bug in SIMP's ssh module that does
-# not allow the module to be used with LDAP and not SSSD (SIMP-4509).
+# FIXME: Hacky workaround for a bug in SIMP's ssh module that will not
+# allow the case where LDAP is used and SSSD is not (SIMP-4509).
 # The bad ssh code is not executed if the AuthorizedKeysCommand is
 # configured.  However, we don't really want to replace the default
 # validation command. So, this ugly hack sets the AuthorizedKeysCommand
