@@ -153,25 +153,23 @@ class simp_gitlab (
   Array[String[1]]       $cipher_suite             = simplib::lookup( 'simp_options::openssl::cipher_suite', {
                                                                       'default_value'  => ['DEFAULT', '!MEDIUM']
                                                                     }),
-  String[1]              $ssh_authorized_keyfile   = simplib::lookup( 'ssh::server::conf::authorizedkeysfile' , {
-                                                                      'default_value' => '%h/.ssh/authorized_keys'}
-                                                                    ).split(/ +/)[0],
   Enum['ce','ee']        $edition                  = 'ce',
 ) {
+
+  simplib::assert_metadata( $module_name )
 
   $oses = load_module_metadata( $module_name )['operatingsystem_support'].map |$i| { $i['operatingsystem'] }
   unless $::operatingsystem in $oses { fail("${::operatingsystem} not supported") }
 
   # calculated variables
-  $gitlab_root_passwd = passgen( "simp_gitlab_${trusted['certname']}" )
+  $gitlab_root_passwd = simplib::passgen( "simp_gitlab_${trusted['certname']}" )
   $gitlab_ssh_user    = pick($gitlab_options.dig( 'user', 'username' ), 'git')
-  $gitlab_ssh_group   = pick($gitlab_options.dig( 'user', 'group' ), 'git')
   $gitlab_ssh_home    = pick($gitlab_options.dig( 'user', 'home' ), '/var/opt/gitlab' )
-  $gitlab_ssh_keyfile = simp_gitlab::authorizedkeyfile_path()
-
+  $gitlab_ssh_keyfile = pick($gitlab_options.dig( 'shell', 'auth_file' ), "${gitlab_ssh_home}/.ssh/authorized_keys" )
 
   include 'postfix'
   include 'ntpd'
+  include 'ssh'
   include 'simp_gitlab::install'
   include 'simp_gitlab::config'
 

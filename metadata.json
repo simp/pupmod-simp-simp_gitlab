@@ -16,6 +16,10 @@
   ],
   "dependencies": [
     {
+      "name": "herculesteam/augeasproviders_ssh",
+      "version_requirement": ">= 2.5.0 < 3.0.0"
+    },
+    {
       "name": "simp/iptables",
       "version_requirement": ">= 6.0.1 < 7.0.0"
     },
@@ -36,6 +40,10 @@
       "version_requirement": ">= 3.3.1 < 4.0.0"
     },
     {
+      "name": "simp/ssh",
+      "version_requirement": ">= 6.3.0 < 7.0.0"
+    },
+    {
       "name": "simp/svckill",
       "version_requirement": ">= 3.2.1 < 4.0.0"
     },
@@ -52,14 +60,12 @@
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "6",
         "7"
       ]
     },
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "6",
         "7"
       ]
     }

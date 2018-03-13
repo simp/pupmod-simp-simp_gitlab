@@ -1,4 +1,20 @@
 ---
+# FIXME: Hacky workaround for a bug in SIMP's ssh module that will not
+# allow the case where LDAP is used and SSSD is not (SIMP-4509).
+# The bad ssh code is not executed if the AuthorizedKeysCommand is
+# configured.  However, we don't really want to replace the default
+# validation command. So, this ugly hack sets the AuthorizedKeysCommand
+# to a script that will fail, and then counts on the sshd to fall
+# back to the default validation after the failure. (Yes this is
+# convoluted and very, very ugly!) As an annoying side effect of
+# this hack, you will see error messages like the following in
+# /var/log/secure:
+#
+#  ... sshd[10232]: error: AuthorizedKeysCommand /bin/false vagrant failed, status 1
+#
+# **These messages can be ignored!**
+ssh::server::conf::authorizedkeyscommand: '/bin/false'
+
 simp_options::trusted_nets:   ['any']
 simp_options::puppet::server: there.is.no.puppet.server
 simp_options::puppet::ca:     there.is.no.puppet.ca

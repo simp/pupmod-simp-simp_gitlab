@@ -23,6 +23,17 @@ describe 'simp_gitlab pki tls with firewall' do
         app_pki_external_source => '/etc/pki/simp-testing/pki',
         gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
       }
+
+      # allow vagrant access despite change in the default location of
+      # authorized keys files that comes from SIMP's ssh module
+      file { '/etc/ssh/local_keys/vagrant':
+        ensure  => file,
+        owner   => 'vagrant',
+        group   => 'vagrant',
+        source  => '/home/vagrant/.ssh/authorized_keys',
+        mode    => '0644',
+        seltype => 'sshd_key_t',
+       }
     EOS
   end
 
@@ -33,11 +44,6 @@ describe 'simp_gitlab pki tls with firewall' do
       class{ 'svckill': mode => 'enforcing' }
       EOM
       apply_manifest_on(gitlab_server, test_prep_manifest)
-    end
-
-    it 'gitlab_user fact should be nil before gitlab install' do
-      results = JSON.load(on(gitlab_server, 'puppet facts').output)
-      expect(results['gitlab_user']).to be_nil
     end
 
     it 'should work with no errors' do
@@ -65,17 +71,6 @@ describe 'simp_gitlab pki tls with firewall' do
       "https://#{gitlab_server_fqdn}/users/sign_in",
       firewall: false
     )
-
-    it "gitlab_user fact should be 'git' after gitlab install and config has completed" do
-      retry_on(gitlab_server, 'grep ^git: /etc/passwd', :max_retries => 20,
-        :retry_interval => 10, :verbose => true)
-
-      retry_on(gitlab_server, 'ls /var/opt/gitlab/gitlab-shell/config.yml',
-        :max_retries => 20, :retry_interval => 10, :verbose => true)
-
-      results = JSON.load(on(gitlab_server, 'puppet facts').output)
-      expect(results['values']['gitlab_user']).to eq 'git'
-    end
   end
 
   context 'with PKI + firewall + custom port 777' do

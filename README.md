@@ -24,6 +24,7 @@
     * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
   * [Acceptance tests](#acceptance-tests)
+    * [Environment variable `TEST_GITLAB_CE_VERSION`](#environment-variable-test_gitlab_ce_version)
     * [Environment variable `TRUSTED_NETS`](#environment-variable-trusted_nets)
     * [Manually inspecting the SUT GitLab server with a web browser](#manually-inspecting-the-sut-gitlab-server-with-a-web-browser)
     * [Interactive debugging using pry](#interactive-debugging-using-pry)
@@ -92,10 +93,8 @@ As a profile module, `simp_gitlab` has a few functions:
   - SIMP integrations:
     - Open access for a local `git` SSH user
        - set up a SIMP `pam::access::rule` to permit GitLab's local `git` user
-       - configure the location of GitLab's local `git` user's SSH authorized
-         keys to be file at the location of the first entry in
-         `ssh::server::conf::authorizedkeysfile` (default:
-         `/etc/ssh/local_keys/git`)
+       - configures `sshd` such that the GitLab's local `git` user's SSH authorized
+         keys file path is managed only by the GitLab Omnibus installer.
     - The postfix service that comes with GitLab Omnibus is disabled in favor
       of the SIMP `postfix` module.
 - [ ] Ensure that GitLab Omnibus can be installed without internet access
@@ -325,13 +324,14 @@ package version or 'latest' to indicate the latest available version.
 ```shell
 TEST_GITLAB_CE_VERSION=latest bundle exec rake beaker:suites
 ```
+
 #### Environment variable `TRUSTED_NETS`
 
 `TRUSTED_NETS` is an environment variable that may contain a comma-delimited
 list of trusted networks to add to the gitlab SUT's firewall.
 
 ```shell
-TRUSTED_NETS=192.168.11.0/24,10.10.10.10 bundle exec rake beaker:suites
+TRUSTED_NETS=192.168.11.0/24,10.0.2.2 bundle exec rake beaker:suites
 ```
 
 **Note:** if the `TRUSTED_NETS` configuration is too broad, it may cause
@@ -342,17 +342,29 @@ some acceptance tests (for denied clients) to fail.
 Each nodeset in `spec/acceptance/nodesets/` contains a commented-out
 `forwarded_ports:` section.  If you want to use a web browser to manually
 inspect the SUT GitLab server during any of the tests, uncomment this section
-and add your machine's (non-local) IP address to the `TRUSTED_NETS` variable.
+and add the NAT network router's IP address to the `TRUSTED_NETS` variable.
+
+For example:
 
 ```shell
-# Remember to uncomment the `forwarded_ports:` section in the nodeset file and
-# add a pause in the acceptance tests where you want to inspect:
-TRUSTED_NETS=10.10.10.10 BEAKER_destroy=no PRY=yes bundle exec rake beaker:suites
+TRUSTED_NETS=10.0.2.2 BEAKER_destroy=no bundle exec rake beaker:suites
 ```
+
+Then, in a browser on the host machine, navigate to `https://127.0.0.1:<port>`,
+where `<port>` is the forwarded port for the test being executed, i.e.,
+8080, 8443, or 8777.
+
+**Note:** If you need to login as the administrator to the GitLab instance,
+use the login of `root` and the password found on the GitLab server host at
+`/opt/puppetlabs/puppet/cache/simp/environments/production/simp_autofiles/gen_passwd/simp_gitlab_server.<your domain>`.
 
 #### Interactive debugging using pry
 
 Setting the environment variable `PRY=yes` will cause the acceptance tests to
-drop into a pry console under certain (usually just before failures in examples
-with complex or hard-to-debug state)
+drop into a pry console under certain circumstances (usually just before
+failures in examples with complex or hard-to-debug state).  This will
+effectively pause the test, to allow you to debug.
 
+```shell
+TRUSTED_NETS=10.0.2.2 BEAKER_destroy=no PRY=yes bundle exec rake beaker:suites
+```

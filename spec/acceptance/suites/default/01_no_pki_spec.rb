@@ -23,6 +23,17 @@ describe 'simp_gitlab class' do
         firewall => true,
         gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
       }
+
+      # allow vagrant access despite change in the default location of
+      # authorized keys files that comes from SIMP's ssh module
+      file { '/etc/ssh/local_keys/vagrant':
+        ensure  => file,
+        owner   => 'vagrant',
+        group   => 'vagrant',
+        source  => '/home/vagrant/.ssh/authorized_keys',
+        mode    => '0644',
+        seltype => 'sshd_key_t',
+       }
     EOS
   end
 
