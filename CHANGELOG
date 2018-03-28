@@ -1,3 +1,7 @@
+* Wed Mar 28 2018 Jeanne Greulich <jeanne.greulich@onyxpoint.com> - 0.3.0
+- Updated README to note that authorized key files need to be copied
+  when upgrading from version 0.2.0.
+
 * Wed Feb 28 2018 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.0
 - Drop support for CentOS 6 in order to cleanly solve an intermittent
   problem in which the GitLab local user's authorized keys lock file
