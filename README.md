@@ -132,7 +132,7 @@ parameter is set to the correct edition.
 ### Upgrade to 0.3.0
 
 Upgrading from simp_gitlab 0.2.0 to 0.3.0 requires you to copy the authorized key file
-from /etc/ssh/local_key/git to /var/opt/gitlab/.ssh/authorized_keys. Alternately
+from /etc/ssh/local_keys/git to /var/opt/gitlab/.ssh/authorized_keys. Alternately
 you can re-add your deployment keys in the gitlab interface.
 See the CHANGELOG entries for version 0.3.0 for more details.
 
