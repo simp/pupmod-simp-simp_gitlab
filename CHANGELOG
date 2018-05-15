@@ -1,3 +1,7 @@
+* Tue May 15 2018 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.2
+- Expand the range of the augeasproviders_ssh module dependency
+  to allow 3.x versions.
+
 * Wed Mar 28 2018 Jeanne Greulich <jeanne.greulich@onyxpoint.com> - 0.3.1
 - Updated README to note that authorized key files need to be copied
   when upgrading from version 0.2.0.

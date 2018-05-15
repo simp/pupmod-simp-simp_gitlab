@@ -1,6 +1,6 @@
 {
   "name": "simp-simp_gitlab",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "SIMP Team",
   "summary": "SIMP profiles for GitLab",
   "license": "Apache-2.0",
@@ -17,7 +17,7 @@
   "dependencies": [
     {
       "name": "herculesteam/augeasproviders_ssh",
-      "version_requirement": ">= 2.5.0 < 3.0.0"
+      "version_requirement": ">= 2.5.0 < 4.0.0"
     },
     {
       "name": "simp/iptables",

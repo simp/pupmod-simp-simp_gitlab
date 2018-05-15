@@ -7,7 +7,7 @@ fixtures:
       ref: 2.1.4
     augeasproviders_ssh:
       repo: https://github.com/simp/augeasproviders_ssh
-      ref: 2.5.3
+      ref: 3.0.0
     concat:
       # master is beyond 4.1.1, but has breaking changes to
       # how fragments are ordered (MODULES-6625)
