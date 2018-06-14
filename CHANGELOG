@@ -1,3 +1,6 @@
+* Thu Jun 14 2018 Nick Miller <nick.miller@onyxpoint.com> - 0.3.2
+- Update systemd fixtures and CI assets
+
 * Tue May 15 2018 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.2
 - Expand the range of the augeasproviders_ssh module dependency
   to allow 3.x versions.
