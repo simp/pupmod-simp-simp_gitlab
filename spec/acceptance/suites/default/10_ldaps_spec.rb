@@ -137,7 +137,7 @@ describe 'simp_gitlab using ldap' do
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)
         gl_form = GitlabSigninForm.new(html)
-        html = user1_session.curl_post(
+        html    = user1_session.curl_post(
           "https://#{gitlab_server_fqdn + gl_form.action}",
           gl_form.signin_post_data('ldapuser1','suP3rP@ssw0r!')
         )

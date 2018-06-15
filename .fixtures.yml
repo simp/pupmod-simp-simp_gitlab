@@ -26,7 +26,7 @@ fixtures:
     # auditd: https://github.com/simp/pupmod-simp-auditd
     # haveged: https://github.com/simp/pupmod-simp-haveged
     # logrotate: https://github.com/simp/pupmod-simp-logrotate
-    # simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
+    simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
     # simp_options: https://github.com/simp/pupmod-simp-simp_options
     # simpcat: https://github.com/simp/pupmod-simp-simpcat
     # tcpwrappers: https://github.com/simp/pupmod-simp-tcpwrappers
