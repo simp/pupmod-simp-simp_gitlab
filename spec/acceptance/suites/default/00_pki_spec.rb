@@ -38,6 +38,30 @@ describe 'simp_gitlab pki tls with firewall' do
   end
 
   context 'with PKI enabled' do
+    it 'should set hieradata so beaker can always reconnect' do
+      hiera = {
+        'sudo::user_specifications' => {
+          'vagrant_all' => {
+            'user_list' => ['vagrant'],
+            'cmnd'      => ['ALL'],
+            'passwd'    => false,
+          },
+        },
+        'pam::access::users' => {
+          'defaults' => {
+            'origins'    => ['ALL'],
+            'permission' => '+',
+          },
+          'vagrant' => nil,
+        },
+        'ssh::server::conf::permitrootlogin'    => true,
+        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys'
+      }
+      create_remote_file(hosts,
+        '/etc/puppetlabs/code/environments/production/hieradata/common.yaml',
+        hiera.to_yaml
+      )
+    end
     it 'should prep the test environment' do
       test_prep_manifest = <<-EOM
       # clean up Vagrant's leftovers

@@ -1,13 +1,8 @@
 ---
 fixtures:
   repositories:
-    auditd: https://github.com/simp/pupmod-simp-auditd
-    augeasproviders_core:
-      repo: https://github.com/simp/augeasproviders_core
-      ref: 2.1.4
-    augeasproviders_ssh:
-      repo: https://github.com/simp/augeasproviders_ssh
-      ref: 3.0.0
+    augeasproviders_core: https://github.com/simp/augeasproviders_core
+    augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh
     concat:
       # master is beyond 4.1.1, but has breaking changes to
       # how fragments are ordered (MODULES-6625)
@@ -17,22 +12,23 @@ fixtures:
       repo: https://github.com/simp/puppet-gitlab.git
       ref: v1.13.3
     iptables: https://github.com/simp/pupmod-simp-iptables
-    logrotate: https://github.com/simp/pupmod-simp-logrotate
     ntpd: https://github.com/simp/pupmod-simp-ntpd
     pam: https://github.com/simp/pupmod-simp-pam
     pki: https://github.com/simp/pupmod-simp-pki
     postfix: https://github.com/simp/pupmod-simp-postfix
     rsyslog: https://github.com/simp/pupmod-simp-rsyslog
-    simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
-    haveged: https://github.com/simp/pupmod-simp-haveged
     ssh: https://github.com/simp/pupmod-simp-ssh
-    simp_options: https://github.com/simp/pupmod-simp-simp_options
-    simpcat: https://github.com/simp/pupmod-simp-simpcat
     simplib: https://github.com/simp/pupmod-simp-simplib
-    stdlib:
-      repo: https://github.com/simp/puppetlabs-stdlib
-      ref: 4.24.0
+    stdlib: https://github.com/simp/puppetlabs-stdlib
     svckill: https://github.com/simp/pupmod-simp-svckill
-    tcpwrappers: https://github.com/simp/pupmod-simp-tcpwrappers
+
+    # Fixtures required for the acceptance tests
+    # auditd: https://github.com/simp/pupmod-simp-auditd
+    # haveged: https://github.com/simp/pupmod-simp-haveged
+    # logrotate: https://github.com/simp/pupmod-simp-logrotate
+    simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
+    # simp_options: https://github.com/simp/pupmod-simp-simp_options
+    # simpcat: https://github.com/simp/pupmod-simp-simpcat
+    # tcpwrappers: https://github.com/simp/pupmod-simp-tcpwrappers
   symlinks:
     simp_gitlab: "#{source_dir}"
