@@ -132,7 +132,7 @@ describe 'simp_gitlab using ldap' do
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
-      it 'permits an LDAP user to log in via the web page' do
+      it 'permits an LDAP user to log in via the web page', :skip => 'Skipping test due to bug in Gitlab (SIMP-4946)' do
 
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)

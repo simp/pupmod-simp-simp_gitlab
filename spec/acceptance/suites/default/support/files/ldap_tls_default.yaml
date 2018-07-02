@@ -66,4 +66,19 @@ simp_openldap::server::conf::default_ldif::ppolicy_pwd_min_length: 3
 simp_openldap::server::conf::default_ldif::ppolicy_pwd_check_quality: 0
 simp_openldap::server::conf::default_ldif::ppolicy_pwd_max_failure: 100
 
+sudo::user_specifications:
+  vagrant_all:
+    user_list: 
+      - 'vagrant'
+    cmnd: 
+      - 'ALL'
+    passwd: false
+pam::access::users:
+  defaults:
+    origins: 
+      - 'ALL'
+    permission: '+'
+  vagrant:
+ssh::server::conf::permitrootlogin: true
+ssh::server::conf::authorizedkeysfile: '.ssh/authorized_keys'
 
