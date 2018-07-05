@@ -200,10 +200,6 @@ el7-acceptance:
     PUPPET_VERSION: '4.10'
   script:
     - bundle exec rake beaker:suites[default,centos-7-x64]
-  # Allowing failures due to a bug in Gitlab, referenced in ticket SIMP-4946: 
-  # https://simp-project.atlassian.net/browse/SIMP-4946
-  # Remove this after A) We work around the issue, or B) Gitlab resolves the issue in 11.1
-  allow_failure: true
 
 el7-acceptance-latest-gitlab:
   stage: acceptance
