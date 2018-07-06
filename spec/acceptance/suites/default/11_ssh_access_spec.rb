@@ -48,7 +48,7 @@ describe 'gitlab ssh access' do
     # we are going to have the existing Linux vagrant user use the ldapuser1 GitLab
     # account.  However before we can upload ssh keys for this to happen, we first
     # need to retrieve the GitLab id of ldapuser1.
-    it 'should allow retrieval of GitLab user info' do
+    it 'should allow retrieval of GitLab user info', :skip => 'Skipping test due to bug in Gitlab (SIMP-4946)' do
       args = [
         curl_ssl_cmd(permitted_client),
         "https://#{gitlab_server.node_name}/api/v4/users?username=ldapuser1",
@@ -96,7 +96,7 @@ describe 'gitlab ssh access' do
     end
   end
 
-  context 'user ssh GitLab access' do
+  context 'user ssh GitLab access', :skip => 'Skipping test due to bug in Gitlab (SIMP-4946)' do
     it 'should allow user to clone via ssh' do
       # start ssh-agent, add vagrant's dev key to it, and add GitLab host key to
       # vagrant's known_hosts file
