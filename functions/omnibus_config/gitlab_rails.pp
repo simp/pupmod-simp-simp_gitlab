@@ -9,7 +9,7 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
   }
 
   # --------------------------------------------------------------------
-  # Construct the 'dap_servers' Hash
+  # Construct the 'ldap_servers' Hash
   # --------------------------------------------------------------------
   $_servers = hash($simp_gitlab::ldap_uri.map |$server| {
 
