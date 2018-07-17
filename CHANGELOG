@@ -1,3 +1,6 @@
+* Fri Jul 13 2018 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.3
+- Disable usage ping
+
 * Thu Jun 14 2018 Nick Miller <nick.miller@onyxpoint.com> - 0.3.2
 - Update systemd fixtures and CI assets
 

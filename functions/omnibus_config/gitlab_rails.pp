@@ -1,7 +1,16 @@
-# Compile a hash of settings for the gitlab module's `gitlab_rails` parameter, using SIMP settings
-# @return Hash of settings for the 'gitlab::gitlab_rails' parameter
+# Compile a hash of settings for the gitlab module's `gitlab_rails` parameter,
+# using SIMP settings
+#
+# @return Hash of settings for the 'gitlab::gitlab_rails' # parameter
 function simp_gitlab::omnibus_config::gitlab_rails() {
 
+  $options = {
+    'usage_ping_enabled' => false,
+  }
+
+  # --------------------------------------------------------------------
+  # Construct the 'ldap_servers' Hash
+  # --------------------------------------------------------------------
   $_servers = hash($simp_gitlab::ldap_uri.map |$server| {
 
     # We should also capture a port if it is specified at end of the URL, but
@@ -48,13 +57,16 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
     ]
   })
 
-  if $::simp_gitlab::ldap {
-    {
+  $ldap_options = $::simp_gitlab::ldap ? {
+    true    => {
       'ldap_enabled' => true,
       'ldap_servers' => $_servers,
-    }
-  } else {
-    {}
+    },
+    default =>  {},
   }
+  # --------------------------------------------------------------------
+
+  deep_merge( $options, $ldap_options )
+
 }
 
