@@ -1,3 +1,6 @@
+* Fri Sep 07 2018 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.4-0
+- Drop Hiera 4 support
+
 * Fri Jul 13 2018 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.3
 - Disable usage ping
 
