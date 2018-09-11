@@ -140,8 +140,7 @@ class simp_gitlab (
   Optional[String[3]]    $ldap_group_base          = undef,
   Optional[String[1]]    $ldap_user_filter         = undef,
   Hash                   $gitlab_options           = {},
-
-  Stdlib::Absolutepath   $app_pki_external_source  = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
+  String                 $app_pki_external_source  = simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' }),
   Stdlib::Absolutepath   $app_pki_dir              = '/etc/pki/simp_apps/gitlab/x509',
   Stdlib::Absolutepath   $app_pki_key              = "${app_pki_dir}/private/${facts['fqdn']}.pem",
   Stdlib::Absolutepath   $app_pki_cert             = "${app_pki_dir}/public/${facts['fqdn']}.pub",
