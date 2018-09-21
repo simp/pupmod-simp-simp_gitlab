@@ -144,7 +144,7 @@ el7-acceptance:
   <<: *cache_bundler
   <<: *setup_env_beaker
   variables:
-    PUPPET_VERSION: '4.10'
+    PUPPET_VERSION: '~> 4.10.0'
   script:
     - bundle exec rake spec_clean
     - bundle exec rake beaker:suites[default,centos-7-x64]
@@ -156,7 +156,7 @@ el7-acceptance-latest-gitlab:
   <<: *cache_bundler
   <<: *setup_env_beaker
   variables:
-    PUPPET_VERSION: '4.10'
+    PUPPET_VERSION: '~> 4.10.0'
     TEST_GITLAB_CE_VERSION: 'latest'
   script:
     - bundle exec rake spec_clean
@@ -172,7 +172,7 @@ el7-acceptance-latest-gitlab:
 ###   <<: *cache_bundler
 ###   <<: *setup_bundler_env
 ###   variables:
-###     PUPPET_VERSION: '4.10'
+###     PUPPET_VERSION: '~> 4.10.0'
 ###     BEAKER_fips: 'yes'
 ###   script:
 ###     - bundle exec rake beaker:suites[default]
