@@ -13,6 +13,7 @@ group :test do
   gem 'hiera-puppet-helper'
   gem 'puppetlabs_spec_helper', '~> 2.7.0'
   gem 'metadata-json-lint'
+  gem 'nokogiri'
   gem 'puppet-strings'
   gem 'puppet-lint-empty_string-check',   :require => false
   gem 'puppet-lint-trailing_comma-check', :require => false
