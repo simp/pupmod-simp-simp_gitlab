@@ -57,10 +57,7 @@ describe 'simp_gitlab pki tls with firewall' do
         'ssh::server::conf::permitrootlogin'    => true,
         'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys'
       }
-      create_remote_file(hosts,
-        '/etc/puppetlabs/code/environments/production/hieradata/common.yaml',
-        hiera.to_yaml
-      )
+      hosts.each { |sut| set_hieradata_on(sut, hiera) }
     end
     it 'should prep the test environment' do
       test_prep_manifest = <<-EOM

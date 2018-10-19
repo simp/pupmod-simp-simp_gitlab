@@ -1,3 +1,7 @@
+* Fri Oct 19 2018 Jeanne Greulich <jeanne.greulich@onyxpoint.com> - 0.3.4-0
+- Updated assets and fixed a setting in the acceptance test
+  so test would run under puppet 5
+
 * Tue Sep 11 2018 Nicholas Markowski <nicholas.markowski@onyxpoint.com> - 0.3.4-0
 - Updated $app_pki_external_source to accept any string.  This matches the functionality
   of pki::copy.

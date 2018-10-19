@@ -104,8 +104,6 @@ pup5.3-unit:
   <<: *cache_bundler
   <<: *setup_env
   <<: *spec_tests
-  allow_failure: true
-
 
 # Keep an eye on the latest puppet 5
 # ----------------------------------
@@ -119,7 +117,6 @@ pup5.latest-validation:
   <<: *cache_bundler
   <<: *setup_env
   <<: *validation_checks
-  allow_failure: true
 
 pup5.latest-unit:
   stage: unit
@@ -131,9 +128,6 @@ pup5.latest-unit:
   <<: *cache_bundler
   <<: *setup_env
   <<: *spec_tests
-  allow_failure: true
-
-
 
 # Acceptance tests
 # ==============================================================================
