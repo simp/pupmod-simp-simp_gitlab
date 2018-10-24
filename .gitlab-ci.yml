@@ -178,7 +178,7 @@ pup5.5-latest-el7-gitlab:
   <<: *acceptance_base
   allow_failure: true
   script:
-    - 'TEST_GITLAB_CE_VERSION=latest bundle exec rake beaker:suites[default,centos-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=latest bundle exec rake beaker:suites'
 
 pup5.5-fips-acceptance:
   <<: *pup_5_5_1
