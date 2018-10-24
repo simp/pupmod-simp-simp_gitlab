@@ -1,3 +1,6 @@
+* Wed Oct 24 2018 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.3.4-0
+- Add explicit support for Puppet 5
+
 * Fri Oct 19 2018 Jeanne Greulich <jeanne.greulich@onyxpoint.com> - 0.3.4-0
 - Updated assets and fixed a setting in the acceptance test
   so test would run under puppet 5
