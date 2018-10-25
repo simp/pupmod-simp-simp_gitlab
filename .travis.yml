@@ -68,5 +68,5 @@ jobs:
             secure: "WL2EENHeaEaIema1zyCrHpw8Vc3vYtXLxcD47Mb09Iej2aXQ1Scaj0CJ+Jvn4trW1xlPPdp2CHmW5HCihn1WphuqwUhU66/m5/IiGfuFyXh0QWgkaiVyEcS8TtMq2v4/3iuXnLGaMxUO+KbwFdsuaAWUKmPbHMADO3cjwmR9F/VZtd6xibKl3XXiEDUaiTlnUEb1tkW50N6rRHmfM9UlJHYY0EVeWKOfH+EB6GpX2+FaR5fBpFnjlubNto2mg0G7BfFn1/598K9qcK+2PVzKmgCTJBPh7yOfWUsLaoLNoCeYCFuMNsPhe1KpoAvM9rAHZA0OGHh41FYd+WpkLl34LMZguWyttX8GaD8GVMImFGmygLQi/kPG1DRvoZjBsqxz22SHvRr68TpHCYvBlkfUg4za4EpzGtSJ85V5uns070fW9z7NEwdobk3KWiUqBBM2VyuF9bwBhlS7Zg9hYRUZnX3I4rIkjDhsvL50f7f2nEsO69sc/3BwH2Z2fgWmrE6zBzSer3fqCcomFSYyoJ9SgInbdLuXPaVi4UenoMoSDoOhTviPKCYwqPuq5tJkO+h40APwXXRIZgsnV33aXm1Mq1XIwfJmpKYistHDhlstGV8rZfEKl/Hm/J0wpXJZ1fMO3RBMHI5CQ3kqqLBXJYZ6aOeAglw1JQ4CffHitPCO/4s="
           on:
             tags: true
-            rvm: 2.4.1
+            rvm: 2.4.4
             condition: '($SKIP_FORGE_PUBLISH != true)'
