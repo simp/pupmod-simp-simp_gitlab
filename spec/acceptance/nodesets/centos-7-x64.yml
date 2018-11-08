@@ -1,3 +1,10 @@
+<%
+  if ENV['BEAKER_HYPERVISOR']
+    hypervisor = ENV['BEAKER_HYPERVISOR']
+  else
+    hypervisor = 'vagrant'
+  end
+-%>
 ---
 HOSTS:
   server:
@@ -7,7 +14,7 @@ HOSTS:
       - master
     platform:   el-7-x86_64
     box:        centos/7
-    hypervisor: vagrant
+    hypervisor: <%= hypervisor %>
     vagrant_memsize: 1024
     vagrant_cpus: 2
 #-------------------------------------------------------------------------------
@@ -41,7 +48,7 @@ HOSTS:
       - permittedclient
     platform:   el-7-x86_64
     box:        centos/7
-    hypervisor: vagrant
+    hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
   client-2:
     roles:
@@ -51,7 +58,7 @@ HOSTS:
       - ldapserver
     platform:   el-7-x86_64
     box:        centos/7
-    hypervisor: vagrant
+    hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
 CONFIG:
   log_level: verbose
@@ -59,4 +66,7 @@ CONFIG:
   run_in_parallel:
     - install
     - config
+<% if ENV['BEAKER_PUPPET_COLLECTION'] -%>
+  puppet_collection: <%= ENV['BEAKER_PUPPET_COLLECTION'] %>
+<% end -%>
   ## vb_gui: true

@@ -1,6 +1,3 @@
-# ------------------------------------------------------------------------------
-# NOTE: SIMP Puppet rake tasks support ruby 2.1.9
-# ------------------------------------------------------------------------------
 gem_sources = ENV.fetch('GEM_SERVERS','https://rubygems.org').split(/[, ]+/)
 
 gem_sources.each { |gem_source| source gem_source }
@@ -9,7 +6,7 @@ group :test do
   gem 'rake'
   gem 'puppet', ENV.fetch('PUPPET_VERSION', '~> 5.5')
   gem 'hiera-puppet-helper'
-  gem 'puppetlabs_spec_helper', '~> 2.7.0'
+  gem 'puppetlabs_spec_helper'
   gem 'metadata-json-lint'
   gem 'nokogiri'
   gem 'puppet-strings'
