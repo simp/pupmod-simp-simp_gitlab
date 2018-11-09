@@ -1,3 +1,7 @@
+* Tue Nov 06 2018 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.4-0
+- Add explicit support for Oracle Linux
+- Update badges in README.md
+
 * Wed Oct 24 2018 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.3.4-0
 - Add explicit support for Puppet 5
 

@@ -13,7 +13,7 @@ HOSTS:
       - default
       - master
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        onyxpoint/oel-7-x86_64
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 1024
     vagrant_cpus: 2
@@ -47,7 +47,7 @@ HOSTS:
       - client
       - permittedclient
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        onyxpoint/oel-7-x86_64
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
   client-2:
@@ -57,7 +57,7 @@ HOSTS:
       - logdest
       - ldapserver
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        onyxpoint/oel-7-x86_64
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
 CONFIG:
