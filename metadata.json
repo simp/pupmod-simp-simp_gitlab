@@ -1,6 +1,6 @@
 {
   "name": "simp-simp_gitlab",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "author": "SIMP Team",
   "summary": "SIMP profiles for GitLab",
   "license": "Apache-2.0",
@@ -49,7 +49,7 @@
     },
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.13.1 < 5.0.0"
+      "version_requirement": ">= 4.13.1 < 6.0.0"
     },
     {
       "name": "vshn/gitlab",
