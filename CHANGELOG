@@ -1,4 +1,8 @@
 * Thu Mar 07 2019 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.5-0
+- Added missing simp-pki dependency to metadata.json
+- Use ``generate_pem_hash_links`` option of pki_cert_sync to allow
+  the gitlab application to manage the certificate hash links.
+  ``gitlab reconfigure`` generates those hash links.
 - Update the upper bound of stdlib to < 6.0.0
 - Update a URL in the README.md
 

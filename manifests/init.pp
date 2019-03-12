@@ -193,9 +193,11 @@ class simp_gitlab (
     }
 
     pki_cert_sync{ '/etc/gitlab/trusted-certs':
-      source => "${app_pki_dir}/cacerts",
-      purge  => true,
-      notify => Class['gitlab'],
+      source                  => "${app_pki_dir}/cacerts",
+      purge                   => true,
+      # ``gitlab reconfigure`` generates PEM hash links
+      generate_pem_hash_links => false,
+      notify                  => Class['gitlab'],
     }
 
     Pki::Copy['gitlab'] -> Pki_cert_sync['/etc/gitlab/trusted-certs']
