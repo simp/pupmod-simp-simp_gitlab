@@ -49,6 +49,11 @@ describe 'simp_gitlab' do
             let(:params) {{
               :pki => true,
             }}
+            it { is_expected.to contain_pki__copy('gitlab') }
+            it { is_expected.to contain_pki_cert_sync('/etc/gitlab/trusted-certs').with( {
+              :purge                   => true,
+              :generate_pem_hash_links => false
+            } ) }
             it { is_expected.to contain_class('gitlab').with_external_port(443) }
             it { is_expected.to contain_class('gitlab').with_external_url(/^https/) }
             it 'should contain correct nginx settings' do
