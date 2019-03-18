@@ -1,10 +1,14 @@
-* Thu Mar 07 2019 Liz Nemsick <lnemsick.simp@gmail.com> - 0.3.5-0
+* Thu Mar 07 2019 Liz Nemsick <lnemsick.simp@gmail.com> - 0.4.0-0
 - Added missing simp-pki dependency to metadata.json
 - Use ``generate_pem_hash_links`` option of pki_cert_sync to allow
   the gitlab application to manage the certificate hash links.
   ``gitlab reconfigure`` generates those hash links.
-- Update the upper bound of stdlib to < 6.0.0
-- Update a URL in the README.md
+- Added manage_package and package_ensure parameters to simp_gitlab
+- Switched from vshn/gitlab 1.13.3 to its replacement puppet/gitlab
+  3.0.2 and reworked the manifests, as appropriate, to work with the
+  newer module.
+- Updated the upper bound of stdlib to < 6.0.0
+- Updated a URL in the README.md
 
 * Tue Nov 06 2018 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.3.4-0
 - Add explicit support for Oracle Linux
