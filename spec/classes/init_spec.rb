@@ -14,9 +14,7 @@ describe 'simp_gitlab' do
             let(:params) {{ }}
 
             it { is_expected.to compile.with_all_deps }
-            it { is_expected.to create_class('simp_gitlab') }
             it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
-            it { is_expected.to contain_class('simp_gitlab') }
             it { is_expected.to contain_class('postfix') }
             it { is_expected.to contain_class('ntpd') }
             it { is_expected.to contain_class('ssh') }
