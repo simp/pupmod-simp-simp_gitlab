@@ -126,7 +126,7 @@
 # @param manage_package
 #   Whether simp_gitlab will manage the gitlab-[ce,ee] package.
 #
-#   - Set to true if you want simp_gitlab will set the GitLab root password,
+#   - Set to true if you want simp_gitlab to set the GitLab root password,
 #     during the initial install and configuration of GitLab.  This is
 #     **HIGHLY** recommended, as the root password is not secured during
 #     install otherwise.  Anyone can navigate the the GitLab URL and set
