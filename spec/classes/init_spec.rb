@@ -1,21 +1,6 @@
 require 'spec_helper'
 
 describe 'simp_gitlab' do
-  shared_examples_for "a structured module" do
-    it { is_expected.to compile.with_all_deps }
-    it { is_expected.to create_class('simp_gitlab') }
-    it { is_expected.to contain_class('simp_gitlab') }
-    it { is_expected.to contain_class('postfix') }
-    it { is_expected.to contain_class('ntpd') }
-    it { is_expected.to contain_class('ssh') }
-    it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user') }
-    it { is_expected.to contain_class('gitlab') }
-
-    # These resources are provided by the gitlab component module
-    it { is_expected.to contain_service('gitlab-runsvdir') }
-    it { is_expected.to contain_package('gitlab-ce').with_ensure('installed') }
-  end
-
 
   [:permissive, :enforcing].each do |selinux_mode|
     context "when SELinux is `#{selinux_mode.to_s}`" do
@@ -23,15 +8,42 @@ describe 'simp_gitlab' do
         :selinux_mode   => selinux_mode
       }).each do |os, os_facts|
         context "on #{os}" do
-          let(:facts){
-            os_facts.merge({
-            :gitlab_systemd => os_facts.fetch('init_systems',{}).include?('systemd'),
-          })}
+          let(:facts) { os_facts }
 
           context 'simp_gitlab class without any parameters' do
             let(:params) {{ }}
-            it_behaves_like 'a structured module'
+
+            it { is_expected.to compile.with_all_deps }
             it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
+            it { is_expected.to contain_class('postfix') }
+            it { is_expected.to contain_class('ntpd') }
+            it { is_expected.to contain_class('ssh') }
+            it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user') }
+            it { is_expected.to contain_class('gitlab').with( {
+              :manage_package          => false,
+              :manage_upstream_edition => 'ce',
+              :external_url            => 'http://foo.example.com:80',
+              :external_port           => 80,
+              :nginx                   => {
+                'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n"
+              },
+              :gitlab_rails            => { 'usage_ping_enabled' => false },
+              :shell                   => {
+                'auth_file' => '/var/opt/gitlab/.ssh/authorized_keys'
+              },
+              :mattermost              => { 'enable' => false },
+              :mattermost_nginx        => { 'enable' => false },
+              :prometheus              => { 'enable' => false },
+              :node_exporter           => { 'enable' => false },
+              :redis_exporter          => { 'enable' => false },
+              :postgres_exporter       => { 'enable' => false },
+              :gitlab_monitor          => { 'enable' => false },
+            } ) }
+            it { is_expected.to contain_package('gitlab-ce').with_ensure('installed') }
+            it { is_expected.to contain_exec('initial_gitlab_reconfigure') }
+
+            # These resources are provided by the gitlab component module
+            it { is_expected.to contain_service('gitlab-runsvdir') }
           end
 
           context 'simp_gitlab class with firewall enabled' do
@@ -40,7 +52,6 @@ describe 'simp_gitlab' do
               :tcp_listen_port => 1234,
               :firewall        => true,
             }}
-            ###it_behaves_like "a structured module"
             it { is_expected.to create_iptables__listen__tcp_stateful('allow_gitlab_nginx_tcp').with_dports(1234)
             }
           end

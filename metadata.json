@@ -1,6 +1,6 @@
 {
   "name": "simp-simp_gitlab",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "author": "SIMP Team",
   "summary": "SIMP profiles for GitLab",
   "license": "Apache-2.0",
@@ -18,6 +18,14 @@
     {
       "name": "herculesteam/augeasproviders_ssh",
       "version_requirement": ">= 2.5.0 < 4.0.0"
+    },
+    {
+      "name": "puppet/gitlab",
+      "version_requirement": ">= 3.0.2 < 4.0.0"
+    },
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.13.1 < 6.0.0"
     },
     {
       "name": "simp/iptables",
@@ -50,14 +58,6 @@
     {
       "name": "simp/svckill",
       "version_requirement": ">= 3.2.1 < 4.0.0"
-    },
-    {
-      "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.13.1 < 6.0.0"
-    },
-    {
-      "name": "vshn/gitlab",
-      "version_requirement": ">= 1.13.3 < 2.0.0"
     }
   ],
   "operatingsystem_support": [

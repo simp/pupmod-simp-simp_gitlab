@@ -16,7 +16,7 @@
   * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
 * [Usage](#usage)
   * [A basic GitLab setup using PKI](#a-basic-gitlab-setup-using-pki)
-  * [Passing custom parameters to `vshn-gitlab`](#passing-custom-parameters-to-vshn-gitlab)
+  * [Passing custom parameters to `puppet-gitlab`](#passing-custom-parameters-to-puppet-gitlab)
   * [Configuring Nginx](#configuring-nginx)
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
@@ -44,7 +44,7 @@ with SIMP.
 
 [gitlab_omnibus]: https://docs.gitlab.com/omnibus/ "GitLab Omnibus"
 [gitlab_rb_template]: https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
-[vshn_gitlab]: https://github.com/vshn/puppet-gitlab
+[puppet_gitlab]: https://github.com/voxpupuli/puppet-gitlab
 [simp_simp_options]: https://github.com/simp/pupmod-simp-simp_options
 
 
@@ -72,8 +72,8 @@ https://simp-project.atlassian.net/.
 ### What `simp_gitlab` affects
 
 This module is a profile that integrates Gitlab with SIMP.  It makes extensive
-use of the component module [`vshn/gitlab`][vshn_gitlab].  It is important to
-note that `vshn-gitlab` configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb`
+use of the component module [`puppet/gitlab`][puppet_gitlab].  It is important to
+note that `puppet-gitlab` configures the GitLab Omnibus's `/etc/gitlab/gitlab.rb`
 and runs `gitlab-ctl reconfigure`.
 
 ![Relationships between components](assets/simp_gitlab_components.png)
@@ -168,16 +168,16 @@ class { 'simp_gitlab':
 ```
 
 
-### Passing custom parameters to `vshn-gitlab`
+### Passing custom parameters to `puppet-gitlab`
 
-Parameters for [`vshn/gitlab`][vshn_gitlab] can be passed in directly using the
+Parameters for [`puppet/gitlab`][puppet_gitlab] can be passed in directly using the
 (Hash) `$simp_gitlab::gitlab_options` parameter.
 
 **Warning:**  `$simp_gitlab::gitlab_options` parameters that conflict with the
 rest of `simp_gitlab` may lead to undefined behavior / broken systems.
 
 
-**Hint:** Many of the data structures used by [`vshn/gitlab`][vshn_gitlab]'s
+**Hint:** Many of the data structures used by [`puppet/gitlab`][puppet_gitlab]'s
 parameters are documented at
 https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
 
@@ -228,8 +228,8 @@ module's generated YARD documentation for reference material.
       - Mattermost (chat): https://docs.gitlab.com/omnibus/gitlab-mattermost/README.html
       - Prometheus (monitoring): https://docs.gitlab.com/ce/administration/monitoring/prometheus/index.html
       - GitLab Docker images: https://docs.gitlab.com/omnibus/docker/README.html
-  * vshn/gitlab component module:
-    * https://github.com/vshn/puppet-gitlab
+  * puppet/gitlab component module:
+    * https://github.com/voxpupuli/puppet-gitlab
   - Security & compliance
     - https://www.stigviewer.com/stig/web_server/
 
@@ -271,7 +271,7 @@ configurations legitimately vary.
   These services are internal to the GitLab Omnibus installation and are not
   registered with the host OS or the Puppet providers for `service`.  It is
   possible for the services to take so long to start in the background that
-  dependencies within `vshn-gitlab` will fail.
+  dependencies within `puppet-gitlab` will fail.
   <!-- this line is indented to continue the preceding bullet -->
   In these cases, it should be sufficient to simply run Puppet again after the
   services finish starting (status with `gitlab-ctl status`).
