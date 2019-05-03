@@ -81,7 +81,7 @@ jobs:
       deploy:
         - provider: releases
           api_key:
-            secure: "CHANGE_SECURE"
+            secure: "XPlNEg33l/MJreZl+bfCogPLqSySGXVn0LR7FU5Qj4gWY7g2Q2DQubb0Lgw5GnstbGW7NocilIr1ZWTn866IPpT4uvaVwMV+uKl2nVMCWgSAfhpwDCWZfrn6s5nNJi7lPpwbHu974auXCw4VoU0xqBuuVixCkfjKpyZVaFcASrvZPbE/rEqK9oTsQMj775fyx27sWvzQrN3zzE3/+r52XHKW2rTTIrfObXxeE9gw8J2DnvS7noU8dQqpqoEnXWM1nuwsoP2l2DX1tK5T+9t3jYc5rZhwtrsT7nfLL3uj7Fa9AIfUfrTs7FJjiJHd7560fTV2q/wq8ziKgI7ID0Rwun6c2RXZEOturk/YmdstuYifLh/HtgQWw/e7J/MTCnazzT1AHM8FAWVjQmKIY1+GuKI73BCNypTrJVpv7GNSxbeW3uP0YRFHoFjWcbSxIRYyi7W67r7U2eufU1RXtNX4BgHlELgfuFRVO9O0bNo3C4y2v1cG4At3YGViuCv9zRYiR4sFw40I5PuLEQXGPaqEq71VYKiUFrgmHJuawTX6Y9mwBUTBvHIGmXmO6lYnEfF0d+lHR2y4Ra9Cvcv101J1e49SoeIZ74TL4SJhQSXaM4pQk27VPana51Hi6J42zxUlInCkokM4IoPO4pU8/pZVgR6Aa7WXCVs8bM2NSPyLDQo="
           skip_cleanup: true
           on:
             tags: true
@@ -89,7 +89,7 @@ jobs:
         - provider: puppetforge
           user: simp
           password:
-            secure: "CHANGE_PASSWORD"
+            secure: "WL2EENHeaEaIema1zyCrHpw8Vc3vYtXLxcD47Mb09Iej2aXQ1Scaj0CJ+Jvn4trW1xlPPdp2CHmW5HCihn1WphuqwUhU66/m5/IiGfuFyXh0QWgkaiVyEcS8TtMq2v4/3iuXnLGaMxUO+KbwFdsuaAWUKmPbHMADO3cjwmR9F/VZtd6xibKl3XXiEDUaiTlnUEb1tkW50N6rRHmfM9UlJHYY0EVeWKOfH+EB6GpX2+FaR5fBpFnjlubNto2mg0G7BfFn1/598K9qcK+2PVzKmgCTJBPh7yOfWUsLaoLNoCeYCFuMNsPhe1KpoAvM9rAHZA0OGHh41FYd+WpkLl34LMZguWyttX8GaD8GVMImFGmygLQi/kPG1DRvoZjBsqxz22SHvRr68TpHCYvBlkfUg4za4EpzGtSJ85V5uns070fW9z7NEwdobk3KWiUqBBM2VyuF9bwBhlS7Zg9hYRUZnX3I4rIkjDhsvL50f7f2nEsO69sc/3BwH2Z2fgWmrE6zBzSer3fqCcomFSYyoJ9SgInbdLuXPaVi4UenoMoSDoOhTviPKCYwqPuq5tJkO+h40APwXXRIZgsnV33aXm1Mq1XIwfJmpKYistHDhlstGV8rZfEKl/Hm/J0wpXJZ1fMO3RBMHI5CQ3kqqLBXJYZ6aOeAglw1JQ4CffHitPCO/4s="
           on:
             tags: true
             condition: '($SKIP_FORGE_PUBLISH != true)'
