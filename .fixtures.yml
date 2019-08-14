@@ -6,7 +6,7 @@ fixtures:
     concat: https://github.com/simp/puppetlabs-concat
     gitlab:
       repo: https://github.com/simp/puppet-gitlab.git
-      ref: v3.0.2
+      ref: v4.0.1
     iptables: https://github.com/simp/pupmod-simp-iptables
     ntpd: https://github.com/simp/pupmod-simp-ntpd
     pam: https://github.com/simp/pupmod-simp-pam
