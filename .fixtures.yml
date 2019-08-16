@@ -17,14 +17,11 @@ fixtures:
     simplib: https://github.com/simp/pupmod-simp-simplib
     stdlib: https://github.com/simp/puppetlabs-stdlib
     svckill: https://github.com/simp/pupmod-simp-svckill
+    yumrepo_core:
+      repo: https://github.com/simp/pupmod-puppetlabs-yumrepo_core.git
+      puppet_version: ">= 6.0.0"
 
     # Fixtures required for the acceptance tests
-    # auditd: https://github.com/simp/pupmod-simp-auditd
-    # haveged: https://github.com/simp/pupmod-simp-haveged
-    # logrotate: https://github.com/simp/pupmod-simp-logrotate
     simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
-    # simp_options: https://github.com/simp/pupmod-simp-simp_options
-    # simpcat: https://github.com/simp/pupmod-simp-simpcat
-    # tcpwrappers: https://github.com/simp/pupmod-simp-tcpwrappers
   symlinks:
     simp_gitlab: "#{source_dir}"
