@@ -4,11 +4,10 @@ module SimpGitlabBeakerHelpers
     def gitlab_ce_version
       unless @gitlab_ce_version
         if ENV['TEST_GITLAB_CE_VERSION'] and !ENV['TEST_GITLAB_CE_VERSION'].strip.empty?
-          # explicit version or latest
+          # explicit version
           @gitlab_ce_version = ENV['TEST_GITLAB_CE_VERSION']
         else
-        # NOTE:  Known to fail with 10.5.2
-          @gitlab_ce_version = '10.5.1'
+          @gitlab_ce_version = 'latest'
         end
       end
       @gitlab_ce_version

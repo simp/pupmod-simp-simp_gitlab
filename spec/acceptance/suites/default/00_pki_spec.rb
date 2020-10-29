@@ -1,45 +1,12 @@
 require 'spec_helper_acceptance'
 require 'json'
 
-test_name 'simp_gitlab pki tls with firewall connection'
+test_name 'simp_gitlab pki tls connection'
 
-describe 'simp_gitlab pki tls with firewall' do
-  let(:manifest__gitlab) do
-    <<-EOS
-      include 'svckill'
-      include 'iptables'
-      iptables::listen::tcp_stateful { 'ssh':
-        dports       => 22,
-        trusted_nets => ['any'],
-      }
-
-      class { 'simp_gitlab':
-        trusted_nets => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*26}'#{x}',"}.join}
-                          '#{gitlab_server.get_ip}',
-                          '#{permitted_client.get_ip}',
-                          '127.0.0.1/32',
-                        ],
-        pki                     => true,
-        app_pki_external_source => '/etc/pki/simp-testing/pki',
-        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
-      }
-
-      # allow vagrant access despite change in the default location of
-      # authorized keys files that comes from SIMP's ssh module
-      file { '/etc/ssh/local_keys/vagrant':
-        ensure  => file,
-        owner   => 'vagrant',
-        group   => 'vagrant',
-        source  => '/home/vagrant/.ssh/authorized_keys',
-        mode    => '0644',
-        seltype => 'sshd_key_t',
-       }
-    EOS
-  end
-
-  context 'with PKI enabled' do
-    it 'should set hieradata so beaker can always reconnect' do
-      hiera = {
+describe 'simp_gitlab pki tls' do
+  let(:hiera__vagrant) do
+      {
+        # enable vagrant access
         'sudo::user_specifications' => {
           'vagrant_all' => {
             'user_list' => ['vagrant'],
@@ -55,35 +22,77 @@ describe 'simp_gitlab pki tls with firewall' do
           'vagrant' => nil,
         },
         'ssh::server::conf::permitrootlogin'    => true,
-        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys'
+        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
+    }
+  end
+
+  let(:manifest__gitlab) do
+    <<~EOS
+      include 'svckill'
+      include 'iptables'
+
+      iptables::listen::tcp_stateful { 'ssh':
+        dports       => 22,
+        trusted_nets => ['any'],
       }
+
+      class { 'simp_gitlab':
+        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*30}'#{x}',"}.join}
+                                     '#{gitlab_server.get_ip}',
+                                     '#{permitted_client.get_ip}',
+                                     '127.0.0.1/32',
+                                   ],
+        pki                     => true,
+        app_pki_external_source => '/etc/pki/simp-testing/pki',
+        package_ensure          => '#{gitlab_ce_version}',
+      }
+
+      # allow vagrant access despite change in the default location of
+      # authorized keys files that comes from SIMP's ssh module
+      file { '/etc/ssh/local_keys/vagrant':
+        ensure  => file,
+        owner   => 'vagrant',
+        group   => 'vagrant',
+        source  => '/home/vagrant/.ssh/authorized_keys',
+        mode    => '0644',
+        seltype => 'sshd_key_t',
+       }
+    EOS
+  end
+
+  context 'with PKI enabled but no firewall' do
+    let(:hiera) {
+      hiera = hiera__vagrant.dup
+      # don't use iptables firewall
+      hiera['iptables::enable'] = false
+
+      # don't use firewalld either (if this is true, firewalld will start up
+      # even if iptables::enable is false)
+      hiera['iptables::use_firewalld'] = false
+
+      hiera
+    }
+
+    it 'should set hieradata so beaker can reconnect and no firewall is used' do
       hosts.each { |sut| set_hieradata_on(sut, hiera) }
     end
+
     it 'should prep the test environment' do
-      test_prep_manifest = <<-EOM
-      # clean up Vagrant's leftovers
-      class{ 'svckill': mode => 'enforcing' }
+      test_prep_manifest = <<~EOM
+        # clean up Vagrant's leftovers
+        class{ 'svckill': mode => 'enforcing' }
       EOM
+
       apply_manifest_on(gitlab_server, test_prep_manifest)
+      on(gitlab_server, 'puppet resource service firewalld ensure=stopped')
     end
 
     it 'should work with no errors' do
-      no_firewall_manifest = manifest__gitlab.sub(
-        /include 'iptables'/,
-        "class {'iptables': enable => false }"
-      )
-      apply_manifest_on(gitlab_server, no_firewall_manifest, catch_failures: true)
-
-      # FIXME: postfix creates the same files twice; why?
-      apply_manifest_on(gitlab_server, no_firewall_manifest, catch_failures: true)
+      apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
     end
 
     it 'should be idempotent' do
-      no_firewall_manifest = manifest__gitlab.sub(
-        /include 'iptables'/,
-        "class {'iptables': enable => false }"
-      )
-      apply_manifest_on(gitlab_server, no_firewall_manifest, catch_changes: true)
+      apply_manifest_on(gitlab_server, manifest__gitlab, catch_changes: true)
       on(gitlab_server, 'rpm -q gitlab-ce')
     end
 
@@ -95,27 +104,41 @@ describe 'simp_gitlab pki tls with firewall' do
   end
 
   context 'with PKI + firewall + custom port 777' do
+    let (:hiera) {
+      hiera = hiera__vagrant.dup
+
+      # turn on firewalld (as a passthrough); the value of iptables::enable is
+      # immaterial when this is true
+      hiera['iptables::use_firewalld'] = true
+
+      hiera
+    }
+
     let(:new_lines) do
       '        firewall                => true,' + "\n" +
       '        tcp_listen_port         => 777,'
     end
 
+    it 'should set hieradata so beaker can reconnect and firewalld is used' do
+      hosts.each { |sut| set_hieradata_on(sut, hiera) }
+    end
+
     it 'should prep the test environment' do
-      test_prep_manifest = <<-EOM
-      # Turns off firewalld in EL7.  Presumably this would already be done.
-      include 'iptables'
+      test_prep_manifest = <<~EOM
+        include 'iptables'
 
-      iptables::listen::tcp_stateful { 'ssh':
-        dports       => 22,
-        trusted_nets => ['any'],
-      }
+        iptables::listen::tcp_stateful { 'ssh':
+          dports       => 22,
+          trusted_nets => ['any'],
+        }
 
-      class{ 'svckill':
-        mode   => 'enforcing',
-        # Keep Gitlab installed and running from the last test
-        ignore => ['gitlab-runsvdir', 'gitlab-runsvdir.service'],
-      }
+        class{ 'svckill':
+          mode   => 'enforcing',
+          # Keep Gitlab installed and running from the last test
+          ignore => ['gitlab-runsvdir', 'gitlab-runsvdir.service'],
+        }
       EOM
+
       apply_manifest_on(gitlab_server,  test_prep_manifest)
     end
 

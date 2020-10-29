@@ -1,27 +1,54 @@
 require 'spec_helper_acceptance'
 
-test_name 'simp_gitlab class'
+test_name 'simp_gitlab connection with firewall but without pki'
 
-describe 'simp_gitlab class' do
+describe 'simp_gitlab firewall without pki' do
+ let(:hiera) do
+      {
+        # enable vagrant access
+        'sudo::user_specifications' => {
+          'vagrant_all' => {
+            'user_list' => ['vagrant'],
+            'cmnd'      => ['ALL'],
+            'passwd'    => false,
+          },
+        },
+        'pam::access::users' => {
+          'defaults' => {
+            'origins'    => ['ALL'],
+            'permission' => '+',
+          },
+          'vagrant' => nil,
+        },
+        'ssh::server::conf::permitrootlogin'    => true,
+        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
+
+        # turn on firewalld (as a passthrough); the value of iptables::enable is
+        # immaterial when this is true
+        'iptables::use_firewalld'               => true,
+    }
+  end
+
 
   let(:manifest__gitlab) do
-    <<-EOS
+    <<~EOS
       include 'svckill'
       include 'iptables'
+
       iptables::listen::tcp_stateful { 'ssh':
         dports       => 22,
         trusted_nets => ['any'],
       }
 
       class { 'simp_gitlab':
-        trusted_nets => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*26}'#{x}',"}.join}
-                          '#{gitlab_server.get_ip}',
-                          '#{permitted_client.get_ip}',
-                          '127.0.0.1/32',
-                        ],
-        pki      => false,
-        firewall => true,
-        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
+        trusted_nets   => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*21}'#{x}',"}.join}
+                            '#{gitlab_server.get_ip}',
+                            '#{permitted_client.get_ip}',
+                            '127.0.0.1/32',
+                          ],
+        pki            => false,
+        firewall       => true,
+        package_ensure => '#{gitlab_ce_version}',
       }
 
       # allow vagrant access despite change in the default location of
@@ -37,8 +64,11 @@ describe 'simp_gitlab class' do
     EOS
   end
 
-  context 'default parameters' do
-    # Using puppet_apply as a helper
+  context 'with firewall only' do
+    it 'should set hieradata so beaker can reconnect and firewalld is used' do
+      hosts.each { |sut| set_hieradata_on(sut, hiera) }
+    end
+
     it 'should work with no errors' do
       apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
     end

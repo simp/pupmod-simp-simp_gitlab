@@ -11,10 +11,11 @@ class SutWebSession
     @client       = client
     @curl_cmd     = curl_ssl_cmd(@client)
     @previous_url = nil
+    @retries      = ENV['BEAKER_gitlab_retries'] || 6
   end
 
   def curl_get(url)
-    curl_args      = "-c #{@cookie_file} -D #{@header_file} -L '#{url}'"
+    curl_args      = "-c #{@cookie_file} -D #{@header_file} -L '#{url}' --retry #{@retries}"
     result         = curl_on_client(curl_args)
     @previous_url  = url if result
     result

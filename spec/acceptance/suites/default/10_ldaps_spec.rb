@@ -23,25 +23,26 @@ describe 'simp_gitlab using ldap' do
     @manifest__ldap_server   = File.read(
       File.expand_path('../support/manifests/install_ldap_server.pp',__FILE__)
     )
-    @manifest__gitlab = <<-EOS
+    @manifest__gitlab = <<~EOS
       include 'svckill'
       include 'iptables'
+
       iptables::listen::tcp_stateful { 'ssh':
         dports       => 22,
         trusted_nets => ['any'],
       }
 
       class { 'simp_gitlab':
-        trusted_nets => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*26}'#{x}',"}.join}
-                          '#{gitlab_server.get_ip}',
-                          '#{permitted_client.get_ip}',
-                          '127.0.0.1/32',
-                        ],
-        pki      => true,
-        firewall => true,
-        ldap     => true,
+        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*30}'#{x}',"}.join}
+                                     '#{gitlab_server.get_ip}',
+                                     '#{permitted_client.get_ip}',
+                                     '127.0.0.1/32',
+                                   ],
+        pki                     => true,
+        firewall                => true,
+        ldap                    => true,
         app_pki_external_source => '/etc/pki/simp-testing/pki',
-        gitlab_options => {'package_ensure' => '#{gitlab_ce_version}' },
+        package_ensure          => '#{gitlab_ce_version}',
       }
 
       # allow vagrant access despite change in the default location of
@@ -99,9 +100,6 @@ describe 'simp_gitlab using ldap' do
 
       it 'should apply with no errors' do
         apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
-
-        # FIXME: postfix creates the same files twice... is this an ordering issue?
-        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
       end
 
       it 'should be idempotent' do
@@ -118,6 +116,8 @@ describe 'simp_gitlab using ldap' do
       #
       #   - Check for login errors on the gitlab_sever in
       #     /var/log/gitlab/unicorn/unicorn_stdout.log
+      #     or
+      #     /var/log/gitlab/puma/puma_stdout.log
       #
       # Common errors:
       #
@@ -132,7 +132,7 @@ describe 'simp_gitlab using ldap' do
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
-      it 'permits an LDAP user to log in via the web page', :skip => 'Skipping test due to bug in Gitlab (SIMP-4946)' do
+      it 'permits an LDAP user to log in via the web page' do
 
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)

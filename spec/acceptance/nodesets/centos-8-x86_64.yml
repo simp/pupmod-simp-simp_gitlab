@@ -12,8 +12,8 @@ HOSTS:
       - server
       - default
       - master
-    platform:   el-7-x86_64
-    box:        onyxpoint/oel-7-x86_64
+    platform:   el-8-x86_64
+    box:        centos/8
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 1024
     vagrant_cpus: 2
@@ -46,10 +46,12 @@ HOSTS:
     roles:
       - client
       - permittedclient
-    platform:   el-7-x86_64
-    box:        onyxpoint/oel-7-x86_64
+    platform:   el-8-x86_64
+    box:        centos/8
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
+
+# Until SIMP 6.6.0, LDAP server must be on an EL7 node
   client-2:
     roles:
       - client
@@ -57,7 +59,7 @@ HOSTS:
       - logdest
       - ldapserver
     platform:   el-7-x86_64
-    box:        onyxpoint/oel-7-x86_64
+    box:        centos/7
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
 CONFIG:
