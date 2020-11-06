@@ -26,13 +26,20 @@ class simp_gitlab::config {
 
   if $simp_gitlab::set_gitlab_root_password {
     # This only runs if the marker file created by change_gitlab_root_password
-    # is absent.
     $_exe = '/usr/local/sbin/change_gitlab_root_password'
     $_timeout = $simp_gitlab::rails_console_load_timeout
     exec { 'set_gitlab_root_password':
       command => "${_exe} -t ${_timeout} ${simp_gitlab::gitlab_root_password}",
       require => File['/usr/local/sbin/change_gitlab_root_password'],
-      creates  => '/etc/gitlab/.root_password_set'
+      creates => '/etc/gitlab/.root_password_set',
+
+      # make sure Puppet timeout is longer than max time we would allow for
+      # the script to run
+      timeout => $_timeout + 60,
+
+      # when run just after a gitlab-ctl reconfigure, the gitlab rails console
+      # may not yet be responsive
+      tries   => 2
     }
 
     Class['gitlab::service'] -> Exec['set_gitlab_root_password']
