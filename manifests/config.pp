@@ -26,6 +26,7 @@ class simp_gitlab::config {
 
   if $simp_gitlab::set_gitlab_root_password {
     # This only runs if the marker file created by change_gitlab_root_password
+    # is absent
     $_exe = '/usr/local/sbin/change_gitlab_root_password'
     $_timeout = $simp_gitlab::rails_console_load_timeout
     exec { 'set_gitlab_root_password':
