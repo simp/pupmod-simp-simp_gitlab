@@ -88,7 +88,18 @@ describe 'simp_gitlab pki tls' do
     end
 
     it 'should work with no errors' do
-      apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
+      # On slow servers, the gitlab-rails console may not come up in the
+      # allotted time after a `gitlab-ctl reconfigure`. This means
+      # `Exec[set_gitlab_root_password]` will fail. So may need to execute
+      # `puppet apply` twice to get to a non-errored state.
+      result = apply_manifest_on(gitlab_server, manifest__gitlab, acceptable_exit_codes: [0,1,2,4,6] )
+
+      unless [0,2].include?(result.exit_code)
+        puts '>'*80
+        puts 'First `puppet apply` with gitlab install failed. Retrying...'
+        puts '<'*80
+        apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
+      end
     end
 
     it 'should be idempotent' do

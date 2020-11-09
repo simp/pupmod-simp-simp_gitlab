@@ -21,9 +21,11 @@
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
 * [Limitations](#limitations)
+  * [SIMP PKI management does not support Let's Encrypt](#simp-pki-management-does-not-support-lets-encrypt)
   * [Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`](#gitlabs-ldap-tls-is-configured-to-re-use-omnibus-trusted-certs-instead-of-ca_file)
   * [GitLab](#gitlab)
     * [Puppet runs can fail if GitLab Omnibus's internal services don't start in time](#puppet-runs-can-fail-if-gitlab-omnibuss-internal-services-dont-start-in-time)
+    * [Puppet runs can fail if gitlab-rails console load times out](#puppet-runs-can-fail-if-gitlab-rails-console-load-times-out)
     * [Nessus scans may incorrectly report CRIME vulnerability in GitLab](#nessus-scans-may-incorrectly-report-crime-vulnerability-in-gitlab)
     * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
@@ -132,9 +134,10 @@ root user password upon initial installation of GitLab. As a side effect,
 by default, the password will be automatically set to the value of
 `simp_gitlab::gitlab_root_password`, unless the (empty) marker file
 `/etc/gitlab/.root_password_set` exists or the parameter
-`simp_gitlab::set_gitlab_root_password` is set to `false`. If you forget to
-disable this automation or just want to reset the GitLab root password, simply
-run `/usr/local/sbin/change_gitlab_root_password <new_password>` manually.
+`simp_gitlab::set_gitlab_root_password` is set to `false`. If during an
+upgrade of this module you forget to disable this automation or just want
+to reset the GitLab root password, simply run
+ `/usr/local/sbin/change_gitlab_root_password <new_password>` manually.
 You do not need to know the previous password to set the new password.
 
 ### Upgrade to 0.3.0
@@ -290,6 +293,14 @@ configurations legitimately vary.
 * If the GitLab Omnibus package is already installed but the `gitlab-runsvdir`
   service is stopped, the service will not start and catalog compilation will
   fail.
+
+#### Puppet runs can fail if gitlab-rails console load times out
+
+`Exec[set_gitlab_root_password]` will fail if the gitlab-rails console does not
+come up within the time configured by `simp_gitlab::rails_console_load_timeout`.
+If this happens, set the GitLab root password by running
+`/usr/local/sbin/change_gitlab_root_password <new_password>` manually, and then
+run puppet again.
 
 #### Nessus scans may incorrectly report CRIME vulnerability in GitLab
 

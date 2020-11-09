@@ -99,7 +99,18 @@ describe 'simp_gitlab using ldap' do
       end
 
       it 'should apply with no errors' do
-        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
+        # On slow servers, the gitlab-rails console may not come up in the
+        # allotted time after a `gitlab-ctl reconfigure`. This means
+        # `Exec[set_gitlab_root_password]` will fail. So may need to execute
+        # `puppet apply` twice to get to a non-errored state.
+        result = apply_manifest_on(gitlab_server,@manifest__gitlab, acceptable_exit_codes: [0,1,2,4,6] )
+
+        unless [0,2].include?(result.exit_code)
+          puts '>'*80
+          puts 'First `puppet apply` with gitlab install failed. Retrying...'
+          puts '<'*80
+          apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
+        end
       end
 
       it 'should be idempotent' do
@@ -127,6 +138,13 @@ describe 'simp_gitlab using ldap' do
       #   ERROR -- omniauth: (ldapldapclient2hosttld) Authentication failure!
       #     invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError,
       #     Invalid credentials for ldapuser1
+      #
+      #   ERROR: Not a recognizable signin form
+      #     * GitlabSigninForm has failed to parse the returned HTML page,  because the
+      #       page returned is not the expected login page.
+      #     * If you examine the HTML returned (e.g., load it into a browser), and the
+      #       page is a change password page, this means the GitLab root password was
+      #       not set during install.
       #
       # This procedure was informed by the noble work at:
       #

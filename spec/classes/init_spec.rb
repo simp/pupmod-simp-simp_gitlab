@@ -73,7 +73,6 @@ describe 'simp_gitlab' do
         it { is_expected.to contain_exec('set_gitlab_root_password')
           .with_command('/usr/local/sbin/change_gitlab_root_password -t 300 generated_password')
           .with_timeout(360)
-          .with_tries(2)
         }
 
         it { is_expected.to_not contain_class('simp_gitlab::config::pki') }

@@ -15,8 +15,8 @@ HOSTS:
     platform:   el-7-x86_64
     box:        generic/oracle7
     hypervisor: <%= hypervisor %>
-    vagrant_memsize: 1024
-    vagrant_cpus: 2
+    vagrant_memsize: 4096
+    vagrant_cpus: 4
 #-------------------------------------------------------------------------------
 # If you want to use a web browser to manually inspect the SUT GitLab server
 # during any of the tests, uncomment the section below and add your host's

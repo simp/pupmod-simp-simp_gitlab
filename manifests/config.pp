@@ -37,10 +37,6 @@ class simp_gitlab::config {
       # make sure Puppet timeout is longer than max time we would allow for
       # the script to run
       timeout => $_timeout + 60,
-
-      # when run just after a gitlab-ctl reconfigure, the gitlab rails console
-      # may not yet be responsive
-      tries   => 2
     }
 
     Class['gitlab::service'] -> Exec['set_gitlab_root_password']
