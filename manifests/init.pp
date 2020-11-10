@@ -143,6 +143,13 @@
 #   Number of seconds to wait for gitlab-rails console to load when
 #   setting the GitLab root password.
 #
+# @param allow_fips
+#   Whether to allow the module to install and manage GitLab, when the
+#   server has FIPS enabled.
+#
+#   * Only set this to `true` if the version of GitLab you are running
+#     supports FIPS mode.
+#
 # @author https://github.com/simp/pupmod-simp-simp_gitlab/graphs/contributors
 #
 class simp_gitlab (
@@ -178,41 +185,46 @@ class simp_gitlab (
   String                 $package_ensure             = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
   Boolean                $set_gitlab_root_password   = true,
   String[16]             $gitlab_root_password       = simplib::passgen( "simp_gitlab_${trusted['certname']}" ),
-  Integer[60]            $rails_console_load_timeout = 300
+  Integer[60]            $rails_console_load_timeout = 300,
+  Boolean                $allow_fips                 = false
 ) {
 
   simplib::assert_metadata( $module_name )
 
-  # calculated variables
-  $gitlab_ssh_user    = pick($gitlab_options.dig( 'user', 'username' ), 'git')
-  $gitlab_ssh_home    = pick($gitlab_options.dig( 'user', 'home' ), '/var/opt/gitlab' )
-  $gitlab_ssh_keyfile = pick($gitlab_options.dig( 'shell', 'auth_file' ), "${gitlab_ssh_home}/.ssh/authorized_keys" )
-  $merged_gitlab_options = deep_merge(simp_gitlab::omnibus_config::gitlab(), $gitlab_options)
-
-  include 'chrony'
-  include 'postfix'
-  include 'ssh'
-  include 'simp_gitlab::install'
-  include 'simp_gitlab::config'
-
-  Class['chrony']
-  -> Class['simp_gitlab::install']
-  -> Class['simp_gitlab::config']
-  -> Class['postfix']
-
-  if $pki {
-    include 'simp_gitlab::config::pki'
-
-    # need to trigger a ``gitlab-ctl reconfigure`` to pick up new certs
-    Class['simp_gitlab::config::pki'] ~> Class['gitlab::service']
+  if $facts['fips_enabled'] and !$allow_fips {
+    fail('GitLab does not support FIPS mode')
   }
+  else {
+    # calculated variables
+    $gitlab_ssh_user    = pick($gitlab_options.dig( 'user', 'username' ), 'git')
+    $gitlab_ssh_home    = pick($gitlab_options.dig( 'user', 'home' ), '/var/opt/gitlab' )
+    $gitlab_ssh_keyfile = pick($gitlab_options.dig( 'shell', 'auth_file' ), "${gitlab_ssh_home}/.ssh/authorized_keys" )
+    $merged_gitlab_options = deep_merge(simp_gitlab::omnibus_config::gitlab(), $gitlab_options)
 
-  if $firewall {
-    include 'simp_gitlab::config::firewall'
+    include 'chrony'
+    include 'postfix'
+    include 'ssh'
+    include 'simp_gitlab::install'
+    include 'simp_gitlab::config'
 
-    # simp_gitlab::install will result in a running GitLab instance, so make
-    # sure the firewall is in place!
-    Class['simp_gitlab::config::firewall'] -> Class['simp_gitlab::install']
+    Class['chrony']
+    -> Class['simp_gitlab::install']
+    -> Class['simp_gitlab::config']
+    -> Class['postfix']
+
+    if $pki {
+      include 'simp_gitlab::config::pki'
+
+      # need to trigger a ``gitlab-ctl reconfigure`` to pick up new certs
+      Class['simp_gitlab::config::pki'] ~> Class['gitlab::service']
+    }
+
+    if $firewall {
+      include 'simp_gitlab::config::firewall'
+
+      # simp_gitlab::install will result in a running GitLab instance, so make
+      # sure the firewall is in place!
+      Class['simp_gitlab::config::firewall'] -> Class['simp_gitlab::install']
+    }
   }
-
 }

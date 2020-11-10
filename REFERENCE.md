@@ -337,6 +337,18 @@ setting the GitLab root password.
 
 Default value: `300`
 
+##### `allow_fips`
+
+Data type: `Boolean`
+
+Whether to allow the module to install and manage GitLab, when the
+server has FIPS enabled.
+
+* Only set this to `true` if the version of GitLab you are running
+  supports FIPS mode.
+
+Default value: ``false``
+
 ## Functions
 
 ### `simp_gitlab::omnibus_config::gitlab`

@@ -36,6 +36,8 @@
         `gitlab::external_url`.
       - 'external_port' is no longer a supported GitLab configuration key and
          causes `gitlab-ctl reconfigure` to fail.
+    - `simp_gitlab` now fails to compile when the node is in FIPS mode,
+      unless `simp_gitlab::allow_fips` (a new parameter) is set to `true`.
   - Added:
     - Support for EL8.
     - `simp_gitlab` parameters to enable setting the GitLab root password
