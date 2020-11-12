@@ -1,7 +1,7 @@
-# == Class simp_gitlab::config::firewall
+# @summary Manage firewall for external GitLab access
 #
-# This class is meant to be called from simp_gitlab.
-# It ensures that firewall rules are defined.
+# @api private
+# @author https://github.com/simp/pupmod-simp-simp_gitlab/graphs/contributors
 #
 class simp_gitlab::config::firewall {
   assert_private()

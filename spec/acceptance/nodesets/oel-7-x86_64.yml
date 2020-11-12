@@ -13,10 +13,10 @@ HOSTS:
       - default
       - master
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        generic/oracle7
     hypervisor: <%= hypervisor %>
-    vagrant_memsize: 1024
-    vagrant_cpus: 2
+    vagrant_memsize: 4096
+    vagrant_cpus: 4
 #-------------------------------------------------------------------------------
 # If you want to use a web browser to manually inspect the SUT GitLab server
 # during any of the tests, uncomment the section below and add your host's
@@ -47,7 +47,7 @@ HOSTS:
       - client
       - permittedclient
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        generic/oracle7
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
   client-2:
@@ -57,7 +57,7 @@ HOSTS:
       - logdest
       - ldapserver
     platform:   el-7-x86_64
-    box:        centos/7
+    box:        generic/oracle7
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
 CONFIG:
@@ -66,6 +66,10 @@ CONFIG:
   run_in_parallel:
     - install
     - config
+  ssh:
+    keepalive: true
+    keepalive_interval: 10
+    keepalive_maxcount: 60
 <% if ENV['BEAKER_PUPPET_COLLECTION'] -%>
   puppet_collection: <%= ENV['BEAKER_PUPPET_COLLECTION'] %>
 <% end -%>

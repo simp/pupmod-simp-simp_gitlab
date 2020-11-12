@@ -1,3 +1,61 @@
+* Thu Oct 29 2020 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.0-0
+- Updates for GitLab application (12.3.0-13.x) and puppet/gitlab module 6.0.1
+  - Removed:
+    - Support for GitLab < 12.3.0.
+    - TLSv1.1 from the default for `simp_gitlab::ssl_protocols`.
+  - Changed:
+    - Set the GitLab root password in a fashion that minimizes coupling of
+      `simp_gitlab` with the internals of the `gitlab` module.
+      - Set a throw-away password during initial GitLab package installation
+        using GitLab configuration in /etc/gitlab/gitlab.rb. Setting the
+        password during initial install is the **only** way to ensure the
+        password is not set by an external user. Otherwise, the first GitLab
+        page that comes up is the page to reset the root password.
+      - After GitLab initial configuration, set the real root password using
+        a script that implements Gitlab-provided procedures for setting the
+        password.
+      - IMPORTANT: As a side effect of these changes, upon module upgrade,
+        the password will be automatically set to the value of
+        `simp_gitlab::gitlab_root_password`, unless the (empty) marker file
+        `/etc/gitlab/.root_password_set` exists or the parameter
+        `simp_gitlab::set_gitlab_root_password` is set to `false`.
+        If you forget to disable this automation or just want to reset the
+        GitLab root password, simply run
+        `/usr/local/sbin/change_gitlab_root_password <new_password>` manually.
+        You do not need to know the previous password to set the new password.
+    - Use `chronyd` instead of `ntpd`, as GitLab itself uses `chronyd` and
+      `chronyd` is required for EL8.
+    - Use `gitlab` for managing packages again.
+      - Change was only possible once the new mechanism for setting the GitLab
+        root password was implemented.
+    - Renamed the 'gitlab_monitor' key to 'gitlab_exporter' in the configuration
+      hash.
+      - Name change required for GitLab >= 12.3.0.
+    - No longer set `gitlab::external_port`
+      - The custom port is already appropriately configured via the
+        `gitlab::external_url`.
+      - 'external_port' is no longer a supported GitLab configuration key and
+         causes `gitlab-ctl reconfigure` to fail.
+    - `simp_gitlab` now fails to compile when the node is in FIPS mode,
+      unless `simp_gitlab::allow_fips` (a new parameter) is set to `true`.
+  - Added:
+    - Support for EL8.
+    - `simp_gitlab` parameters to enable setting the GitLab root password
+      - `set_gitlab_root_password`
+      - `gitlab_root_password`
+      - `rails_console_load_timeout`
+    - Script to change the GitLab root password,
+      `/usr/local/sbin/change_gitlab_root_password`.
+    - Disabling of Let's Encrypt usage in GitLab , by default.
+      - The integration of SIMP PKI management with with Let's Encrypt has not
+        yet been done.
+      - To use Let's Encrypt, disable SIMP management of PKI by setting
+        `simp_gitlab::pki` to `false` and then manage the certificates manually.
+    - `svckill::ignore` rule for the GitLab service. Since the service
+      is no longer managed by default by `gitlab::service`, this prevents
+      the service from being inadvertently killed when it is unmanaged.
+    - REFERENCE.md documentation.
+
 * Thu Jul 23 2020 Jeanne Greulich <jeanne.greulich@onyxpoint.com> - 0.5.1-0
 - update the upper bound of simplib for SIMP 6.5 release
 

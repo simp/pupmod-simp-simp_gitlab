@@ -208,10 +208,10 @@ variables:
     BEAKER_PUPPET_COLLECTION: 'puppet6'
     MATRIX_RUBY_VERSION: '2.5'
 
-.pup_6_16_0: &pup_6_16_0
+.pup_6_18_0: &pup_6_18_0
   image: 'ruby:2.5'
   variables:
-    PUPPET_VERSION: '6.16.0'
+    PUPPET_VERSION: '6.18.0'
     BEAKER_PUPPET_COLLECTION: 'puppet6'
     MATRIX_RUBY_VERSION: '2.5'
 
@@ -294,8 +294,8 @@ pup6-unit:
   <<: *unit_tests
   <<: *with_SIMP_SPEC_MATRIX_LEVEL_2
 
-pup6.16.0-unit:
-  <<: *pup_6_16_0
+pup6.18.0-unit:
+  <<: *pup_6_18_0
   <<: *unit_tests
 
 # ------------------------------------------------------------------------------
@@ -308,54 +308,88 @@ pup6.16.0-unit:
 # Repo-specific content
 # ==============================================================================
 
-pup5.5.20:
+pup5.5.20-el7:
   <<: *pup_5_5_20
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites'
+    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
 # # FIPS is not supported by gitlab yet
-#pup5.5.20-fips:
-#  <<: *pup_5_5_20
-#  <<: *acceptance_base
-#  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites'
-
-pup5.5.20-oel:
-  <<: *pup_5_5_20
-  <<: *acceptance_base
-  script:
-    - 'bundle exec rake beaker:suites[default,oel]'
-
-# # FIPS is not supported by gitlab yet
-#pup5.5.20-oel-fips:
+#pup5.5.20-el7-fips:
 #  <<: *pup_5_5_20
 #  <<: *acceptance_base
 #  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
 #  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,oel]'
+#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
-pup6:
+pup5.5.20-oel:
+  <<: *pup_5_5_20
+  <<: *acceptance_base
+  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
+  script:
+    - 'bundle exec rake beaker:suites[default,oel-7-x86_64]'
+
+# # FIPS is not supported by gitlab yet
+#pup5.5.20-oel7-fips:
+#  <<: *pup_5_5_20
+#  <<: *acceptance_base
+#  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
+#  script:
+#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,oel-7-x86_64]'
+
+pup6-el7:
   <<: *pup_6
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites'
+    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
 # # FIPS is not supported by gitlab yet
-#pup6-fips:
+#pup6-el7-fips:
 #  <<: *pup_6
 #  <<: *acceptance_base
 #  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites'
+#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
-pup6.16.0:
-  <<: *pup_6_16_0
+# Test with the oldest version of GitLab we support
+pup6-el7-gitlab12_min:
+  <<: *pup_6
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites'
+    - 'TEST_GITLAB_CE_VERSION=12.3.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
-pup6.16.0-oel:
-  <<: *pup_6_16_0
+pup6-el8:
+  <<: *pup_6
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites[default,oel]'
+    - 'bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+# # FIPS is not supported by gitlab yet
+#pup6-el8-fips:
+#  <<: *pup_6
+#  <<: *acceptance_base
+#  script:
+#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup6.18.0-el7:
+  <<: *pup_6_18_0
+  <<: *acceptance_base
+  script:
+    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
+
+pup6.18.0-el8:
+  <<: *pup_6_18_0
+  <<: *acceptance_base
+  script:
+    - 'bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup6.18.0-oel7:
+  <<: *pup_6_18_0
+  <<: *acceptance_base
+  script:
+    - 'bundle exec rake beaker:suites[default,oel-7-x86_64]'
+
+pup6.18.0-oel8:
+  <<: *pup_6_18_0
+  <<: *acceptance_base
+  script:
+    - 'bundle exec rake beaker:suites[default,oel-8-x86_64]'

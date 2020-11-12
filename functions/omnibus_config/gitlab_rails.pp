@@ -1,11 +1,30 @@
-# Compile a hash of settings for the gitlab module's `gitlab_rails` parameter,
-# using SIMP settings
+# Compile a hash of settings for the ``gitlab::gitlab_rails`` parameter, using
+# SIMP settings
 #
 # @return Hash of settings for the 'gitlab::gitlab_rails' # parameter
 function simp_gitlab::omnibus_config::gitlab_rails() {
 
-  $options = {
-    'usage_ping_enabled' => false,
+  if $simp_gitlab::set_gitlab_root_password {
+    # We need to set this password to ensure the first GitLab page that comes
+    # up in a new GitLab installation is NOT the page to reset the root user
+    # password! However, we don't want to use this password, as it is persisted
+    # in /etc/gitlab/gitlab.rb. So, we will replace it immediately after the
+    # GitLab install and configuration with $simp_gitlab::gitlab_root_password
+    # using Exec['set_gitlab_root_password']
+
+    # This string will be written to a managed file (/etc/gitlab/gitlab.rb),
+    # so to prevent idempotency problems, use the persistence that
+    # simplib::passgen provides.
+    $partial_password = simplib::passgen( "temp_simp_gitlab_${trusted['certname']}" )
+    $options = {
+      'initial_root_password' => "temp_${partial_password}",
+      'usage_ping_enabled'    => false
+    }
+  }
+  else {
+    $options = {
+      'usage_ping_enabled' => false
+    }
   }
 
   # --------------------------------------------------------------------

@@ -3,18 +3,18 @@ fixtures:
   repositories:
     augeasproviders_core: https://github.com/simp/augeasproviders_core
     augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh
+    chrony: https://github.com/simp/pupmod-aboe76-chrony
     concat: https://github.com/simp/puppetlabs-concat
-    gitlab:
-      repo: https://github.com/simp/puppet-gitlab.git
-      ref: v3.0.2
+    firewalld: https://github.com/simp/pupmod-voxpupuli-firewalld
+    gitlab: https://github.com/simp/puppet-gitlab.git
     iptables: https://github.com/simp/pupmod-simp-iptables
-    ntpd: https://github.com/simp/pupmod-simp-ntpd
     pam: https://github.com/simp/pupmod-simp-pam
     pki: https://github.com/simp/pupmod-simp-pki
     postfix: https://github.com/simp/pupmod-simp-postfix
     rsyslog: https://github.com/simp/pupmod-simp-rsyslog
     ssh: https://github.com/simp/pupmod-simp-ssh
     simplib: https://github.com/simp/pupmod-simp-simplib
+    simp_firewalld: https://github.com/simp/pupmod-simp-simp_firewalld
     stdlib: https://github.com/simp/puppetlabs-stdlib
     svckill: https://github.com/simp/pupmod-simp-svckill
     yumrepo_core:

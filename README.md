@@ -21,9 +21,11 @@
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
 * [Limitations](#limitations)
+  * [SIMP PKI management does not support Let's Encrypt](#simp-pki-management-does-not-support-lets-encrypt)
   * [Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`](#gitlabs-ldap-tls-is-configured-to-re-use-omnibus-trusted-certs-instead-of-ca_file)
   * [GitLab](#gitlab)
     * [Puppet runs can fail if GitLab Omnibus's internal services don't start in time](#puppet-runs-can-fail-if-gitlab-omnibuss-internal-services-dont-start-in-time)
+    * [Puppet runs can fail if gitlab-rails console load times out](#puppet-runs-can-fail-if-gitlab-rails-console-load-times-out)
     * [Nessus scans may incorrectly report CRIME vulnerability in GitLab](#nessus-scans-may-incorrectly-report-crime-vulnerability-in-gitlab)
     * [Redis log warnings](#redis-log-warnings)
 * [Development](#development)
@@ -87,11 +89,12 @@ As a profile module, `simp_gitlab` has a few functions:
     - [x] `simp_options::pki`
     - [x] `simp_options::ldap::*`
   - Intentionally unimplemented:
-    - `simp_options::selinux` ― The GitLab Omnibus installer appears to handle SELinux correctly
-    - `simp_options::tcpwrappers` ― nothing in Omnibus is linked to TCP Wrapper
-    - `simp_options::auditing` ― nothing in Omnibus needs special auditd logic
+    - `simp_options::selinux`: The GitLab Omnibus installer appears to handle SELinux correctly
+    - `simp_options::tcpwrappers`: Nothing in Omnibus is linked to TCP Wrapper
+    - `simp_options::auditing`: Nothing in Omnibus needs special auditd logic
   - Deferred:
-    - `simp_options::fips` ― GitLab Omnibus ships with a version of OpenSSL that does not support FIPS mode
+    - `simp_options::fips`: GitLab Omnibus ships with a version of OpenSSL that
+      [does not support FIPS mode](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5574)
     - `simp_options::syslog` (not clear that we want to support this outside of `ee`)
   - SIMP integrations:
     - Open access for a local `git` SSH user
@@ -105,6 +108,7 @@ As a profile module, `simp_gitlab` has a few functions:
 - [ ] Simplify GitLab configuration for common scenarios
    - [x] GitLab
    - [x] GitLab + Omnibus version of NGINX
+   - [ ] Let's Encrypt
    - [ ] Mattermost
    - [ ] GitLab CI runner
    - [ ] Intentionally unimplemented:
@@ -114,23 +118,27 @@ As a profile module, `simp_gitlab` has a few functions:
 - [x] Permit customization of GitLab Omnibus
 - [x] Satisfy as many compliance-relevant criteria as possible
 
-
-**FIXME:** Ensure the *What simp_gitlab affects* section is correct and complete, then remove this message!
-
-mention:
-
- * A list of files, packages, services, or operations that the module will
-   alter, impact, or execute.
- * Dependencies that your module automatically installs.
- * Warnings or other important notices.
-
 ### Setup Requirements
 
+This module supports GitLab 12.3.0 or later.
 
 If using this module from an isolated network, ensure that package and repo
 management are disabled from the module, and that the `gitlab-ce` or
-`gitlab-ee` package is installed.  Be sure that the `$::simp_gitlab::edition`
+`gitlab-ee` package is installed.  Be sure that the `$simp_gitlab::edition`
 parameter is set to the correct edition.
+
+### Upgrade to 0.6.0
+
+simp_gitlab version 0.6.0 introduced a new mechanism for setting the GitLab
+root user password upon initial installation of GitLab. As a side effect,
+by default, the password will be automatically set to the value of
+`simp_gitlab::gitlab_root_password`, unless the (empty) marker file
+`/etc/gitlab/.root_password_set` exists or the parameter
+`simp_gitlab::set_gitlab_root_password` is set to `false`. If during an
+upgrade of this module you forget to disable this automation or just want
+to reset the GitLab root password, simply run
+ `/usr/local/sbin/change_gitlab_root_password <new_password>` manually.
+You do not need to know the previous password to set the new password.
 
 ### Upgrade to 0.3.0
 
@@ -209,8 +217,7 @@ own profiles to establish a new `.conf` file.
 
 ## Reference
 
-Please refer to the inline documentation within each source file, or to the
-module's generated YARD documentation for reference material.
+See [REFERENCE.md](./REFERENCE.md) for API documentation.
 
 ### Further Reference for munging GitLab Omnibus
 
@@ -235,6 +242,13 @@ module's generated YARD documentation for reference material.
 
 
 ## Limitations
+
+### SIMP PKI management does not support Let's Encrypt
+
+`simp_gitlab` PKI management does not yet support the use of Let's Encrypt
+within GitLab.  At this time, if you want to use Let's Encrypt, you will need to
+disable SIMP management of PKI by setting ``simp_gitlab::pki`` to ``false`` and
+then manage the certificates manually.
 
 ### Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`
 
@@ -279,6 +293,14 @@ configurations legitimately vary.
 * If the GitLab Omnibus package is already installed but the `gitlab-runsvdir`
   service is stopped, the service will not start and catalog compilation will
   fail.
+
+#### Puppet runs can fail if gitlab-rails console load times out
+
+`Exec[set_gitlab_root_password]` will fail if the gitlab-rails console does not
+come up within the time configured by `simp_gitlab::rails_console_load_timeout`.
+If this happens, set the GitLab root password by running
+`/usr/local/sbin/change_gitlab_root_password <new_password>` manually, and then
+run puppet again.
 
 #### Nessus scans may incorrectly report CRIME vulnerability in GitLab
 
