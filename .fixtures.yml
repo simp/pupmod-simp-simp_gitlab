@@ -5,12 +5,8 @@ fixtures:
     augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh
     chrony: https://github.com/simp/pupmod-aboe76-chrony
     concat: https://github.com/simp/puppetlabs-concat
-    firewalld:
-      repo: https://github.com/simp/pupmod-voxpupuli-firewalld
-      ref: v4.3.0
-    gitlab:
-      repo: https://github.com/simp/puppet-gitlab.git
-      ref: v6.0.1
+    firewalld: https://github.com/simp/pupmod-voxpupuli-firewalld
+    gitlab: https://github.com/simp/puppet-gitlab.git
     iptables: https://github.com/simp/pupmod-simp-iptables
     pam: https://github.com/simp/pupmod-simp-pam
     pki: https://github.com/simp/pupmod-simp-pki
