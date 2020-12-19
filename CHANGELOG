@@ -1,3 +1,6 @@
+* Sat Dec 19 2020 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.6.1
+- Removed EL6 support
+
 * Thu Oct 29 2020 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.0-0
 - Updates for GitLab application (12.3.0-13.x) and puppet/gitlab module 6.0.1
   - Removed:
