@@ -16,12 +16,12 @@
   ],
   "dependencies": [
     {
-      "name": "aboe/chrony",
-      "version_requirement": ">= 0.3.1 < 1.0.0"
+      "name": "puppet/chrony",
+      "version_requirement": ">= 1.0.0 < 2.0.0"
     },
     {
       "name": "herculesteam/augeasproviders_ssh",
-      "version_requirement": ">= 2.5.0 < 4.0.0"
+      "version_requirement": ">= 2.5.0 < 5.0.0"
     },
     {
       "name": "puppet/gitlab",

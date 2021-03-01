@@ -58,14 +58,14 @@ describe 'simp_gitlab using ldap' do
     EOS
   end
 
-  hosts_with_role(hosts, 'ldapserver').each do |ldapserver|
-    context "on LDAP server #{ldapserver}" do
+  hosts.each do |host|
+    context "on host #{host}" do
       it 'should enable additional OS repos as needed' do
-        result = on(ldapserver, 'cat /etc/oracle-release', :accept_all_exit_codes => true)
-        if (result.exit_code == 0) && ldapserver[:platform].match(/el-7/)
+        result = on(host, 'cat /etc/oracle-release', :accept_all_exit_codes => true)
+        if (result.exit_code == 0) && host[:platform].match(/el-7/)
           # OEL 7 needs another repo enabled for the openssh-ldap package
-          ldapserver.install_package('yum-utils')
-          on(ldapserver, 'yum-config-manager --enable ol7_optional_latest')
+          host.install_package('yum-utils')
+          on(host, 'yum-config-manager --enable ol7_optional_latest')
         end
       end
     end
