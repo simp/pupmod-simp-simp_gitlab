@@ -125,13 +125,23 @@ describe 'simp_gitlab using ldap' do
       #
       # Troubleshooting:
       #
-      #   - Check for login errors on the gitlab_sever in
-      #     /var/log/gitlab/unicorn/unicorn_stdout.log
-      #     or
+      #   - Check for access errors on the gitlab_server in
+      #     /var/log/gitlab/nginx/gitlab_error.log
+      #
+      #   - Check for login errors on the gitlab_server in
       #     /var/log/gitlab/puma/puma_stdout.log
+      #     or (older GitLab versions)
+      #     /var/log/gitlab/unicorn/unicorn_stdout.log
       #
       # Common errors:
+      # nginx:
+      #   [error]...access forbidden by rule, client: 1.2.3.4,...
+      #   Unless nginx configuration has radically changed, you will only
+      #   see this if you have not set the TRUSTED_NETS environment variable
+      #   appropriately, when you attempt to access the SUT's GitLab server
+      #   from a web browser.
       #
+      # puma:
       #   ERROR -- omniauth: (ldapldapclient2hosttld) Authentication failure!
       #     ldap_error: Net::LDAP::Error,
       #     SSL_connect returned=1 errno=0 state=error: certificate verify failed
@@ -139,6 +149,7 @@ describe 'simp_gitlab using ldap' do
       #     invalid_credentials: OmniAuth::Strategies::LDAP::InvalidCredentialsError,
       #     Invalid credentials for ldapuser1
       #
+      # Web session handling:
       #   ERROR: Not a recognizable signin form
       #     * GitlabSigninForm has failed to parse the returned HTML page,  because the
       #       page returned is not the expected login page.
@@ -161,25 +172,45 @@ describe 'simp_gitlab using ldap' do
         )
         doc     = Nokogiri::HTML(html)
 
-        noko_alerts     = doc.css("div[class='flash-alert']")
-        profile_link    = doc.css("a[class='profile-link']")
-        noko_alert_text = ''
-        unless noko_alerts.empty?
-          noko_alert_text = noko_alerts.text.strip
-          warn '='*80,"== noko alert text: '#{noko_alert_text}'",'='*80
+        # The following CSS-based searches are fragile, but the best
+        # we can do...
+
+        # Looking for the list item that is the drop down with user settings.
+        # Currently it is in the top most right corner of the web page, when the
+        # user has logged in.
+        current_user = doc.css("li[class='current-user']").first
+        current_user_text = nil
+        if current_user.nil?
+          warn '='*80,'== list item with current-user not found ==','='*80
+        else
+          current_user_text = current_user.text
+          unless current_user_text.match('ldapuser1')
+            warn "INFO: current-user list item text: #{current_user_text}"
+          end
         end
 
-        if(noko_alert_text =~ /^Could not authenticate/ || profile_link.empty?)
-          warn "ENV['PRY'] is set to 'yes'; switching to pry console"
-          binding.pry if ENV['PRY'] == 'yes'
+        # Looking for the alert banner that appears at the top of the login
+        # web page when the login attempt is unsuccessful.
+        login_alerts = doc.css("div[class~='flash-alert']")
+        login_alert_text = ''
+        unless login_alerts.empty?
+          login_alert_text = login_alerts.text.strip
+          warn '='*80,"== login alert text: '#{login_alert_text}'",'='*80
+        end
+
+        if ENV['PRY'] == 'yes'
+          if(login_alert_text =~ /^Could not authenticate/ || !current_user_text.match('ldapuser1'))
+            warn "ENV['PRY'] is set to 'yes'; switching to pry console"
+            binding.pry
+          end
         end
 
         # Test for failure
-        expect(noko_alert_text).to_not match(/^Could not authenticate/)
+        expect(login_alert_text).to_not match(/^Could not authenticate/)
 
         # Test for success
-        expect(profile_link).not_to be_empty
-        expect(profile_link.first['data-user']).to eq('ldapuser1')
+        expect(current_user).not_to be_nil
+        expect(current_user_text).to match(/ldapuser1/)
       end
     end
 
