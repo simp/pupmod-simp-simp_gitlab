@@ -267,9 +267,9 @@ TLS settings as GitLab's web server―which is something that [we try to keep
 distinct][distinct_tls], as there could be situations in which their
 configurations legitimately vary.
 
-[ldap_ca_file_problems]: https://gitlab.com/gitlab-org/gitlab-ce/issues/40003
-[ce37254_workarounds]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_45543716
-[ce37254_trusted_wo_ca_file]: https://gitlab.com/gitlab-org/gitlab-ce/issues/37254#note_3894021
+[ldap_ca_file_problems]: https://gitlab.com/gitlab-org/gitlab-foss/issues/40003
+[ce37254_workarounds]: https://gitlab.com/gitlab-org/gitlab-foss/issues/37254#note_45543716
+[ce37254_trusted_wo_ca_file]: https://gitlab.com/gitlab-org/gitlab-foss/issues/37254#note_3894021
 [distinct_tls]: https://github.com/simp/pupmod-simp-simp_openldap/blob/master/manifests/client.pp#L15-L18
 
 

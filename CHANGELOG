@@ -1,3 +1,6 @@
+* Wed Apr 21 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.2
+- Update GitLab ticket URLs in README
+
 * Thu Jan 07 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.1
 - Fixed a bug in which the change_gitlab_root_password script did
   not work for GitLab versions that included Ruby 2.7.x (GitLab 13.6.0
