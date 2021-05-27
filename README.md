@@ -120,14 +120,22 @@ As a profile module, `simp_gitlab` has a few functions:
 
 ### Setup Requirements
 
-This module supports GitLab 12.3.0 or later.
+#### Supported GitLab versions
+
+This module was last tested with GitLab Community Edition 13.11.5.
+It may work for other GitLab versions. You can verify it works for a specific
+version by [executing the acceptance tests with that version](#acceptance-tests).
+
+#### Isolated network requirements
 
 If using this module from an isolated network, ensure that package and repo
 management are disabled from the module, and that the `gitlab-ce` or
 `gitlab-ee` package is installed.  Be sure that the `$simp_gitlab::edition`
 parameter is set to the correct edition.
 
-### Upgrade to 0.6.0
+#### Upgrade caveats
+
+##### Upgrade to 0.6.0
 
 simp_gitlab version 0.6.0 introduced a new mechanism for setting the GitLab
 root user password upon initial installation of GitLab. As a side effect,
@@ -140,7 +148,7 @@ to reset the GitLab root password, simply run
  `/usr/local/sbin/change_gitlab_root_password <new_password>` manually.
 You do not need to know the previous password to set the new password.
 
-### Upgrade to 0.3.0
+##### Upgrade to 0.3.0
 
 Upgrading from simp_gitlab 0.2.0 to 0.3.0 requires you to copy the authorized key file
 from `/etc/ssh/local_keys/git` to `/var/opt/gitlab/.ssh/authorized_keys`. Alternately
@@ -352,9 +360,10 @@ for more information.
 to specify the version of gitlab-ce to use in the acceptance tests.
 When set, it must either a version string for a specific gitlab-ce
 package version or 'latest' to indicate the latest available version.
+When unset, the latest version is tested.
 
 ```shell
-TEST_GITLAB_CE_VERSION=latest bundle exec rake beaker:suites
+TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites
 ```
 
 #### Environment variable `TRUSTED_NETS`

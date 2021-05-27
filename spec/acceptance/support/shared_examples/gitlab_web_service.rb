@@ -31,7 +31,18 @@ shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
       permitted_client,
       "#{curl_ssl_cmd(permitted_client)} -L #{gitlab_signin_url}"
     )
-    expect(result.stdout).to match(/GitLab|password/)
+
+    # These web-page-scraping checks are inherently fragile, but the best we
+    # can do...
+    root_pw_change_page =
+      !result.stdout.match(/reset_password_token/).nil? ||
+      (
+        !result.stdout.match(/New password/).nil? &&
+        !result.stdout.match(/Confirm new password/).nil?
+      )
+    expect(root_pw_change_page).to be(false), 'Root password not set:  root password change page detected'
+    expect(result.stdout).to match(/GitLab/)
+    expect(result.stdout).to match(/Forgot your password/), 'Login page not detected'
   end
 
   it 'denies web access from unknown clients' do
