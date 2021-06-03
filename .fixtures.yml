@@ -1,6 +1,9 @@
 ---
 fixtures:
   repositories:
+    augeas_core:
+      repo: https://github.com/simp/pupmod-puppetlabs-augeas_core.git
+      puppet_version: ">= 6.0.0"
     augeasproviders_core: https://github.com/simp/augeasproviders_core
     augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh
     chrony: https://github.com/simp/pupmod-aboe76-chrony
