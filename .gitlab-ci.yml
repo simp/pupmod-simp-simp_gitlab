@@ -357,92 +357,71 @@ pup7.x-unit:
 # Repo-specific content
 # ==============================================================================
 
-pup5.x-el7:
-  <<: *pup_5_x
-  <<: *acceptance_base
-  script:
-    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-# # FIPS is not supported by gitlab yet
-#pup5.x-el7-fips:
-#  <<: *pup_5_x
-#  <<: *acceptance_base
-#  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
-#  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-pup5.x-oel:
-  <<: *pup_5_x
-  <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
-  script:
-    - 'bundle exec rake beaker:suites[default,oel-7-x86_64]'
-
-# # FIPS is not supported by gitlab yet
-#pup5.x-oel7-fips:
-#  <<: *pup_5_x
-#  <<: *acceptance_base
-#  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_3
-#  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,oel-7-x86_64]'
-
-pup6.x-el7:
+# Test with the GitLab latest version with the latest OS.  It may fail (i.e., we
+# have seen breaking changes on minor GitLab releases), but we want to try it
+# every time to have an early-warning of problems.
+pup6.x-el8-latest:
   <<: *pup_6_x
   <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
-  script:
-    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-# # FIPS is not supported by gitlab yet
-#pup6.x-el7-fips:
-#  <<: *pup_6_x
-#  <<: *acceptance_base
-#  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-# Test with the oldest version of GitLab we support
-pup6.x-el7-gitlab12_min:
-  <<: *pup_6_x
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=12.3.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-pup6.x-el8:
-  <<: *pup_6_x
-  <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
+  allow_failure: true
   script:
     - 'bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
+
+# Test with the last GitLab version that we know works (aka stable).
+# - Can't use a variable for the version and retain compatibility with puppetsync.
+# - Last stable GitLab version = 13.11.5
+# - **If you change this, also change the version in the README.md**.
+#
+pup6.x-el7-stable:
+  <<: *pup_6_x
+  <<: *acceptance_base
+  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
+  script:
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-7-x86_64]'
+
+pup6.x-el8-stable:
+  <<: *pup_6_x
+  <<: *acceptance_base
+  script:
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
 # # FIPS is not supported by gitlab yet
-#pup6.x-el8-fips:
+#pup6.x-el8-fips-stable:
 #  <<: *pup_6_x
 #  <<: *acceptance_base
+#  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
 #  script:
-#    - 'BEAKER_fips=yes bundle exec rake beaker:suites[default,centos-8-x86_64]'
+#    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
-pup6.pe-el7:
+pup6.pe-el7-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites[default,centos-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
-pup6.pe-el8:
+pup6.pe-el8-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   script:
-    - 'bundle exec rake beaker:suites[default,centos-8-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
-pup6.pe-oel7:
+# # FIPS is not supported by gitlab yet
+#pup6.pe-el8-fips-stable:
+#  <<: *pup_6_pe
+#  <<: *acceptance_base
+#  script:
+#    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup6.pe-oel7-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
   script:
-    - 'bundle exec rake beaker:suites[default,oel-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,oel-7-x86_64]'
 
-pup6.pe-oel8:
+pup6.pe-oel8-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
   script:
-    - 'bundle exec rake beaker:suites[default,oel-8-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,oel-8-x86_64]'

@@ -1,9 +1,4 @@
-$test_binary = $facts['os']['release']['major'] ? {
-  '6' => '/usr/bin/test',
-  '7' => '/bin/test',
-  '8' => '/bin/test',
-}
-
+$test_binary = '/bin/test'
 
 # NOTE: for the purposes of resetting GitLab, it _should_ be enough to
 # run `gitlab-ctl cleanse`.  However, that hasn't always been enough
@@ -25,12 +20,17 @@ exec{['/opt/gitlab/bin/gitlab-ctl cleanse',
 
 exec{'/bin/rm -rf /run/gitlab*':
   tag => 'after_uninstall',
-  onlyif => "${test_binary} -f /run/gitlab*",
+  onlyif => "${test_binary} -d /run/gitlab*",
 }
 
 exec{'/bin/rm -rf /opt/gitlab*':
   tag => 'after_uninstall',
-  onlyif => "${test_binary} -f /opt/gitlab*",
+  onlyif => "${test_binary} -d /opt/gitlab*",
+}
+
+exec{'/bin/rm -rf /var/log/gitlab*':
+  tag => 'after_uninstall',
+  onlyif => "${test_binary} -d /var/log/gitlab*",
 }
 
 file{ '/usr/lib/systemd/system/gitlab-runsvdir.service':
