@@ -1,6 +1,6 @@
 {
   "name": "simp-simp_gitlab",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "author": "SIMP Team",
   "summary": "SIMP profiles for GitLab",
   "license": "Apache-2.0",
@@ -25,11 +25,11 @@
     },
     {
       "name": "puppet/gitlab",
-      "version_requirement": ">= 6.0.1 < 7.0.0"
+      "version_requirement": ">= 6.0.1 < 8.0.0"
     },
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.13.1 < 7.0.0"
+      "version_requirement": ">= 4.13.1 < 8.0.0"
     },
     {
       "name": "simp/iptables",
@@ -86,7 +86,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 5.0.0 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 7.0.0"
     }
   ]
 }

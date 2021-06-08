@@ -1,11 +1,16 @@
-* Fri Jun 04 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.2
-- Minor README updates
-  - Clarify versions of GitLab this modules is known to work with and
-    the steps a user can do to verify it works with a different version.
-  - Update GitLab ticket URLs.
-- Allow herculesteam/augeasproviders_ssh < 5.0.0
-- Use puppet/chrony in lieu of aboe/chrony, as VoxPupuli has now assumed
-  ownership of this module.
+* Fri Jun 04 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.7.0
+- Removed
+  - Drop support for Puppet 5
+- Changed
+  - Minor README updates
+    - Clarify versions of GitLab this modules is known to work with and
+      the steps a user can do to verify it works with a different version.
+    - Update GitLab ticket URLs.
+  - Allow herculesteam/augeasproviders_ssh < 5.0.0
+  - Allow puppet/gitlab < 8.0.0
+  - Allow puppetlabs/stdlib < 8.0.0
+  - Use puppet/chrony in lieu of aboe/chrony, as VoxPupuli has now assumed
+    ownership of this module.
 
 * Thu Jan 07 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.1
 - Fixed a bug in which the change_gitlab_root_password script did
