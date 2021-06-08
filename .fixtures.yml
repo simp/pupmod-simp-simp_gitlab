@@ -4,27 +4,27 @@ fixtures:
     augeas_core:
       repo: https://github.com/simp/pupmod-puppetlabs-augeas_core.git
       puppet_version: ">= 6.0.0"
-    augeasproviders_core: https://github.com/simp/augeasproviders_core
-    augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh
-    chrony: https://github.com/simp/pupmod-aboe76-chrony
-    concat: https://github.com/simp/puppetlabs-concat
-    firewalld: https://github.com/simp/pupmod-voxpupuli-firewalld
+    augeasproviders_core: https://github.com/simp/augeasproviders_core.git
+    augeasproviders_ssh: https://github.com/simp/augeasproviders_ssh.git
+    chrony: https://github.com/simp/pupmod-voxpupuli-chrony.git
+    concat: https://github.com/simp/puppetlabs-concat.git
+    firewalld: https://github.com/simp/pupmod-voxpupuli-firewalld.git
     gitlab: https://github.com/simp/puppet-gitlab.git
-    iptables: https://github.com/simp/pupmod-simp-iptables
-    pam: https://github.com/simp/pupmod-simp-pam
-    pki: https://github.com/simp/pupmod-simp-pki
-    postfix: https://github.com/simp/pupmod-simp-postfix
-    rsyslog: https://github.com/simp/pupmod-simp-rsyslog
-    ssh: https://github.com/simp/pupmod-simp-ssh
-    simplib: https://github.com/simp/pupmod-simp-simplib
-    simp_firewalld: https://github.com/simp/pupmod-simp-simp_firewalld
-    stdlib: https://github.com/simp/puppetlabs-stdlib
-    svckill: https://github.com/simp/pupmod-simp-svckill
+    iptables: https://github.com/simp/pupmod-simp-iptables.git
+    pam: https://github.com/simp/pupmod-simp-pam.git
+    pki: https://github.com/simp/pupmod-simp-pki.git
+    postfix: https://github.com/simp/pupmod-simp-postfix.git
+    rsyslog: https://github.com/simp/pupmod-simp-rsyslog.git
+    ssh: https://github.com/simp/pupmod-simp-ssh.git
+    simplib: https://github.com/simp/pupmod-simp-simplib.git
+    simp_firewalld: https://github.com/simp/pupmod-simp-simp_firewalld.git
+    stdlib: https://github.com/simp/puppetlabs-stdlib.git
+    svckill: https://github.com/simp/pupmod-simp-svckill.git
     yumrepo_core:
       repo: https://github.com/simp/pupmod-puppetlabs-yumrepo_core.git
       puppet_version: ">= 6.0.0"
 
     # Fixtures required for the acceptance tests
-    simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap
+    simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap.git
   symlinks:
     simp_gitlab: "#{source_dir}"
