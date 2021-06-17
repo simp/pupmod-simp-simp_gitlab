@@ -1,5 +1,4 @@
-* Thu Jun 17 2021 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.8.0
-- Removed support for Puppet 5
+* Thu Jun 17 2021 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.7.0
 - Ensured support for Puppet 7 in requirements and stdlib
 
 * Fri Jun 04 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.7.0
