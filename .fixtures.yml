@@ -23,8 +23,6 @@ fixtures:
     yumrepo_core:
       repo: https://github.com/simp/pupmod-puppetlabs-yumrepo_core.git
       puppet_version: ">= 6.0.0"
-
-    # Fixtures required for the acceptance tests
     simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap.git
   symlinks:
     simp_gitlab: "#{source_dir}"
