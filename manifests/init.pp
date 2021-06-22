@@ -186,7 +186,7 @@ class simp_gitlab (
   Boolean                $set_gitlab_root_password   = true,
   String[16]             $gitlab_root_password       = simplib::passgen( "simp_gitlab_${trusted['certname']}" ),
   Integer[60]            $rails_console_load_timeout = 300,
-  Boolean                $allow_fips                 = false
+  Boolean                $allow_fips                 = true
 ) {
 
   simplib::assert_metadata( $module_name )

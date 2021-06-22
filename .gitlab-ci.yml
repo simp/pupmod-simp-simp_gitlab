@@ -345,7 +345,7 @@ pup6.x-el8-latest:
 
 # Test with the last GitLab version that we know works (aka stable).
 # - Can't use a variable for the version and retain compatibility with puppetsync.
-# - Last stable GitLab version = 13.11.5
+# - Last stable GitLab version = 14.0.0
 # - **If you change this, also change the version in the README.md**.
 #
 pup6.x-el7-stable:
@@ -353,50 +353,54 @@ pup6.x-el7-stable:
   <<: *acceptance_base
   <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
 pup6.x-el8-stable:
   <<: *pup_6_x
   <<: *acceptance_base
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
-# # FIPS is not supported by gitlab yet
-#pup6.x-el8-fips-stable:
-#  <<: *pup_6_x
-#  <<: *acceptance_base
-#  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
-#  script:
-#    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+pup6.x-el8-fips-stable:
+  <<: *pup_6_x
+  <<: *acceptance_base
+  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
+  script:
+    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
 pup6.pe-el7-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
 
 pup6.pe-el8-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
-# # FIPS is not supported by gitlab yet
-#pup6.pe-el8-fips-stable:
-#  <<: *pup_6_pe
-#  <<: *acceptance_base
-#  script:
-#    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+pup6.pe-el8-fips-stable:
+  <<: *pup_6_pe
+  <<: *acceptance_base
+  script:
+    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
 
 pup6.pe-oel7-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,oel-7-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-7-x86_64]'
 
 pup6.pe-oel8-stable:
   <<: *pup_6_pe
   <<: *acceptance_base
   script:
-    - 'TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites[default,oel-8-x86_64]'
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-8-x86_64]'
+
+pup7.x-el8-stable:
+  <<: *pup_7_x
+  <<: *acceptance_base
+  script:
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'

@@ -93,8 +93,6 @@ As a profile module, `simp_gitlab` has a few functions:
     - `simp_options::tcpwrappers`: Nothing in Omnibus is linked to TCP Wrapper
     - `simp_options::auditing`: Nothing in Omnibus needs special auditd logic
   - Deferred:
-    - `simp_options::fips`: GitLab Omnibus ships with a version of OpenSSL that
-      [does not support FIPS mode](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5574)
     - `simp_options::syslog` (not clear that we want to support this outside of `ee`)
   - SIMP integrations:
     - Open access for a local `git` SSH user
@@ -122,7 +120,7 @@ As a profile module, `simp_gitlab` has a few functions:
 
 #### Supported GitLab versions
 
-This module was last tested with GitLab Community Edition 13.11.5.
+This module was last tested with GitLab Community Edition 14.0.0.
 It may work for other GitLab versions. You can verify it works for a specific
 version by [executing the acceptance tests with that version](#acceptance-tests).
 
@@ -134,6 +132,14 @@ management are disabled from the module, and that the `gitlab-ce` or
 parameter is set to the correct edition.
 
 #### Upgrade caveats
+
+##### Upgrade to 0.7.0
+
+simp_gitlab version 0.7.0 now defaults `simp_gitlab::allow_fips` to true, as
+the version of GitLab this module was tested with, 14.0.0, supports FIPS mode.
+This will allow you to install and configure GitLab on FIPS_enabled servers,
+but not affect existing GitLab servers configured by earlier versions of this
+module.
 
 ##### Upgrade to 0.6.0
 
