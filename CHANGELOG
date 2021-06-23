@@ -1,19 +1,25 @@
-* Thu Jun 17 2021 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.7.0
-- Ensured support for Puppet 7 in requirements and stdlib
-
-* Fri Jun 04 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.7.0
+* Tue Jun 22 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.7.0
 - Removed
-  - Drop support for Puppet 5
+  - Dropped support for Puppet 5
 - Changed
+  - `simp_gitlab::allow_fips` now defaults to true, as the last version of
+     GitLab this module was tested with, 14.0.0, supports FIPS mode.
+     - This will allow new GitLab installations on servers for which FIPS-mode
+       is enabled, but not affect existing GitLab servers configured by earlier
+       versions of this module.
   - Minor README updates
     - Clarify versions of GitLab this modules is known to work with and
       the steps a user can do to verify it works with a different version.
+    - Remove OBE FIPS-mode failure
     - Update GitLab ticket URLs.
   - Allow herculesteam/augeasproviders_ssh < 5.0.0
   - Allow puppet/gitlab < 8.0.0
   - Allow puppetlabs/stdlib < 8.0.0
   - Use puppet/chrony in lieu of aboe/chrony, as VoxPupuli has now assumed
     ownership of this module.
+
+* Thu Jun 17 2021 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.7.0
+- Ensured support for Puppet 7 in requirements and stdlib
 
 * Thu Jan 07 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.6.1
 - Fixed a bug in which the change_gitlab_root_password script did

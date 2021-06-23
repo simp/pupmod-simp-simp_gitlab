@@ -251,14 +251,14 @@ describe 'simp_gitlab' do
         context 'with default parameters' do
           let(:params) {{ }}
 
-          it { is_expected.to_not compile.with_all_deps }
-        end
-
-        context 'with allow_fips=true' do
-          let(:params) {{ :allow_fips => true }}
-
           it { is_expected.to compile.with_all_deps }
           it { is_expected.to contain_class('simp_gitlab').with_trusted_nets(['127.0.0.1/32']) }
+        end
+
+        context 'with allow_fips=false' do
+          let(:params) {{ :allow_fips => false }}
+
+          it { is_expected.to_not compile.with_all_deps }
         end
       end
 
