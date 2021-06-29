@@ -60,6 +60,17 @@ describe 'simp_gitlab pki tls' do
     EOS
   end
 
+  # workaround beaker issue in which FQDN is not properly set but Facter
+  # thinks it is set
+  context 'fix static host name' do
+    hosts.each do |host|
+      it "should ensure static host name matches FQDN fact on #{host}" do
+        fqdn = fact_on(host, 'fqdn')
+        on(host, "hostnamectl set-hostname --static #{fqdn}")
+      end
+    end
+  end
+
   context 'with PKI enabled but no firewall' do
     let(:hiera) {
       hiera = hiera__vagrant.dup

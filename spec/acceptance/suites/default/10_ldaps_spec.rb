@@ -12,6 +12,12 @@ describe 'simp_gitlab using ldap' do
     _domains.map! { |d| "dc=#{d}" }
     @ldap_domains = _domains.join(',')
 
+    # TODO Create a password helper for the LDAP root, LDAP bind, and LDAP
+    #      user passwords (plain text and encrypted formats). Currently, the
+    #      passwords are hardcoded in various test files.
+    @ldap_root_password = 'suP3rP@ssw0r!'
+    @ldapuser_password = 'suP3rP@ssw0r!'
+
     hieradata_file = File.expand_path('../support/files/ldap_tls_default.yaml',__FILE__)
     @ldap_hieradata = File.read(hieradata_file)
                         .gsub('LDAP_BASE_DN',@ldap_domains)
@@ -20,7 +26,10 @@ describe 'simp_gitlab using ldap' do
     @manifest__remove_gitlab = File.read(
       File.expand_path('../support/manifests/remove_gitlab.pp',__FILE__)
     )
-    @manifest__ldap_server   = File.read(
+    @manifest__remove_ldap_server = File.read(
+      File.expand_path('../support/manifests/remove_ldap_server.pp',__FILE__)
+    )
+    @manifest__install_ldap_server   = File.read(
       File.expand_path('../support/manifests/install_ldap_server.pp',__FILE__)
     )
     @manifest__gitlab = <<~EOS
@@ -74,35 +83,47 @@ describe 'simp_gitlab using ldap' do
   context 'with TLS & PKI enabled' do
     shared_examples_for 'a web login for LDAP users' do |ldap_proto|
       before :all do
-
         # clean out earlier gitlab environments
         apply_manifest_on(gitlab_server, @manifest__remove_gitlab, catch_failures: true)
 
         # clean out earlier ldap environments
-        on(ldap_server,
-           'puppet resource service slapd ensure=stopped > /dev/null && ' +
-             'rm -rf /var/lib/ldap /etc/openldap && ' +
-             'yum erase -y openldap-{servers,clients}; :'
-          )
+        apply_manifest_on(ldap_server, @manifest__remove_ldap_server, catch_failures: true)
 
         # set up the ldap server
         # ------------------------------
-        # distribute common LDAP & trusted_nets settings
-        hosts.each { |h| set_hieradata_on(h, @ldap_hieradata, 'default') }
 
         # install LDAP service
-        apply_manifest_on(ldap_server, @manifest__ldap_server)
+        set_hieradata_on(ldap_server, @ldap_hieradata, 'default')
+        apply_manifest_on(ldap_server, @manifest__install_ldap_server)
 
         # add LDAP accounts
-        ldif_file = File.expand_path('../support/files/ldap_test_user.ldif',__FILE__)
-        ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',@ldap_domains)
-        create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
-        result = on(ldap_server, 'ldapadd -x -ZZ ' +
+        os_major  = pfact_on(ldap_server, 'os.release.major')
+        if os_major == '7'
+          ldif_file = File.expand_path('../support/files/ldap_test_user.ldif',__FILE__)
+          ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',@ldap_domains)
+          create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
+          result = on(ldap_server, 'ldapadd -x -ZZ ' +
                         "-D cn=LDAPAdmin,ou=People,#{@ldap_domains} " +
                         "-H ldap://#{ldap_server_fqdn} " +
-                        "-w 'suP3rP@ssw0r!' " +
+                        "-w '#{@ldap_root_password}' " +
                         '-f /root/user_ldif.ldif'
-        )
+          )
+        else
+          add_users_file =  File.expand_path('../support/files/add_ldapusers.sh',__FILE__)
+          add_users_script = File.read(add_users_file).gsub('LDAP_BASE_DN',@ldap_domains)
+          create_remote_file(ldap_server, '/root/add_ldapusers.sh', add_users_script)
+          on(ldap_server, 'chmod +x /root/add_ldapusers.sh')
+          on(ldap_server, '/root/add_ldapusers.sh')
+
+          result = on(ldap_server, "dsidm accounts -b #{@ldap_domains} user list")
+          expect(result.stdout).to include('ldapuser1')
+          expect(result.stdout).to include('ldapuser2')
+
+          result = on(ldap_server, "dsidm accounts -b #{@ldap_domains} group list")
+          expect(result.stdout).to include('gitlab')
+          expect(result.stdout).to include('ldapuser1')
+          expect(result.stdout).to include('ldapuser2')
+        end
       end
 
       it 'should be configured with the test hiera data' do
@@ -173,14 +194,14 @@ describe 'simp_gitlab using ldap' do
       #
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
-      it 'permits an LDAP user to log in via the web page' do
+      it 'permits a valid LDAP user to log in via the web page' do
 
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)
         gl_form = GitlabSigninForm.new(html)
         html    = user1_session.curl_post(
           "https://#{gitlab_server_fqdn + gl_form.action}",
-          gl_form.signin_post_data('ldapuser1','suP3rP@ssw0r!')
+          gl_form.signin_post_data('ldapuser1',@ldapuser_password)
         )
         doc     = Nokogiri::HTML(html)
 
@@ -224,6 +245,16 @@ describe 'simp_gitlab using ldap' do
         expect(current_user).not_to be_nil
         expect(current_user_text).to match(/ldapuser1/)
       end
+
+      # (As of 10.4) LDAP group membership is only considered by GitLab EE
+      #
+      # TODO Understand which GitLab LDAP feature this comment is referring to.
+      # - The group_base GitLab LDAP config item seems to apply to group
+      #   synchronization.
+      # - GitLab CE allows user filtering via the user_filter GitLab LDAP
+      #   config item.  So, seems like a LDAP filter could be used to limit
+      #   access to users within specific groups.
+      it 'rejects an invalid LDAP user log in attempt via the web page'
     end
 
     context 'authenticates over StartTLS (ldap://)' do
