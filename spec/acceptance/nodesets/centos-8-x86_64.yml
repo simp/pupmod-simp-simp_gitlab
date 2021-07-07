@@ -13,7 +13,7 @@ HOSTS:
       - default
       - master
     platform:   el-8-x86_64
-    box:        centos/8
+    box:        generic/centos8
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 4096
     vagrant_cpus: 4
@@ -47,7 +47,7 @@ HOSTS:
       - client
       - permittedclient
     platform:   el-8-x86_64
-    box:        centos/8
+    box:        generic/centos8
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 192
 
