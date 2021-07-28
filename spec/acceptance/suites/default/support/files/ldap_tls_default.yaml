@@ -51,16 +51,7 @@ simp_ds389::instances::accounts::password_policy:
   passwordMaxFailure: 100
 
 
-# FIXME Workarounds
-# * SIMP-10378: GitLab does not support TLS client authentication but
-#   simp_ds389::instances::accounts requires it.
-# * GitLab LDAP client sends lower ciphers than the minssf default of 256
-#   - Reported connection is TLS1.2 128-bit AES-GCM
-#   - Longer (better) ciphers are available in the configured cipher set
-#    (openssl "DEFAULT:!MEDIUM"), so it is unclear why none of the ciphers
-#    that would satisfy 256 minssf are agreed upon when GitLab and 389ds
-#    negotiate them during TLS setup.
-#
+# GitLab - 389ds interoperability settings
 simp_ds389::instances::accounts::tls_params:
   dse_config:
     cn=config:

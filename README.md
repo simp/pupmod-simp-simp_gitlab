@@ -20,6 +20,7 @@
   * [Configuring Nginx](#configuring-nginx)
 * [Reference](#reference)
   * [Further Reference for munging GitLab Omnibus](#further-reference-for-munging-gitlab-omnibus)
+  * [GitLab LDAP integration reference](#gitlab-ldap-integration-reference)
 * [Limitations](#limitations)
   * [SIMP PKI management does not support Let's Encrypt](#simp-pki-management-does-not-support-lets-encrypt)
   * [Gitlab's LDAP TLS is configured to re-use Omnibus' `trusted-certs/` instead of `ca_file`](#gitlabs-ldap-tls-is-configured-to-re-use-omnibus-trusted-certs-instead-of-ca_file)
@@ -238,7 +239,7 @@ See [REFERENCE.md](./REFERENCE.md) for API documentation.
   * GitLab Omnibus
     - documentation: https://docs.gitlab.com/omnibus/README.html
       - [Common installation problems](https://docs.gitlab.com/omnibus/common_installation_problems/README.html)
-      - [Maintainence commands](https://docs.gitlab.com/omnibus/maintenance/README.html#maintenance-commands)
+      - [Maintenance commands](https://docs.gitlab.com/omnibus/maintenance/README.html#maintenance-commands)
       - [Troubleshooting](https://docs.gitlab.com/omnibus/README.html#troubleshooting)
     - architecture: https://docs.gitlab.com/omnibus/architecture/README.html
       - [Global GitLab configuration template](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template)
@@ -254,6 +255,15 @@ See [REFERENCE.md](./REFERENCE.md) for API documentation.
   - Security & compliance
     - https://www.stigviewer.com/stig/web_server/
 
+### GitLab LDAP integration reference
+
+[GitLab LDAP Setup](https://docs.gitlab.com/ee/administration/auth/ldap) has
+detailed information about configuring GitLab to authenticate users using LDAP.
+Within this section, there are two sub-sections especially of interest when
+debugging LDAP connection problems:
+
+  * [LDAP TLS limitations](https://docs.gitlab.com/ee/administration/auth/ldap/#limitations)
+  * [LDAP troubleshooting](https://docs.gitlab.com/ee/administration/auth/ldap/#troubleshooting)
 
 ## Limitations
 
