@@ -1,4 +1,5 @@
 # This LDIF creates users and groups needed to test GitLab's LDAP configuration
+# Requires token substitution for LDAP_BASE_DN.
 
 # ------------------------------------------------------------------------------
 # ldapuser1 should be able to log into gitlab
@@ -56,12 +57,6 @@ objectClass: ldapPublicKey
 loginShell: /bin/bash
 homeDirectory: /home/ldapuser2
 
-
-
-
-# ------------------------------------------------------------------------------
-# (As of 10.4) LDAP group membership is only considered by GitLab EE
-# ------------------------------------------------------------------------------
 dn: cn=gitlab,ou=Group,LDAP_BASE_DN
 objectClass: posixGroup
 objectClass: top
@@ -73,4 +68,3 @@ dn: cn=gitlab,ou=Group,LDAP_BASE_DN
 changetype: modify
 add: memberUid
 memberUid: ldapuser1
-

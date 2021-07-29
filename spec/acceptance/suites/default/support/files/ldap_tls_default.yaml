@@ -1,7 +1,17 @@
 ---
+# Test hieradata for LDAP
+# - Requires token substitution for LDAP_URI and LDAP_BASE_DN
+# - When using TLS (not StartTLS), requires replacement of 'ldap:' with
+#   'ldaps:' in URLs
+# - None of the test manifests actually incude the simp_options class. However,
+#   we are setting some of its global catalysts, here, because it simplifies
+#   the configuration of multiple classes
+
+###############################################################################
+# Common security settings
+###############################################################################
+simp_options::firewall: true
 simp_options::trusted_nets:   ['any']
-simp_options::puppet::server: there.is.no.puppet.server
-simp_options::puppet::ca:     there.is.no.puppet.ca
 simp_options::pki:            true
 simp_options::pki::source:    '/etc/pki/simp-testing/pki'
 
@@ -10,13 +20,18 @@ pki::public_key_source:  "/etc/pki/simp-testing/pki/public/%{facts.fqdn}.pub"
 pki::cacerts_sources:
   - "/etc/pki/simp-testing/pki/cacerts"
 
+# When iptables is enabled, make sure it uses firewalld on EL7
+iptables::use_firewalld: true
+
+###############################################################################
+# Common LDAP settings
+###############################################################################
 simp_options::ldap: true
 simp_options::ldap::uri:
   - ldap://LDAP_URI
 simp_options::ldap::base_dn:  LDAP_BASE_DN
 simp_options::ldap::bind_dn:  cn=hostAuth,ou=Hosts,LDAP_BASE_DN
 simp_options::ldap::bind_pw: 'foobarbaz'
-# suP3rP@ssw0r!
 simp_options::ldap::bind_hash: '{SSHA}BNPDR0qqE6HyLTSlg13T0e/+yZnSgYQz'
 simp_options::ldap::sync_pw: 'foobarbaz'
 simp_options::ldap::sync_hash: '{SSHA}BNPDR0qqE6HyLTSlg13T0e/+yZnSgYQz'
@@ -24,19 +39,44 @@ simp_options::ldap::master:  ldap://LDAP_URI
 simp_options::ldap::root_dn: cn=LDAPAdmin,ou=People,LDAP_BASE_DN
 
 
+###############################################################################
+# simp_ds389::instances::accounts settings only applicable on EL8+
+###############################################################################
+simp_ds389::instances::accounts::root_pw: 'suP3rP@ssw0r!'
 
-simp_openldap::app_pki_dir: /etc/pki/simp_apps/openldap/x509
-simp_openldap::app_pki_external_source: /etc/pki/simp-testing/pki
+# relaxed LDAP defaults to make multiple tests easier to mock
+simp_ds389::instances::accounts::password_policy:
+  passwordMustChange: 'off'
+  passwordMinLength: 3
+  passwordMaxFailure: 100
+
+
+# GitLab - 389ds interoperability settings
+simp_ds389::instances::accounts::tls_params:
+  dse_config:
+    cn=config:
+      nsslapd-minssf: 128
+    cn=encryption,cn=config:
+      nsSSLClientAuth: allowed
+
+###############################################################################
+# simp_openldap::client settings only applicable on EL7
+# - Used when adding ldapuser1 & ldapuser2 using 'ldapadd'
+###############################################################################
+simp_openldap::client::tls_cipher_suite:
+- 'HIGH'
+- '-SSLv2'
+
+###############################################################################
+# simp_openldap::server settings only applicable on EL7
+###############################################################################
 simp_openldap::server::conf::rootpw: "{SSHA}TghZyHW6r8/NL4fo0Q8BnihxVb7A7af5"
 simp_openldap::server::use_ppolicy: true
 simp_openldap::server::conf::tls_cipher_suite:
 - 'HIGH'
 - '-SSLv2'
-simp_openldap::server::conf::tls_protocol_min: 3.3
 
-simp_openldap::client::tls_cipher_suite:
-- 'HIGH'
-- '-SSLv2'
+simp_openldap::server::conf::tls_protocol_min: 3.3
 simp_openldap::server::conf::slapd_log_level:
 - 'stats'
 - 'sync'
@@ -50,7 +90,9 @@ simp_openldap::server::conf::default_ldif::ppolicy_pwd_min_length: 3
 simp_openldap::server::conf::default_ldif::ppolicy_pwd_check_quality: 0
 simp_openldap::server::conf::default_ldif::ppolicy_pwd_max_failure: 100
 
-# allow vagrant access
+###############################################################################
+# Settings to allow vagrant access
+###############################################################################
 sudo::user_specifications:
   vagrant_all:
     user_list:
@@ -58,16 +100,13 @@ sudo::user_specifications:
     cmnd:
       - 'ALL'
     passwd: false
+
 pam::access::users:
   defaults:
     origins:
       - 'ALL'
     permission: '+'
   vagrant:
+
 ssh::server::conf::permitrootlogin: true
 ssh::server::conf::authorizedkeysfile: '.ssh/authorized_keys'
-
-
-# when iptables is enabled, make sure it uses firewalld
-iptables::use_firewalld: true
-

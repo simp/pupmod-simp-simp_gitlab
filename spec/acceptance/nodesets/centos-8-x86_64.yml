@@ -51,17 +51,17 @@ HOSTS:
     hypervisor: <%= hypervisor %>
     vagrant_memsize: 256
 
-# Until SIMP 6.6.0, LDAP server must be on an EL7 node
   client-2:
     roles:
       - client
       - unknownclient
       - logdest
       - ldapserver
-    platform:   el-7-x86_64
-    box:        centos/7
+    platform:   el-8-x86_64
+    box:        generic/centos8
     hypervisor: <%= hypervisor %>
-    vagrant_memsize: 512
+    vagrant_memsize: 2048
+
 CONFIG:
   log_level: verbose
   type:      aio
