@@ -20,6 +20,7 @@ fixtures:
     simp_firewalld: https://github.com/simp/pupmod-simp-simp_firewalld.git
     stdlib: https://github.com/simp/puppetlabs-stdlib.git
     svckill: https://github.com/simp/pupmod-simp-svckill.git
+    systemd: https://github.com/simp/puppet-systemd.git
     yumrepo_core: https://github.com/simp/pupmod-puppetlabs-yumrepo_core.git
     simp_openldap: https://github.com/simp/pupmod-simp-simp_openldap.git
   symlinks:
