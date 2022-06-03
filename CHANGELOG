@@ -1,3 +1,9 @@
+* Fri Jun 03 2022 Trevor Vaughan <trevor@sicura.us> - 0.7.1
+- Allow `puppet/chrony` < `3.0.0`
+- Allow `puppet/gitlab` < `9.0.0`
+- Allow `puppetlabs/stdlib` < `9.0.0`
+- Bump latest tested GitLab CE version to 15.0.1
+
 * Tue Jun 22 2021 Liz Nemsick <lnemsick.simp@gmail.com> - 0.7.0
 - Removed
   - Dropped support for Puppet 5
