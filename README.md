@@ -13,6 +13,12 @@
 * [Setup](#setup)
   * [What `simp_gitlab` affects](#what-simp_gitlab-affects)
   * [Setup Requirements](#setup-requirements)
+    * [Supported GitLab versions](#supported-gitlab-versions)
+    * [Isolated network requirements](#isolated-network-requirements)
+    * [Upgrade caveats](#upgrade-caveats)
+      * [Upgrade to 0.7.0](#upgrade-to-070)
+      * [Upgrade to 0.6.0](#upgrade-to-060)
+      * [Upgrade to 0.3.0](#upgrade-to-030)
   * [Beginning with simp_gitlab](#beginning-with-simp_gitlab)
 * [Usage](#usage)
   * [A basic GitLab setup using PKI](#a-basic-gitlab-setup-using-pki)
@@ -121,7 +127,7 @@ As a profile module, `simp_gitlab` has a few functions:
 
 #### Supported GitLab versions
 
-This module was last tested with GitLab Community Edition 14.0.0.
+This module was last tested with GitLab Community Edition 15.0.1.
 It may work for other GitLab versions. You can verify it works for a specific
 version by [executing the acceptance tests with that version](#acceptance-tests).
 
@@ -379,7 +385,7 @@ package version or 'latest' to indicate the latest available version.
 When unset, the latest version is tested.
 
 ```shell
-TEST_GITLAB_CE_VERSION=13.11.5 bundle exec rake beaker:suites
+TEST_GITLAB_CE_VERSION=15.0.1 bundle exec rake beaker:suites
 ```
 
 #### Environment variable `TRUSTED_NETS`
