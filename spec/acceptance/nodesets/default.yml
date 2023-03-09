@@ -1,1 +1,47 @@
-centos-7-x86_64.yml
+---
+HOSTS:
+  server:
+    roles:
+    - server
+    - default
+    - master
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 4096
+    vagrant_cpus: 4
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
+  client-1:
+    roles:
+    - client
+    - permittedclient
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 192
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
+  client-2:
+    roles:
+    - client
+    - unknownclient
+    - logdest
+    - ldapserver
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 192
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
+CONFIG:
+  log_level: verbose
+  type: aio
+  run_in_parallel:
+  - install
+  - config
+  ssh:
+    keepalive: true
+    keepalive_interval: 10
+    keepalive_maxcount: 60
+  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'puppet7') %>"
