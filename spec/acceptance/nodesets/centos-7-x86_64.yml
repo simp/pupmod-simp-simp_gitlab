@@ -1,22 +1,17 @@
-<%
-  if ENV['BEAKER_HYPERVISOR']
-    hypervisor = ENV['BEAKER_HYPERVISOR']
-  else
-    hypervisor = 'vagrant'
-  end
--%>
 ---
 HOSTS:
   server:
     roles:
-      - server
-      - default
-      - master
-    platform:   el-7-x86_64
-    box:        centos/7
-    hypervisor: <%= hypervisor %>
+    - server
+    - default
+    - master
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
     vagrant_memsize: 4096
     vagrant_cpus: 4
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
 #-------------------------------------------------------------------------------
 # If you want to use a web browser to manually inspect the SUT GitLab server
 # during any of the tests, uncomment the section below and add your host's
@@ -42,35 +37,37 @@ HOSTS:
 #        from_ip: '127.0.0.1'
 #        to_ip: '0.0.0.0'
 #-------------------------------------------------------------------------------
+
   client-1:
     roles:
-      - client
-      - permittedclient
-    platform:   el-7-x86_64
-    box:        centos/7
-    hypervisor: <%= hypervisor %>
+    - client
+    - permittedclient
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
     vagrant_memsize: 192
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
   client-2:
     roles:
-      - client
-      - unknownclient
-      - logdest
-      - ldapserver
-    platform:   el-7-x86_64
-    box:        centos/7
-    hypervisor: <%= hypervisor %>
+    - client
+    - unknownclient
+    - logdest
+    - ldapserver
+    platform: el-7-x86_64
+    box: centos/7
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
     vagrant_memsize: 192
+    family: centos-cloud/centos-7
+    gce_machine_type: n1-standard-2
 CONFIG:
   log_level: verbose
-  type:      aio
+  type: aio
   run_in_parallel:
-    - install
-    - config
+  - install
+  - config
   ssh:
     keepalive: true
     keepalive_interval: 10
     keepalive_maxcount: 60
-<% if ENV['BEAKER_PUPPET_COLLECTION'] -%>
-  puppet_collection: <%= ENV['BEAKER_PUPPET_COLLECTION'] %>
-<% end -%>
-  ## vb_gui: true
+  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'puppet7') %>"
