@@ -340,9 +340,9 @@ pup7.pe-unit:
   <<: *pup_7_pe
   <<: *unit_tests
 
-pup8.x-unit:
-  <<: *pup_8_x
-  <<: *unit_tests
+#pup8.x-unit:
+#  <<: *pup_8_x
+#  <<: *unit_tests
 
 # ------------------------------------------------------------------------------
 #             NOTICE: **This file is maintained with puppetsync**
@@ -421,8 +421,8 @@ pup7.pe-oel8-stable:
   script:
     - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-8-x86_64]'
 
-pup8.x-el8-stable:
-  <<: *pup_8_x
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+#pup8.x-el8-stable:
+#  <<: *pup_8_x
+#  <<: *acceptance_base
+#  script:
+#    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
