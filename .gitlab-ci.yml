@@ -232,26 +232,26 @@ variables:
 # Puppet Versions
 #-----------------------------------------------------------------------
 
-.pup_6_x: &pup_6_x
-  image: 'ruby:2.5'
-  variables:
-    PUPPET_VERSION: '~> 6.0'
-    BEAKER_PUPPET_COLLECTION: 'puppet6'
-    MATRIX_RUBY_VERSION: '2.5'
-
-.pup_6_pe: &pup_6_pe
-  image: 'ruby:2.5'
-  variables:
-    PUPPET_VERSION: '6.22.1'
-    BEAKER_PUPPET_COLLECTION: 'puppet6'
-    MATRIX_RUBY_VERSION: '2.5'
-
 .pup_7_x: &pup_7_x
   image: 'ruby:2.7'
   variables:
     PUPPET_VERSION: '~> 7.0'
     BEAKER_PUPPET_COLLECTION: 'puppet7'
     MATRIX_RUBY_VERSION: '2.7'
+
+.pup_7_pe: &pup_7_pe
+  image: 'ruby:2.7'
+  variables:
+    PUPPET_VERSION: '7.21.0'
+    BEAKER_PUPPET_COLLECTION: 'puppet7'
+    MATRIX_RUBY_VERSION: '2.7'
+
+.pup_8_x: &pup_8_x
+  image: 'ruby:3.2'
+  variables:
+    PUPPET_VERSION: '~> 8.0'
+    BEAKER_PUPPET_COLLECTION: 'puppet8'
+    MATRIX_RUBY_VERSION: '3.2'
 
 
 
@@ -302,7 +302,7 @@ variables:
 #=======================================================================
 
 releng_checks:
-  <<: *pup_6_x
+  <<: *pup_7_x
   <<: *setup_bundler_env
   stage: 'validation'
   tags: ['docker']
@@ -325,24 +325,24 @@ releng_checks:
 #       different Puppet versions won't accomplish anything.
 
 pup-lint:
-  <<: *pup_6_x
+  <<: *pup_7_x
   <<: *lint_tests
 
 # Unit Tests
 #-----------------------------------------------------------------------
 
-pup6.x-unit:
-  <<: *pup_6_x
-  <<: *unit_tests
-  <<: *with_SIMP_SPEC_MATRIX_LEVEL_2
-
-pup6.pe-unit:
-  <<: *pup_6_pe
-  <<: *unit_tests
-
 pup7.x-unit:
   <<: *pup_7_x
   <<: *unit_tests
+  <<: *with_SIMP_SPEC_MATRIX_LEVEL_2
+
+pup7.pe-unit:
+  <<: *pup_7_pe
+  <<: *unit_tests
+
+#pup8.x-unit:
+#  <<: *pup_8_x
+#  <<: *unit_tests
 
 # ------------------------------------------------------------------------------
 #             NOTICE: **This file is maintained with puppetsync**
@@ -357,8 +357,8 @@ pup7.x-unit:
 # Test with the GitLab latest version with the latest OS.  It may fail (i.e., we
 # have seen breaking changes on minor GitLab releases), but we want to try it
 # every time to have an early-warning of problems.
-pup6.x-el8-latest:
-  <<: *pup_6_x
+pup7.x-el8-latest:
+  <<: *pup_7_x
   <<: *acceptance_base
   allow_failure: true
   script:
@@ -370,59 +370,59 @@ pup6.x-el8-latest:
 # - Last stable GitLab version = 14.0.0
 # - **If you change this, also change the version in the README.md**.
 #
-pup6.x-el7-stable:
-  <<: *pup_6_x
+pup7.x-el7-stable:
+  <<: *pup_7_x
   <<: *acceptance_base
   <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
   script:
     - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-pup6.x-el8-stable:
-  <<: *pup_6_x
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
-
-pup6.x-el8-fips-stable:
-  <<: *pup_6_x
-  <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
-  script:
-    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
-
-pup6.pe-el7-stable:
-  <<: *pup_6_pe
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
-
-pup6.pe-el8-stable:
-  <<: *pup_6_pe
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
-
-pup6.pe-el8-fips-stable:
-  <<: *pup_6_pe
-  <<: *acceptance_base
-  script:
-    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
-
-pup6.pe-oel7-stable:
-  <<: *pup_6_pe
-  <<: *acceptance_base
-  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-7-x86_64]'
-
-pup6.pe-oel8-stable:
-  <<: *pup_6_pe
-  <<: *acceptance_base
-  script:
-    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-8-x86_64]'
 
 pup7.x-el8-stable:
   <<: *pup_7_x
   <<: *acceptance_base
   script:
     - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup7.x-el8-fips-stable:
+  <<: *pup_7_x
+  <<: *acceptance_base
+  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
+  script:
+    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup7.pe-el7-stable:
+  <<: *pup_7_pe
+  <<: *acceptance_base
+  script:
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-7-x86_64]'
+
+pup7.pe-el8-stable:
+  <<: *pup_7_pe
+  <<: *acceptance_base
+  script:
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup7.pe-el8-fips-stable:
+  <<: *pup_7_pe
+  <<: *acceptance_base
+  script:
+    - 'BEAKER_fips=yes TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
+
+pup7.pe-oel7-stable:
+  <<: *pup_7_pe
+  <<: *acceptance_base
+  <<: *with_SIMP_ACCEPTANCE_MATRIX_LEVEL_2
+  script:
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-7-x86_64]'
+
+pup7.pe-oel8-stable:
+  <<: *pup_7_pe
+  <<: *acceptance_base
+  script:
+    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,oel-8-x86_64]'
+
+#pup8.x-el8-stable:
+#  <<: *pup_8_x
+#  <<: *acceptance_base
+#  script:
+#    - 'TEST_GITLAB_CE_VERSION=14.0.0 bundle exec rake beaker:suites[default,centos-8-x86_64]'
