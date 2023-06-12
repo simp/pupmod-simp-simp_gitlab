@@ -1,3 +1,6 @@
+* Mon Jun 12 2023 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.8.0
+- Add RockyLinux 8 support
+
 * Fri Jun 03 2022 Trevor Vaughan <trevor@sicura.us> - 0.7.1
 - Allow `puppet/chrony` < `3.0.0`
 - Allow `puppet/gitlab` < `9.0.0`
