@@ -19,15 +19,15 @@
 
 ### Functions
 
-* [`simp_gitlab::omnibus_config::gitlab`](#simp_gitlabomnibus_configgitlab): Compile a hash of settings for the ``gitlab`` class parameters, using SIMP settings
-* [`simp_gitlab::omnibus_config::gitlab_rails`](#simp_gitlabomnibus_configgitlab_rails): Compile a hash of settings for the ``gitlab::gitlab_rails`` parameter, using SIMP settings
-* [`simp_gitlab::omnibus_config::gitlab_shell`](#simp_gitlabomnibus_configgitlab_shell): Compile a hash of settings for the ``gitlab::shell`` parameter, using SIMP settings
-* [`simp_gitlab::omnibus_config::mattermost`](#simp_gitlabomnibus_configmattermost): Compile a hash of settings for the ``gitlab::mattermost`` parameter, using SIMP settings
-* [`simp_gitlab::omnibus_config::nginx`](#simp_gitlabomnibus_confignginx): Compile a hash of settings for the ``gitlab::nginx`` parameter, using SIMP settings
+* [`simp_gitlab::omnibus_config::gitlab`](#simp_gitlab--omnibus_config--gitlab): Compile a hash of settings for the ``gitlab`` class parameters, using SIMP settings
+* [`simp_gitlab::omnibus_config::gitlab_rails`](#simp_gitlab--omnibus_config--gitlab_rails): Compile a hash of settings for the ``gitlab::gitlab_rails`` parameter, using SIMP settings
+* [`simp_gitlab::omnibus_config::gitlab_shell`](#simp_gitlab--omnibus_config--gitlab_shell): Compile a hash of settings for the ``gitlab::shell`` parameter, using SIMP settings
+* [`simp_gitlab::omnibus_config::mattermost`](#simp_gitlab--omnibus_config--mattermost): Compile a hash of settings for the ``gitlab::mattermost`` parameter, using SIMP settings
+* [`simp_gitlab::omnibus_config::nginx`](#simp_gitlab--omnibus_config--nginx): Compile a hash of settings for the ``gitlab::nginx`` parameter, using SIMP settings
 
 ### Data types
 
-* [`Simp_Gitlab::Stroolean`](#simp_gitlabstroolean): Valid PKI management options
+* [`Simp_Gitlab::Stroolean`](#Simp_Gitlab--Stroolean): Valid PKI management options
 
 ## Classes
 
@@ -52,40 +52,40 @@ it can be used independently:
 
 The following parameters are available in the `simp_gitlab` class:
 
-* [`trusted_nets`](#trusted_nets)
-* [`denied_nets`](#denied_nets)
-* [`external_url`](#external_url)
-* [`tcp_listen_port`](#tcp_listen_port)
-* [`firewall`](#firewall)
-* [`pki`](#pki)
-* [`app_pki_external_source`](#app_pki_external_source)
-* [`app_pki_dir`](#app_pki_dir)
-* [`app_pki_key`](#app_pki_key)
-* [`app_pki_cert`](#app_pki_cert)
-* [`app_pki_ca`](#app_pki_ca)
-* [`edition`](#edition)
-* [`two_way_ssl_validation`](#two_way_ssl_validation)
-* [`ldap_verify_certificates`](#ldap_verify_certificates)
-* [`ssl_verify_depth`](#ssl_verify_depth)
-* [`ssl_protocols`](#ssl_protocols)
-* [`gitlab_options`](#gitlab_options)
-* [`cipher_suite`](#cipher_suite)
-* [`ldap`](#ldap)
-* [`ldap_uri`](#ldap_uri)
-* [`ldap_active_directory`](#ldap_active_directory)
-* [`ldap_base_dn`](#ldap_base_dn)
-* [`ldap_bind_dn`](#ldap_bind_dn)
-* [`ldap_bind_pw`](#ldap_bind_pw)
-* [`ldap_user_filter`](#ldap_user_filter)
-* [`ldap_group_base`](#ldap_group_base)
-* [`manage_package`](#manage_package)
-* [`package_ensure`](#package_ensure)
-* [`set_gitlab_root_password`](#set_gitlab_root_password)
-* [`gitlab_root_password`](#gitlab_root_password)
-* [`rails_console_load_timeout`](#rails_console_load_timeout)
-* [`allow_fips`](#allow_fips)
+* [`trusted_nets`](#-simp_gitlab--trusted_nets)
+* [`denied_nets`](#-simp_gitlab--denied_nets)
+* [`external_url`](#-simp_gitlab--external_url)
+* [`tcp_listen_port`](#-simp_gitlab--tcp_listen_port)
+* [`firewall`](#-simp_gitlab--firewall)
+* [`pki`](#-simp_gitlab--pki)
+* [`app_pki_external_source`](#-simp_gitlab--app_pki_external_source)
+* [`app_pki_dir`](#-simp_gitlab--app_pki_dir)
+* [`app_pki_key`](#-simp_gitlab--app_pki_key)
+* [`app_pki_cert`](#-simp_gitlab--app_pki_cert)
+* [`app_pki_ca`](#-simp_gitlab--app_pki_ca)
+* [`edition`](#-simp_gitlab--edition)
+* [`two_way_ssl_validation`](#-simp_gitlab--two_way_ssl_validation)
+* [`ldap_verify_certificates`](#-simp_gitlab--ldap_verify_certificates)
+* [`ssl_verify_depth`](#-simp_gitlab--ssl_verify_depth)
+* [`ssl_protocols`](#-simp_gitlab--ssl_protocols)
+* [`gitlab_options`](#-simp_gitlab--gitlab_options)
+* [`cipher_suite`](#-simp_gitlab--cipher_suite)
+* [`ldap`](#-simp_gitlab--ldap)
+* [`ldap_uri`](#-simp_gitlab--ldap_uri)
+* [`ldap_active_directory`](#-simp_gitlab--ldap_active_directory)
+* [`ldap_base_dn`](#-simp_gitlab--ldap_base_dn)
+* [`ldap_bind_dn`](#-simp_gitlab--ldap_bind_dn)
+* [`ldap_bind_pw`](#-simp_gitlab--ldap_bind_pw)
+* [`ldap_user_filter`](#-simp_gitlab--ldap_user_filter)
+* [`ldap_group_base`](#-simp_gitlab--ldap_group_base)
+* [`manage_package`](#-simp_gitlab--manage_package)
+* [`package_ensure`](#-simp_gitlab--package_ensure)
+* [`set_gitlab_root_password`](#-simp_gitlab--set_gitlab_root_password)
+* [`gitlab_root_password`](#-simp_gitlab--gitlab_root_password)
+* [`rails_console_load_timeout`](#-simp_gitlab--rails_console_load_timeout)
+* [`allow_fips`](#-simp_gitlab--allow_fips)
 
-##### <a name="trusted_nets"></a>`trusted_nets`
+##### <a name="-simp_gitlab--trusted_nets"></a>`trusted_nets`
 
 Data type: `Simplib::Netlist`
 
@@ -93,7 +93,7 @@ A list of subnets (in CIDR notation) that should be permitted access
 
 Default value: `simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] })`
 
-##### <a name="denied_nets"></a>`denied_nets`
+##### <a name="-simp_gitlab--denied_nets"></a>`denied_nets`
 
 Data type: `Simplib::Netlist`
 
@@ -101,25 +101,25 @@ A list of subnets (in CIDR notation) that should be explicitly denied access
 
 Default value: `[]`
 
-##### <a name="external_url"></a>`external_url`
+##### <a name="-simp_gitlab--external_url"></a>`external_url`
 
 Data type: `Simplib::Uri`
 
 External URL of Gitlab.  By default, this will be 'https://<fqdn>' if
 ``$pki`` is set and 'http://<fqdn>' if it is ``false``.
 
-Default value: `$pki`
+Default value: `$pki ? { true => "https://${facts['networking']['fqdn']}", 'simp' => "https://${facts['networking']['fqdn']}", default => "http://${facts['networking']['fqdn']}"`
 
-##### <a name="tcp_listen_port"></a>`tcp_listen_port`
+##### <a name="-simp_gitlab--tcp_listen_port"></a>`tcp_listen_port`
 
 Data type: `Simplib::Port`
 
 The port upon which to listen for regular TCP connections.  By default
 this will be ``'80'`` if HTTPS is disabled and ``'443'`` if HTTPS is enabled.
 
-Default value: `$pki`
+Default value: `$pki ? { true => 443, 'simp' => 443, default => 80`
 
-##### <a name="firewall"></a>`firewall`
+##### <a name="-simp_gitlab--firewall"></a>`firewall`
 
 Data type: `Boolean`
 
@@ -127,7 +127,7 @@ If ``true``, manage firewall rules to accommodate **simp_gitlab**
 
 Default value: `simplib::lookup('simp_options::firewall',      {'default_value' => false})`
 
-##### <a name="pki"></a>`pki`
+##### <a name="-simp_gitlab--pki"></a>`pki`
 
 Data type: `Simp_gitlab::Stroolean`
 
@@ -145,7 +145,7 @@ Data type: `Simp_gitlab::Stroolean`
 
 Default value: `simplib::lookup('simp_options::pki', { 'default_value' => false })`
 
-##### <a name="app_pki_external_source"></a>`app_pki_external_source`
+##### <a name="-simp_gitlab--app_pki_external_source"></a>`app_pki_external_source`
 
 Data type: `String`
 
@@ -156,7 +156,7 @@ Data type: `String`
 
 Default value: `simplib::lookup('simp_options::pki::source', { 'default_value' => '/etc/pki/simp/x509' })`
 
-##### <a name="app_pki_dir"></a>`app_pki_dir`
+##### <a name="-simp_gitlab--app_pki_dir"></a>`app_pki_dir`
 
 Data type: `Stdlib::Absolutepath`
 
@@ -165,23 +165,23 @@ This variable controls the basepath of ``$app_pki_key``, ``$app_pki_cert``,
 
 Default value: `'/etc/pki/simp_apps/gitlab/x509'`
 
-##### <a name="app_pki_key"></a>`app_pki_key`
+##### <a name="-simp_gitlab--app_pki_key"></a>`app_pki_key`
 
 Data type: `Stdlib::Absolutepath`
 
 Full path of the private SSL key file.
 
-Default value: `"${app_pki_dir}/private/${facts['fqdn']}.pem"`
+Default value: `"${app_pki_dir}/private/${facts['networking']['fqdn']}.pem"`
 
-##### <a name="app_pki_cert"></a>`app_pki_cert`
+##### <a name="-simp_gitlab--app_pki_cert"></a>`app_pki_cert`
 
 Data type: `Stdlib::Absolutepath`
 
 Full path of the public SSL certificate.
 
-Default value: `"${app_pki_dir}/public/${facts['fqdn']}.pub"`
+Default value: `"${app_pki_dir}/public/${facts['networking']['fqdn']}.pub"`
 
-##### <a name="app_pki_ca"></a>`app_pki_ca`
+##### <a name="-simp_gitlab--app_pki_ca"></a>`app_pki_ca`
 
 Data type: `Stdlib::Absolutepath`
 
@@ -189,7 +189,7 @@ Full path of the the SSL CA certificate.
 
 Default value: `"${app_pki_dir}/cacerts/cacerts.pem"`
 
-##### <a name="edition"></a>`edition`
+##### <a name="-simp_gitlab--edition"></a>`edition`
 
 Data type: `Enum['ce','ee']`
 
@@ -197,24 +197,24 @@ The Gitlab Omnibus edition to install.
 
 Default value: `'ce'`
 
-##### <a name="two_way_ssl_validation"></a>`two_way_ssl_validation`
+##### <a name="-simp_gitlab--two_way_ssl_validation"></a>`two_way_ssl_validation`
 
 Data type: `Boolean`
 
 When ``true``, server and clients will require mutual TLS authentication.
 
-Default value: ``false``
+Default value: `false`
 
-##### <a name="ldap_verify_certificates"></a>`ldap_verify_certificates`
+##### <a name="-simp_gitlab--ldap_verify_certificates"></a>`ldap_verify_certificates`
 
 Data type: `Boolean`
 
 When ``true``, SSL LDAP connections must use certificates signed by a known
 CA.
 
-Default value: ``true``
+Default value: `true`
 
-##### <a name="ssl_verify_depth"></a>`ssl_verify_depth`
+##### <a name="-simp_gitlab--ssl_verify_depth"></a>`ssl_verify_depth`
 
 Data type: `Integer[1]`
 
@@ -222,7 +222,7 @@ Sets the verification depth in the client certificates chain.
 
 Default value: `2`
 
-##### <a name="ssl_protocols"></a>`ssl_protocols`
+##### <a name="-simp_gitlab--ssl_protocols"></a>`ssl_protocols`
 
 Data type: `Array[String[1]]`
 
@@ -230,7 +230,7 @@ Array of Nginx-compatible SSL/TLS protocols for the web server to accept.
 
 Default value: `['TLSv1.2']`
 
-##### <a name="gitlab_options"></a>`gitlab_options`
+##### <a name="-simp_gitlab--gitlab_options"></a>`gitlab_options`
 
 Data type: `Hash`
 
@@ -242,17 +242,21 @@ take precedence.
 
 Default value: `{}`
 
-##### <a name="cipher_suite"></a>`cipher_suite`
+##### <a name="-simp_gitlab--cipher_suite"></a>`cipher_suite`
 
 Data type: `Array[String[1]]`
 
 The cipher suite to use with SSL
 
-Default value: `simplib::lookup( 'simp_options::openssl::cipher_suite', {
-                                                                        'default_value'  => ['DEFAULT', '!MEDIUM']
-                                                                      })`
+Default value:
 
-##### <a name="ldap"></a>`ldap`
+```puppet
+simplib::lookup( 'simp_options::openssl::cipher_suite', {
+                                                                        'default_value'  => ['DEFAULT', '!MEDIUM']
+                                                                      })
+```
+
+##### <a name="-simp_gitlab--ldap"></a>`ldap`
 
 Data type: `Boolean`
 
@@ -260,7 +264,7 @@ If ``true``, enable LDAP support for Gitlab Omnibus.
 
 Default value: `simplib::lookup('simp_options::ldap',          {'default_value' => false})`
 
-##### <a name="ldap_uri"></a>`ldap_uri`
+##### <a name="-simp_gitlab--ldap_uri"></a>`ldap_uri`
 
 Data type: `Array[Simplib::URI]`
 
@@ -269,7 +273,7 @@ List of OpenLDAP server URIs.  Note that _multiple_ URIs is an EE feature.
 
 Default value: `simplib::lookup('simp_options::ldap::uri',     {'default_value' => []})`
 
-##### <a name="ldap_active_directory"></a>`ldap_active_directory`
+##### <a name="-simp_gitlab--ldap_active_directory"></a>`ldap_active_directory`
 
 Data type: `Boolean`
 
@@ -277,9 +281,9 @@ This setting specifies if LDAP server is Active Directory LDAP server.
 For non AD servers it skips the AD specific queries.
 If your LDAP server is not AD, set this to false.
 
-Default value: ``false``
+Default value: `false`
 
-##### <a name="ldap_base_dn"></a>`ldap_base_dn`
+##### <a name="-simp_gitlab--ldap_base_dn"></a>`ldap_base_dn`
 
 Data type: `String[3]`
 
@@ -289,7 +293,7 @@ Base where we can search for users
 
 Default value: `simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()})`
 
-##### <a name="ldap_bind_dn"></a>`ldap_bind_dn`
+##### <a name="-simp_gitlab--ldap_bind_dn"></a>`ldap_bind_dn`
 
 Data type: `String[3]`
 
@@ -297,7 +301,7 @@ The DN to use when binding to the LDAP server
 
 Default value: `simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"})`
 
-##### <a name="ldap_bind_pw"></a>`ldap_bind_pw`
+##### <a name="-simp_gitlab--ldap_bind_pw"></a>`ldap_bind_pw`
 
 Data type: `String[1]`
 
@@ -305,32 +309,32 @@ The password of the bind user
 
 Default value: `simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"})`
 
-##### <a name="ldap_user_filter"></a>`ldap_user_filter`
+##### <a name="-simp_gitlab--ldap_user_filter"></a>`ldap_user_filter`
 
 Data type: `Optional[String[1]]`
 
 Format: RFC 4515 http://tools.ietf.org/search/rfc4515
 @example (employeeType=developer)
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="ldap_group_base"></a>`ldap_group_base`
+##### <a name="-simp_gitlab--ldap_group_base"></a>`ldap_group_base`
 
 Data type: `Optional[String[3]]`
 
 EE only
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="manage_package"></a>`manage_package`
+##### <a name="-simp_gitlab--manage_package"></a>`manage_package`
 
 Data type: `Boolean`
 
 Whether to manage the gitlab-[ce,ee] package.
 
-Default value: ``true``
+Default value: `true`
 
-##### <a name="package_ensure"></a>`package_ensure`
+##### <a name="-simp_gitlab--package_ensure"></a>`package_ensure`
 
 Data type: `String`
 
@@ -339,7 +343,7 @@ The ensure status of the gitlab-[ce,ee] package, when managed by
 
 Default value: `simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' })`
 
-##### <a name="set_gitlab_root_password"></a>`set_gitlab_root_password`
+##### <a name="-simp_gitlab--set_gitlab_root_password"></a>`set_gitlab_root_password`
 
 Data type: `Boolean`
 
@@ -349,9 +353,9 @@ Whether to set the GitLab root password.
   during install otherwise.  Anyone can navigate the the GitLab URL and set
   the root password.
 
-Default value: ``true``
+Default value: `true`
 
-##### <a name="gitlab_root_password"></a>`gitlab_root_password`
+##### <a name="-simp_gitlab--gitlab_root_password"></a>`gitlab_root_password`
 
 Data type: `String[16]`
 
@@ -361,7 +365,7 @@ GitLab root password to set.
 
 Default value: `simplib::passgen( "simp_gitlab_${trusted['certname']}" )`
 
-##### <a name="rails_console_load_timeout"></a>`rails_console_load_timeout`
+##### <a name="-simp_gitlab--rails_console_load_timeout"></a>`rails_console_load_timeout`
 
 Data type: `Integer[60]`
 
@@ -370,7 +374,7 @@ setting the GitLab root password.
 
 Default value: `300`
 
-##### <a name="allow_fips"></a>`allow_fips`
+##### <a name="-simp_gitlab--allow_fips"></a>`allow_fips`
 
 Data type: `Boolean`
 
@@ -380,11 +384,11 @@ server has FIPS enabled.
 * Only set this to `true` if the version of GitLab you are running
   supports FIPS mode.
 
-Default value: ``true``
+Default value: `true`
 
 ## Functions
 
-### <a name="simp_gitlabomnibus_configgitlab"></a>`simp_gitlab::omnibus_config::gitlab`
+### <a name="simp_gitlab--omnibus_config--gitlab"></a>`simp_gitlab::omnibus_config::gitlab`
 
 Type: Puppet Language
 
@@ -398,7 +402,7 @@ settings
 
 Returns: `Any` Hash of `puppet/gitlab` parameters
 
-### <a name="simp_gitlabomnibus_configgitlab_rails"></a>`simp_gitlab::omnibus_config::gitlab_rails`
+### <a name="simp_gitlab--omnibus_config--gitlab_rails"></a>`simp_gitlab::omnibus_config::gitlab_rails`
 
 Type: Puppet Language
 
@@ -412,7 +416,7 @@ SIMP settings
 
 Returns: `Any` Hash of settings for the 'gitlab::gitlab_rails' # parameter
 
-### <a name="simp_gitlabomnibus_configgitlab_shell"></a>`simp_gitlab::omnibus_config::gitlab_shell`
+### <a name="simp_gitlab--omnibus_config--gitlab_shell"></a>`simp_gitlab::omnibus_config::gitlab_shell`
 
 Type: Puppet Language
 
@@ -426,7 +430,7 @@ SIMP settings
 
 Returns: `Any` Hash of settings for the 'gitlab::shell' parameter
 
-### <a name="simp_gitlabomnibus_configmattermost"></a>`simp_gitlab::omnibus_config::mattermost`
+### <a name="simp_gitlab--omnibus_config--mattermost"></a>`simp_gitlab::omnibus_config::mattermost`
 
 Type: Puppet Language
 
@@ -440,7 +444,7 @@ SIMP settings
 
 Returns: `Any` Hash of settings for the 'gitlab::mattermost' parameter
 
-### <a name="simp_gitlabomnibus_confignginx"></a>`simp_gitlab::omnibus_config::nginx`
+### <a name="simp_gitlab--omnibus_config--nginx"></a>`simp_gitlab::omnibus_config::nginx`
 
 Type: Puppet Language
 
@@ -456,13 +460,9 @@ Returns: `Any` Hash of settings for the 'gitlab::nginx' parameter
 
 ## Data types
 
-### <a name="simp_gitlabstroolean"></a>`Simp_Gitlab::Stroolean`
+### <a name="Simp_Gitlab--Stroolean"></a>`Simp_Gitlab::Stroolean`
 
 Valid PKI management options
 
-Alias of
-
-```puppet
-Variant[Enum['simp'], Boolean]
-```
+Alias of `Variant[Enum['simp'], Boolean]`
 
