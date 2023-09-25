@@ -30,7 +30,7 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
   # --------------------------------------------------------------------
   # Construct the 'ldap_servers' Hash
   # --------------------------------------------------------------------
-  $_servers = hash($simp_gitlab::ldap_uri.map |$server| {
+  $_servers = Hash($simp_gitlab::ldap_uri.map |$server| {
 
     # We should also capture a port if it is specified at end of the URL, but
     # even simp_openldap doesn't support that.
