@@ -1,11 +1,12 @@
 # Provides a persistent web browsing session using curl from a SUT client
 #
+require 'English'
 class SutWebSession
   attr_reader   :client, :cookie_file, :header_file, :gitlab_signin_url
   attr_accessor :previous_url
 
   def initialize(client)
-    @unique_str   = "#{Array.new(8).map{|x|(65 + rand(25)).chr}.join}_#{$$}"
+    @unique_str   = "#{Array.new(8).map { |_x| (65 + rand(25)).chr }.join}_#{$PROCESS_ID}"
     @cookie_file  = "/tmp/cookies_#{@unique_str}.txt"
     @header_file  = "/tmp/headers_#{@unique_str}.txt"
     @client       = client
@@ -22,8 +23,8 @@ class SutWebSession
   end
 
   def curl_post(url, post_data_hash)
-    post_data = URI.encode_www_form(Hash[post_data_hash.map{ |x| [x[:name], x[:value]] }])
-    curl_args     = "-b #{@cookie_file} -c #{@cookie_file} -D #{@header_file}" +
+    post_data = URI.encode_www_form(Hash[post_data_hash.map { |x| [x[:name], x[:value]] }])
+    curl_args     = "-b #{@cookie_file} -c #{@cookie_file} -D #{@header_file}" \
                     " -L '#{url}' -d '#{post_data}'"
     result        = curl_on_client(curl_args)
     @previous_url = url if result
@@ -35,12 +36,12 @@ class SutWebSession
     # token should be enough for logins),
     curl_args            += " --referer '#{@previous_url}'" if @previous_url
     result                = on(@client, "#{@curl_cmd} #{curl_args}")
-    failed_response_codes = headers.scan(%r[HTTP/1\.\d (\d\d\d) .*$])
+    failed_response_codes = headers.scan(%r{HTTP/1\.\d (\d\d\d) .*$})
                                    .flatten
-                                   .select{|x| x !~ /^[23]\d\d/ }
+                                   .reject { |x| x =~ %r{^[23]\d\d} }
     unless failed_response_codes.empty?
-      warn '', '-'*80, "REMINDER: web server returned response codes " +
-           "(#{failed_response_codes.join(',')}) during login", '-'*80, ''
+      warn '', '-' * 80, 'REMINDER: web server returned response codes ' \
+                         "(#{failed_response_codes.join(',')}) during login", '-' * 80, ''
       if ENV['PRY'] == 'yes'
         warn "ENV['PRY'] is set to 'yes'; switching to pry console"
         binding.pry
@@ -57,4 +58,3 @@ class SutWebSession
     on(@client, "cat #{@header_file}").stdout
   end
 end
-

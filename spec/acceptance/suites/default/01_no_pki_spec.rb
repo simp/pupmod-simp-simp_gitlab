@@ -3,32 +3,31 @@ require 'spec_helper_acceptance'
 test_name 'simp_gitlab connection with firewall but without pki'
 
 describe 'simp_gitlab firewall without pki' do
- let(:hiera) do
-      {
-        # enable vagrant access
-        'sudo::user_specifications' => {
-          'vagrant_all' => {
-            'user_list' => ['vagrant'],
-            'cmnd'      => ['ALL'],
-            'passwd'    => false,
-          },
+  let(:hiera) do
+    {
+      # enable vagrant access
+      'sudo::user_specifications' => {
+        'vagrant_all' => {
+          'user_list' => ['vagrant'],
+          'cmnd'      => ['ALL'],
+          'passwd'    => false,
         },
-        'pam::access::users' => {
-          'defaults' => {
-            'origins'    => ['ALL'],
-            'permission' => '+',
-          },
-          'vagrant' => nil,
+      },
+      'pam::access::users' => {
+        'defaults' => {
+          'origins'    => ['ALL'],
+          'permission' => '+',
         },
-        'ssh::server::conf::permitrootlogin'    => true,
-        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
+        'vagrant' => nil,
+      },
+      'ssh::server::conf::permitrootlogin'    => true,
+      'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
 
-        # turn on firewalld (as a passthrough); the value of iptables::enable is
-        # immaterial when this is true
-        'iptables::use_firewalld'               => true,
+      # turn on firewalld (as a passthrough); the value of iptables::enable is
+      # immaterial when this is true
+      'iptables::use_firewalld'               => true,
     }
   end
-
 
   let(:manifest__gitlab) do
     <<~EOS
@@ -41,7 +40,7 @@ describe 'simp_gitlab firewall without pki' do
       }
 
       class { 'simp_gitlab':
-        trusted_nets   => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*21}'#{x}',"}.join}
+        trusted_nets   => [ #{ENV['TRUSTED_NETS'].to_s.split(%r{[,| ]}).map { |x| "\n#{' ' * 21}'#{x}'," }.join}
                             '#{gitlab_server.get_ip}',
                             '#{permitted_client.get_ip}',
                             '127.0.0.1/32',
@@ -65,22 +64,22 @@ describe 'simp_gitlab firewall without pki' do
   end
 
   context 'with firewall only' do
-    it 'should set hieradata so beaker can reconnect and firewalld is used' do
+    it 'sets hieradata so beaker can reconnect and firewalld is used' do
       hosts.each { |sut| set_hieradata_on(sut, hiera) }
     end
 
-    it 'should work with no errors' do
+    it 'works with no errors' do
       apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
     end
 
-    it 'should be idempotent' do
+    it 'is idempotent' do
       apply_manifest_on(gitlab_server, manifest__gitlab, catch_changes: true)
     end
 
     it_behaves_like(
       'a GitLab web service',
       "http://#{gitlab_server_fqdn}/users/sign_in",
-      firewall: true
+      firewall: true,
     )
   end
 end

@@ -8,7 +8,6 @@ require 'json'
 values_to_share = {}
 
 describe 'gitlab ssh access' do
-
   # This test is to verify that an authorized GitLab user can access
   # GitLab via ssh.  It uses the GitLab server and an LDAP account set
   # up in 10_ldaps_spec.rb
@@ -16,7 +15,7 @@ describe 'gitlab ssh access' do
   context 'set up ssh and create empty project for authorized user' do
     # We need an oauth token for root in order to modify a user's account
     # via the REST API.
-    it 'should create oauth token for root' do
+    it 'creates oauth token for root' do
       # From https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials
       # We can do this because
       # (1) We have not turned on two-factor authentication for the
@@ -39,9 +38,9 @@ describe 'gitlab ssh access' do
         "https://#{gitlab_server.node_name}/oauth/token",
         '--request POST',
         "--header 'Content-Type: application/json'",
-        "--data '" + json + "'"
+        "--data '" + json + "'",
       ]
-      result = on(permitted_client, args.join(' '), :acceptable_exit_codes => [0,2])
+      result = on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
       token_data = JSON.parse(result.stdout)
       values_to_share[:access_token] = token_data.fetch('access_token')
       # store on host system for debugging
@@ -52,19 +51,19 @@ describe 'gitlab ssh access' do
     # we are going to have the existing Linux vagrant user use the ldapuser1 GitLab
     # account.  However before we can upload ssh keys for this to happen, we first
     # need to retrieve the GitLab id of ldapuser1.
-    it 'should allow retrieval of GitLab user info' do
+    it 'allows retrieval of GitLab user info' do
       args = [
         curl_ssl_cmd(permitted_client),
         "https://#{gitlab_server.node_name}/api/v4/users?username=ldapuser1",
         "--header 'Authorization: Bearer #{values_to_share[:access_token]}'",
-        "--header 'Content-Type: application/json'"
+        "--header 'Content-Type: application/json'",
       ]
-      result = on(permitted_client, args.join(' '), :acceptable_exit_codes => [0,2])
+      result = on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
       user_data = JSON.parse(result.stdout)
       values_to_share[:ldapuser1_id] = user_data[0].fetch('id')
     end
 
-    it "should allow user's ssh keys to be uploaded" do
+    it "allows user's ssh keys to be uploaded" do
       # generate dev ssh key for vagrant (no-password key ONLY because this is a test)
       on(permitted_client, "ssh-keygen -t rsa -b 4096 -f /home/vagrant/.ssh/id_rsa -N ''")
       pub_key = on(permitted_client, 'cat /home/vagrant/.ssh/id_rsa.pub').stdout.strip
@@ -79,12 +78,12 @@ describe 'gitlab ssh access' do
         '--request POST',
         "--header 'Authorization: Bearer #{values_to_share[:access_token]}'",
         "--header 'Content-Type: application/json'",
-        "--data '" + json + "'"
+        "--data '" + json + "'",
       ]
-      result = on(permitted_client, args.join(' '), :acceptable_exit_codes => [0,2])
+      on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
     end
 
-    it 'should allow user to create a GitLab project' do
+    it 'allows user to create a GitLab project' do
       # create a project for ldapuser1
       # https://docs.gitlab.com/ee/api/projects.html#create-project-for-user
       json = "{\"id\": #{values_to_share[:ldapuser1_id]}, \"name\": \"test_project\" }"
@@ -94,14 +93,14 @@ describe 'gitlab ssh access' do
         '--request POST',
         "--header \"Authorization: Bearer #{values_to_share[:access_token]}\"",
         '--header \'Content-Type: application/json\'',
-        "--data '" + json + "'"
+        "--data '" + json + "'",
       ]
-      result = on(permitted_client, args.join(' '), :acceptable_exit_codes => [0,2])
+      on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
     end
   end
 
   context 'user ssh GitLab access' do
-    it 'should allow user to clone via ssh' do
+    it 'allows user to clone via ssh' do
       # start ssh-agent, add vagrant's dev key to it, and add GitLab host key to
       # vagrant's known_hosts file
       ssh_env = '/home/vagrant/.ssh/environment'
@@ -110,8 +109,7 @@ describe 'gitlab ssh access' do
       # this is expected to fail, but we get the GitLab host key added to
       # the known_hosts file in the process
       on(permitted_client, "su -l vagrant -c 'ssh -oStrictHostKeyChecking=no #{gitlab_server.node_name} ls'",
-        :accept_all_exit_codes => true)
-
+        accept_all_exit_codes: true)
 
       # set up git and use to clone ldapuser1's GitLab repo
       install_package(permitted_client, 'git')
@@ -121,5 +119,4 @@ describe 'gitlab ssh access' do
       on(permitted_client, 'ls -al /home/vagrant/test_project')
     end
   end
-
 end
