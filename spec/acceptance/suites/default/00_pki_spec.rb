@@ -5,24 +5,24 @@ test_name 'simp_gitlab pki tls connection'
 
 describe 'simp_gitlab pki tls' do
   let(:hiera__vagrant) do
-      {
-        # enable vagrant access
-        'sudo::user_specifications' => {
-          'vagrant_all' => {
-            'user_list' => ['vagrant'],
-            'cmnd'      => ['ALL'],
-            'passwd'    => false,
-          },
+    {
+      # enable vagrant access
+      'sudo::user_specifications' => {
+        'vagrant_all' => {
+          'user_list' => ['vagrant'],
+          'cmnd'      => ['ALL'],
+          'passwd'    => false,
         },
-        'pam::access::users' => {
-          'defaults' => {
-            'origins'    => ['ALL'],
-            'permission' => '+',
-          },
-          'vagrant' => nil,
+      },
+      'pam::access::users' => {
+        'defaults' => {
+          'origins'    => ['ALL'],
+          'permission' => '+',
         },
-        'ssh::server::conf::permitrootlogin'    => true,
-        'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
+        'vagrant' => nil,
+      },
+      'ssh::server::conf::permitrootlogin'    => true,
+      'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
     }
   end
 
@@ -37,7 +37,7 @@ describe 'simp_gitlab pki tls' do
       }
 
       class { 'simp_gitlab':
-        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*30}'#{x}',"}.join}
+        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(%r{[,| ]}).map { |x| "\n#{' ' * 30}'#{x}'," }.join}
                                      '#{gitlab_server.get_ip}',
                                      '#{permitted_client.get_ip}',
                                      '127.0.0.1/32',
@@ -64,7 +64,7 @@ describe 'simp_gitlab pki tls' do
   # thinks it is set
   context 'fix static host name' do
     hosts.each do |host|
-      it "should ensure static host name matches FQDN fact on #{host}" do
+      it "ensures static host name matches FQDN fact on #{host}" do
         fqdn = fact_on(host, 'fqdn')
         on(host, "hostnamectl set-hostname --static #{fqdn}")
       end
@@ -72,7 +72,7 @@ describe 'simp_gitlab pki tls' do
   end
 
   context 'with PKI enabled but no firewall' do
-    let(:hiera) {
+    let(:hiera) do
       hiera = hiera__vagrant.dup
       # don't use iptables firewall
       hiera['iptables::enable'] = false
@@ -82,13 +82,13 @@ describe 'simp_gitlab pki tls' do
       hiera['iptables::use_firewalld'] = false
 
       hiera
-    }
+    end
 
-    it 'should set hieradata so beaker can reconnect and no firewall is used' do
+    it 'sets hieradata so beaker can reconnect and no firewall is used' do
       hosts.each { |sut| set_hieradata_on(sut, hiera) }
     end
 
-    it 'should prep the test environment' do
+    it 'preps the test environment' do
       test_prep_manifest = <<~EOM
         # clean up Vagrant's leftovers
         class{ 'svckill': mode => 'enforcing' }
@@ -98,22 +98,22 @@ describe 'simp_gitlab pki tls' do
       on(gitlab_server, 'puppet resource service firewalld ensure=stopped')
     end
 
-    it 'should work with no errors' do
+    it 'works with no errors' do
       # On slow servers, the gitlab-rails console may not come up in the
       # allotted time after a `gitlab-ctl reconfigure`. This means
       # `Exec[set_gitlab_root_password]` will fail. So may need to execute
       # `puppet apply` twice to get to a non-errored state.
-      result = apply_manifest_on(gitlab_server, manifest__gitlab, acceptable_exit_codes: [0,1,2,4,6] )
+      result = apply_manifest_on(gitlab_server, manifest__gitlab, acceptable_exit_codes: [0, 1, 2, 4, 6])
 
-      unless [0,2].include?(result.exit_code)
-        puts '>'*80
+      unless [0, 2].include?(result.exit_code)
+        puts '>' * 80
         puts 'First `puppet apply` with gitlab install failed. Retrying...'
-        puts '<'*80
+        puts '<' * 80
         apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
       end
     end
 
-    it 'should be idempotent' do
+    it 'is idempotent' do
       apply_manifest_on(gitlab_server, manifest__gitlab, catch_changes: true)
       on(gitlab_server, 'rpm -q gitlab-ce')
     end
@@ -121,12 +121,12 @@ describe 'simp_gitlab pki tls' do
     it_behaves_like(
       'a GitLab web service',
       "https://#{gitlab_server_fqdn}/users/sign_in",
-      firewall: false
+      firewall: false,
     )
   end
 
   context 'with PKI + firewall + custom port 777' do
-    let (:hiera) {
+    let(:hiera) do
       hiera = hiera__vagrant.dup
 
       # turn on firewalld (as a passthrough); the value of iptables::enable is
@@ -134,18 +134,18 @@ describe 'simp_gitlab pki tls' do
       hiera['iptables::use_firewalld'] = true
 
       hiera
-    }
-
-    let(:new_lines) do
-      '        firewall                => true,' + "\n" +
-      '        tcp_listen_port         => 777,'
     end
 
-    it 'should set hieradata so beaker can reconnect and firewalld is used' do
+    let(:new_lines) do
+      '        firewall                => true,' + "\n" \
+        '        tcp_listen_port         => 777,'
+    end
+
+    it 'sets hieradata so beaker can reconnect and firewalld is used' do
       hosts.each { |sut| set_hieradata_on(sut, hiera) }
     end
 
-    it 'should prep the test environment' do
+    it 'preps the test environment' do
       test_prep_manifest = <<~EOM
         include 'iptables'
 
@@ -161,24 +161,23 @@ describe 'simp_gitlab pki tls' do
         }
       EOM
 
-      apply_manifest_on(gitlab_server,  test_prep_manifest)
+      apply_manifest_on(gitlab_server, test_prep_manifest)
     end
 
-    it 'should work with no errors' do
-      new_manifest = manifest__gitlab.gsub(%r[(pki\s*=>\s*true),?], "\\1,\n#{new_lines}\n")
+    it 'works with no errors' do
+      new_manifest = manifest__gitlab.gsub(%r{(pki\s*=>\s*true),?}, "\\1,\n#{new_lines}\n")
       apply_manifest_on(gitlab_server, new_manifest, catch_failures: true)
     end
 
-    it 'should be idempotent' do
-      new_manifest = manifest__gitlab.gsub(%r[(pki\s*=>\s*true),?], "\\1,\n#{new_lines}\n")
+    it 'is idempotent' do
+      new_manifest = manifest__gitlab.gsub(%r{(pki\s*=>\s*true),?}, "\\1,\n#{new_lines}\n")
       apply_manifest_on(gitlab_server, new_manifest, catch_changes: true)
     end
 
     it_behaves_like(
       'a GitLab web service',
       "https://#{gitlab_server_fqdn}:777/users/sign_in",
-      firewall: true
+      firewall: true,
     )
   end
-
 end
