@@ -42,10 +42,12 @@ class SutWebSession
     unless failed_response_codes.empty?
       warn '', '-' * 80, 'REMINDER: web server returned response codes ' \
                          "(#{failed_response_codes.join(',')}) during login", '-' * 80, ''
+      # rubocop:disable Lint/Debugger
       if ENV['PRY'] == 'yes'
         warn "ENV['PRY'] is set to 'yes'; switching to pry console"
         binding.pry
       end
+      # rubocop:enable Lint/Debugger
     end
     result.stdout
   end

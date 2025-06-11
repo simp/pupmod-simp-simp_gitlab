@@ -6,10 +6,11 @@ require 'helpers/gitlab_signin_form'
 describe 'simp_gitlab using ldap' do
   # We're using instances variables instead of `let()` blocks to run expensive
   # ops up front and keep beaker log chatter focused on the tests
+  # rubocop:disable RSpec/InstanceVariable
   before(:all) do
-    _domains = fact_on(ldap_server, 'domain').split('.')
-    _domains.map! { |d| "dc=#{d}" }
-    @ldap_domains = _domains.join(',')
+    facter_found_domains = fact_on(ldap_server, 'domain').split('.')
+    facter_found_domains.map! { |d| "dc=#{d}" }
+    @ldap_domains = facter_found_domains.join(',')
 
     # TODO: Create a password helper for the LDAP root, LDAP bind, and LDAP
     #      user passwords (plain text and encrypted formats). Currently, the
@@ -228,12 +229,14 @@ describe 'simp_gitlab using ldap' do
           warn '=' * 80, "== login alert text: '#{login_alert_text}'", '=' * 80
         end
 
+        # rubocop:disable Lint/Debugger
         if ENV['PRY'] == 'yes'
           if login_alert_text =~ %r{^Could not authenticate} || !current_user_text.match('ldapuser1')
             warn "ENV['PRY'] is set to 'yes'; switching to pry console"
             binding.pry
           end
         end
+        # rubocop:enable Lint/Debugger
 
         # Test for failure
         expect(login_alert_text).not_to match(%r{^Could not authenticate})
@@ -264,4 +267,5 @@ describe 'simp_gitlab using ldap' do
       it_behaves_like 'a web login for LDAP users', 'ldaps://'
     end
   end
+  # rubocop:enable RSpec/InstanceVariable
 end

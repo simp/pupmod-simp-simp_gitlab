@@ -198,16 +198,16 @@ describe 'simp_gitlab' do
           end
 
           it 'contains correct LDAP settings' do
-            _gitlab_rails = catalogue.resource('class', 'gitlab').send(:parameters)[:gitlab_rails]
-            expect(_gitlab_rails).to include({ 'ldap_enabled' => true })
-            expect(_gitlab_rails['ldap_servers'].size).to eq 3
-            expect(_gitlab_rails['ldap_servers'].first.last).to include({ 'base'  => 'dc=bar,dc=baz' })
-            expect(_gitlab_rails['ldap_servers'].first.last).to include({ 'label' => 'LDAP' })
+            gitlab_rails = catalogue.resource('class', 'gitlab').send(:parameters)[:gitlab_rails]
+            expect(gitlab_rails).to include({ 'ldap_enabled' => true })
+            expect(gitlab_rails['ldap_servers'].size).to eq 3
+            expect(gitlab_rails['ldap_servers'].first.last).to include({ 'base'  => 'dc=bar,dc=baz' })
+            expect(gitlab_rails['ldap_servers'].first.last).to include({ 'label' => 'LDAP' })
           end
 
           it 'mangles LDAP server names into valid and unique provider IDs' do
-            _gitlab_rails = catalogue.resource('class', 'gitlab').send(:parameters)[:gitlab_rails]
-            expect(_gitlab_rails['ldap_servers'].keys.sort).to eql [
+            gitlab_rails = catalogue.resource('class', 'gitlab').send(:parameters)[:gitlab_rails]
+            expect(gitlab_rails['ldap_servers'].keys.sort).to eql [
               'ldapsldapserver1examplecom',
               'ldapsldapserver2examplecom',
               'ldapldapserver3examplecom',
