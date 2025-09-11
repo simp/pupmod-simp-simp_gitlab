@@ -4,33 +4,33 @@ require 'helpers/sut_web_session'
 require 'helpers/gitlab_signin_form'
 
 describe 'simp_gitlab using ldap' do
-
   # We're using instances variables instead of `let()` blocks to run expensive
   # ops up front and keep beaker log chatter focused on the tests
+  # rubocop:disable RSpec/InstanceVariable
   before(:all) do
-    _domains     = fact_on(ldap_server, 'domain').split('.')
-    _domains.map! { |d| "dc=#{d}" }
-    @ldap_domains = _domains.join(',')
+    facter_found_domains = fact_on(ldap_server, 'domain').split('.')
+    facter_found_domains.map! { |d| "dc=#{d}" }
+    @ldap_domains = facter_found_domains.join(',')
 
-    # TODO Create a password helper for the LDAP root, LDAP bind, and LDAP
+    # TODO: Create a password helper for the LDAP root, LDAP bind, and LDAP
     #      user passwords (plain text and encrypted formats). Currently, the
     #      passwords are hardcoded in various test files.
     @ldap_root_password = 'suP3rP@ssw0r!'
     @ldapuser_password = 'suP3rP@ssw0r!'
 
-    hieradata_file = File.expand_path('../support/files/ldap_tls_default.yaml',__FILE__)
+    hieradata_file = File.expand_path('../support/files/ldap_tls_default.yaml', __FILE__)
     @ldap_hieradata = File.read(hieradata_file)
-                        .gsub('LDAP_BASE_DN',@ldap_domains)
-                        .gsub('LDAP_URI', ldap_server.node_name )
+                          .gsub('LDAP_BASE_DN', @ldap_domains)
+                          .gsub('LDAP_URI', ldap_server.node_name)
 
     @manifest__remove_gitlab = File.read(
-      File.expand_path('../support/manifests/remove_gitlab.pp',__FILE__)
+      File.expand_path('../support/manifests/remove_gitlab.pp', __FILE__),
     )
     @manifest__remove_ldap_server = File.read(
-      File.expand_path('../support/manifests/remove_ldap_server.pp',__FILE__)
+      File.expand_path('../support/manifests/remove_ldap_server.pp', __FILE__),
     )
-    @manifest__install_ldap_server   = File.read(
-      File.expand_path('../support/manifests/install_ldap_server.pp',__FILE__)
+    @manifest__install_ldap_server = File.read(
+      File.expand_path('../support/manifests/install_ldap_server.pp', __FILE__),
     )
     @manifest__gitlab = <<~EOS
       include 'svckill'
@@ -42,7 +42,7 @@ describe 'simp_gitlab using ldap' do
       }
 
       class { 'simp_gitlab':
-        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(/[,| ]/).map{|x| "\n#{' '*30}'#{x}',"}.join}
+        trusted_nets            => [ #{ENV['TRUSTED_NETS'].to_s.split(%r{[,| ]}).map { |x| "\n#{' ' * 30}'#{x}'," }.join}
                                      '#{gitlab_server.get_ip}',
                                      '#{permitted_client.get_ip}',
                                      '127.0.0.1/32',
@@ -69,9 +69,9 @@ describe 'simp_gitlab using ldap' do
 
   hosts.each do |host|
     context "on host #{host}" do
-      it 'should enable additional OS repos as needed' do
-        result = on(host, 'cat /etc/oracle-release', :accept_all_exit_codes => true)
-        if (result.exit_code == 0) && host[:platform].match(/el-7/)
+      it 'enables additional OS repos as needed' do
+        result = on(host, 'cat /etc/oracle-release', accept_all_exit_codes: true)
+        if (result.exit_code == 0) && host[:platform].include?('el-7')
           # OEL 7 needs another repo enabled for the openssh-ldap package
           host.install_package('yum-utils')
           on(host, 'yum-config-manager --enable ol7_optional_latest')
@@ -97,20 +97,19 @@ describe 'simp_gitlab using ldap' do
         apply_manifest_on(ldap_server, @manifest__install_ldap_server)
 
         # add LDAP accounts
-        os_major  = pfact_on(ldap_server, 'os.release.major')
+        os_major = pfact_on(ldap_server, 'os.release.major')
         if os_major == '7'
-          ldif_file = File.expand_path('../support/files/ldap_test_user.ldif',__FILE__)
-          ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN',@ldap_domains)
+          ldif_file = File.expand_path('../support/files/ldap_test_user.ldif', __FILE__)
+          ldif_text = File.read(ldif_file).gsub('LDAP_BASE_DN', @ldap_domains)
           create_remote_file(ldap_server, '/root/user_ldif.ldif', ldif_text)
-          result = on(ldap_server, 'ldapadd -x -ZZ ' +
-                        "-D cn=LDAPAdmin,ou=People,#{@ldap_domains} " +
-                        "-H ldap://#{ldap_server_fqdn} " +
-                        "-w '#{@ldap_root_password}' " +
-                        '-f /root/user_ldif.ldif'
-          )
+          on(ldap_server, 'ldapadd -x -ZZ ' \
+                        "-D cn=LDAPAdmin,ou=People,#{@ldap_domains} " \
+                        "-H ldap://#{ldap_server_fqdn} " \
+                        "-w '#{@ldap_root_password}' " \
+                        '-f /root/user_ldif.ldif')
         else
-          add_users_file =  File.expand_path('../support/files/add_ldapusers.sh',__FILE__)
-          add_users_script = File.read(add_users_file).gsub('LDAP_BASE_DN',@ldap_domains)
+          add_users_file = File.expand_path('../support/files/add_ldapusers.sh', __FILE__)
+          add_users_script = File.read(add_users_file).gsub('LDAP_BASE_DN', @ldap_domains)
           create_remote_file(ldap_server, '/root/add_ldapusers.sh', add_users_script)
           on(ldap_server, 'chmod +x /root/add_ldapusers.sh')
           on(ldap_server, '/root/add_ldapusers.sh')
@@ -126,28 +125,28 @@ describe 'simp_gitlab using ldap' do
         end
       end
 
-      it 'should be configured with the test hiera data' do
-        gitlab_hieradata = @ldap_hieradata.gsub('ldap://',ldap_proto)
+      it 'is configured with the test hiera data' do
+        gitlab_hieradata = @ldap_hieradata.gsub('ldap://', ldap_proto)
         set_hieradata_on(gitlab_server, gitlab_hieradata, 'default')
       end
 
-      it 'should apply with no errors' do
+      it 'applies with no errors' do
         # On slow servers, the gitlab-rails console may not come up in the
         # allotted time after a `gitlab-ctl reconfigure`. This means
         # `Exec[set_gitlab_root_password]` will fail. So may need to execute
         # `puppet apply` twice to get to a non-errored state.
-        result = apply_manifest_on(gitlab_server,@manifest__gitlab, acceptable_exit_codes: [0,1,2,4,6] )
+        result = apply_manifest_on(gitlab_server, @manifest__gitlab, acceptable_exit_codes: [0, 1, 2, 4, 6])
 
-        unless [0,2].include?(result.exit_code)
-          puts '>'*80
+        unless [0, 2].include?(result.exit_code)
+          puts '>' * 80
           puts 'First `puppet apply` with gitlab install failed. Retrying...'
-          puts '<'*80
-          apply_manifest_on(gitlab_server,@manifest__gitlab,catch_failures: true)
+          puts '<' * 80
+          apply_manifest_on(gitlab_server, @manifest__gitlab, catch_failures: true)
         end
       end
 
-      it 'should be idempotent' do
-        apply_manifest_on(gitlab_server,@manifest__gitlab,catch_changes: true)
+      it 'is idempotent' do
+        apply_manifest_on(gitlab_server, @manifest__gitlab, catch_changes: true)
       end
 
       it_behaves_like('a GitLab web service', gitlab_signin_url, firewall: true)
@@ -195,15 +194,14 @@ describe 'simp_gitlab using ldap' do
       #   https://stackoverflow.com/questions/47948887/login-to-gitlab-using-curl
       #
       it 'permits a valid LDAP user to log in via the web page' do
-
         user1_session = SutWebSession.new(permitted_client)
         html    = user1_session.curl_get(gitlab_signin_url)
         gl_form = GitlabSigninForm.new(html)
         html    = user1_session.curl_post(
           "https://#{gitlab_server_fqdn + gl_form.action}",
-          gl_form.signin_post_data('ldapuser1',@ldapuser_password)
+          gl_form.signin_post_data('ldapuser1', @ldapuser_password),
         )
-        doc     = Nokogiri::HTML(html)
+        doc = Nokogiri::HTML(html)
 
         # The following CSS-based searches are fragile, but the best
         # we can do...
@@ -214,10 +212,10 @@ describe 'simp_gitlab using ldap' do
         current_user = doc.css("li[class='current-user']").first
         current_user_text = nil
         if current_user.nil?
-          warn '='*80,'== list item with current-user not found ==','='*80
+          warn '=' * 80, '== list item with current-user not found ==', '=' * 80
         else
           current_user_text = current_user.text
-          unless current_user_text.match('ldapuser1')
+          unless current_user_text.match?('ldapuser1')
             warn "INFO: current-user list item text: #{current_user_text}"
           end
         end
@@ -228,22 +226,24 @@ describe 'simp_gitlab using ldap' do
         login_alert_text = ''
         unless login_alerts.empty?
           login_alert_text = login_alerts.text.strip
-          warn '='*80,"== login alert text: '#{login_alert_text}'",'='*80
+          warn '=' * 80, "== login alert text: '#{login_alert_text}'", '=' * 80
         end
 
+        # rubocop:disable Lint/Debugger
         if ENV['PRY'] == 'yes'
-          if(login_alert_text =~ /^Could not authenticate/ || !current_user_text.match('ldapuser1'))
+          if login_alert_text =~ %r{^Could not authenticate} || !current_user_text.match('ldapuser1')
             warn "ENV['PRY'] is set to 'yes'; switching to pry console"
             binding.pry
           end
         end
+        # rubocop:enable Lint/Debugger
 
         # Test for failure
-        expect(login_alert_text).to_not match(/^Could not authenticate/)
+        expect(login_alert_text).not_to match(%r{^Could not authenticate})
 
         # Test for success
         expect(current_user).not_to be_nil
-        expect(current_user_text).to match(/ldapuser1/)
+        expect(current_user_text).to match(%r{ldapuser1})
       end
 
       # (As of 10.4) LDAP group membership is only considered by GitLab EE
@@ -266,6 +266,6 @@ describe 'simp_gitlab using ldap' do
       test_name 'simp_gitlab ldap simple tls'
       it_behaves_like 'a web login for LDAP users', 'ldaps://'
     end
-
   end
+  # rubocop:enable RSpec/InstanceVariable
 end

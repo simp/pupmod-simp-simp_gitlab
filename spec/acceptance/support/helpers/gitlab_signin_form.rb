@@ -12,17 +12,17 @@ class GitlabSigninForm
 
   # Returns a hash of all input elements in a completed signin form
   def signin_post_data(username, password)
-      @form.css('input#username').first['value'] = username
-      @form.css('input#password').first['value'] = password
-      input_data_hash = form.css('input').map do |x|
-        {
-          :name  => x['name'],
-          :type  => x['type'],
-          :value => (x['value'] || nil)
-        }
-      end
-      input_data_hash.select{|x| x[:name] == 'authenticity_token' }.first[:value] = @header_csrf_token
-      input_data_hash
+    @form.css('input#username').first['value'] = username
+    @form.css('input#password').first['value'] = password
+    input_data_hash = form.css('input').map do |x|
+      {
+        name: x['name'],
+        type: x['type'],
+        value: x['value'] || nil,
+      }
+    end
+    input_data_hash.find { |x| x[:name] == 'authenticity_token' }[:value] = @header_csrf_token
+    input_data_hash
   end
 
   private
@@ -37,12 +37,14 @@ class GitlabSigninForm
     end
 
     unless msg.empty?
-      warn "WARNING: #{msg}", '-'*80, ''
+      warn "WARNING: #{msg}", '-' * 80, ''
+      # rubocop:disable Lint/Debugger
       if ENV['PRY'] == 'yes'
         warn "ENV['PRY'] is set to 'yes'; switching to pry console"
         binding.pry
       end
-      fail "ERROR: Not a recognizable signin form"
+      # rubocop:enable Lint/Debugger
+      raise 'ERROR: Not a recognizable signin form'
     end
     form
   end
