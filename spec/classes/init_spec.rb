@@ -35,7 +35,7 @@ describe 'simp_gitlab' do
                     #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/27607
                     # proxy_pass http://gitlab-workhorse;
               EOM
-                           )
+            )
           }
 
           it {
@@ -97,8 +97,8 @@ describe 'simp_gitlab' do
           let(:params) do
             {
               trusted_nets: ['10.0.2.0/24'],
-         tcp_listen_port: 1234,
-         firewall: true,
+              tcp_listen_port: 1234,
+              firewall: true,
             }
           end
 
@@ -148,8 +148,8 @@ describe 'simp_gitlab' do
             let(:params) do
               {
                 pki: true,
-           two_way_ssl_validation: true,
-           app_pki_dir: '/some/other/path',
+                two_way_ssl_validation: true,
+                app_pki_dir: '/some/other/path',
               }
             end
 
@@ -171,8 +171,8 @@ describe 'simp_gitlab' do
             let(:params) do
               {
                 pki: true,
-           firewall: true,
-           tcp_listen_port: 777,
+                firewall: true,
+                tcp_listen_port: 777,
               }
             end
 
@@ -185,15 +185,15 @@ describe 'simp_gitlab' do
           let(:params) do
             {
               ldap: true,
-         ldap_uri: [
-           'ldaps://ldapserver1.example.com',
-           'ldaps://ldapserver2.example.com',
-           'ldap://ldapserver3.example.com',
-         ],
-         ldap_base_dn: 'dc=bar,dc=baz',
-         ldap_bind_dn: 'cn=hostAuth,ou=Hosts,dc=bar,dc=baz',
-         ldap_bind_pw: 's00per sekr3t!',
-         ldap_active_directory: false,
+              ldap_uri: [
+                'ldaps://ldapserver1.example.com',
+                'ldaps://ldapserver2.example.com',
+                'ldap://ldapserver3.example.com',
+              ],
+              ldap_base_dn: 'dc=bar,dc=baz',
+              ldap_bind_dn: 'cn=hostAuth,ou=Hosts,dc=bar,dc=baz',
+              ldap_bind_pw: 's00per sekr3t!',
+              ldap_active_directory: false,
             }
           end
 
@@ -252,9 +252,9 @@ describe 'simp_gitlab' do
 
             it {
               is_expected.to contain_class('gitlab').with_mattermost(
-            'enable'         => 'true',
-            'team_site_name' => 'My GitLab Matters the Most',
-          )
+                'enable'         => 'true',
+                'team_site_name' => 'My GitLab Matters the Most',
+              )
             }
           end
 
@@ -262,7 +262,7 @@ describe 'simp_gitlab' do
             let(:params) do
               {
                 gitlab_options: { 'letsencrypt' => { 'enable' => 'true' } },
-           pki: 'simp',
+                pki: 'simp',
               }
             end
 
@@ -302,7 +302,7 @@ describe 'simp_gitlab' do
       let(:facts) do
         {
           osfamily: 'Solaris',
-           operatingsystem: 'Nexenta',
+          operatingsystem: 'Nexenta',
         }
       end
 
