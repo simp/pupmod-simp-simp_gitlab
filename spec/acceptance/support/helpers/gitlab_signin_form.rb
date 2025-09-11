@@ -18,7 +18,7 @@ class GitlabSigninForm
       {
         name: x['name'],
         type: x['type'],
-        value: x['value'] || nil
+        value: x['value'] || nil,
       }
     end
     input_data_hash.find { |x| x[:name] == 'authenticity_token' }[:value] = @header_csrf_token

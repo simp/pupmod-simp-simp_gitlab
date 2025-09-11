@@ -25,61 +25,61 @@ describe 'simp_gitlab' do
           it {
             is_expected.to contain_file('/etc/gitlab/nginx/conf.d/http_access_list.conf')
               .with_content(<<~EOM,
-              # This file is managed by Puppet(module 'simp_gitlab')
+                # This file is managed by Puppet(module 'simp_gitlab')
 
-                  allow 127.0.0.1/32;
+                    allow 127.0.0.1/32;
 
-                  deny all;
+                    deny all;
 
-                  # See:
-                  #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/27607
-                  # proxy_pass http://gitlab-workhorse;
-            EOM
+                    # See:
+                    #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/27607
+                    # proxy_pass http://gitlab-workhorse;
+              EOM
                            )
           }
 
           it {
             is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with(
-          ensure: 'present',
-          key: 'AuthorizedKeysFile',
-          condition: 'User git',
-          value: '/var/opt/gitlab/.ssh/authorized_keys',
-        )
+              ensure: 'present',
+              key: 'AuthorizedKeysFile',
+              condition: 'User git',
+              value: '/var/opt/gitlab/.ssh/authorized_keys',
+            )
           }
 
           it {
-            is_expected.to contain_class('gitlab').with({
-                                                          manage_package: true,
-          manage_upstream_edition: 'ce',
-          package_ensure: 'installed',
-          external_url: 'http://foo.example.com:80',
-          nginx: {
-            'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n"
-          },
-          gitlab_rails: {
-            'initial_root_password' => 'temp_generated_password',
-            'usage_ping_enabled'    => false
-          },
-          shell: {
-            'auth_file' => '/var/opt/gitlab/.ssh/authorized_keys'
-          },
-          mattermost: { 'enable' => false },
-          mattermost_nginx: { 'enable' => false },
-          prometheus: { 'enable' => false },
-          gitlab_exporter: { 'enable' => false },
-          node_exporter: { 'enable' => false },
-          redis_exporter: { 'enable' => false },
-          postgres_exporter: { 'enable' => false },
-          letsencrypt: { 'enable' => false },
-                                                        })
+            is_expected.to contain_class('gitlab').with(
+              manage_package: true,
+              manage_upstream_edition: 'ce',
+              package_ensure: 'installed',
+              external_url: 'http://foo.example.com:80',
+              nginx: {
+                'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+              },
+              gitlab_rails: {
+                'initial_root_password' => 'temp_generated_password',
+                'usage_ping_enabled'    => false,
+              },
+              shell: {
+                'auth_file' => '/var/opt/gitlab/.ssh/authorized_keys',
+              },
+              mattermost: { 'enable' => false },
+              mattermost_nginx: { 'enable' => false },
+              prometheus: { 'enable' => false },
+              gitlab_exporter: { 'enable' => false },
+              node_exporter: { 'enable' => false },
+              redis_exporter: { 'enable' => false },
+              postgres_exporter: { 'enable' => false },
+              letsencrypt: { 'enable' => false },
+            )
           }
 
           it { is_expected.to contain_svckill__ignore('gitlab-runsvdir') }
           it {
             is_expected.to contain_pam__access__rule('Allow GitLab git users via ssh').with(
-          users: [ 'git' ],
-          origins: [ 'LOCAL' ],
-        )
+              users: [ 'git' ],
+              origins: [ 'LOCAL' ],
+            )
           }
 
           it { is_expected.to contain_file('/usr/local/sbin/change_gitlab_root_password') }
@@ -110,9 +110,9 @@ describe 'simp_gitlab' do
 
           it {
             is_expected.to contain_pam__access__rule('Allow GitLab git users via ssh').with(
-          users: [ 'git' ],
-          origins: [ '10.0.2.0/24' ],
-        )
+              users: [ 'git' ],
+              origins: [ '10.0.2.0/24' ],
+            )
           }
         end
 
@@ -125,21 +125,21 @@ describe 'simp_gitlab' do
 
           it { is_expected.to contain_pki__copy('gitlab') }
           it {
-            is_expected.to contain_pki_cert_sync('/etc/gitlab/trusted-certs').with({
-                                                                                     purge: true,
-          generate_pem_hash_links: false
-                                                                                   })
+            is_expected.to contain_pki_cert_sync('/etc/gitlab/trusted-certs').with(
+              purge: true,
+              generate_pem_hash_links: false,
+            )
           }
           it { is_expected.to contain_class('gitlab').with_external_url(%r{^https}) }
           it 'contains correct nginx settings' do
             nginx = catalogue.resource('class', 'gitlab').send(:parameters)[:nginx]
-            expect(nginx).to include({
-                                       'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+            expect(nginx).to include(
+              'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
               'ssl_certificate'     => '/etc/pki/simp_apps/gitlab/x509/public/foo.example.com.pub',
               'ssl_certificate_key' => '/etc/pki/simp_apps/gitlab/x509/private/foo.example.com.pem',
               'ssl_ciphers'         => 'DEFAULT:!MEDIUM',
               'ssl_protocols'       => 'TLSv1.2',
-                                     })
+            )
             expect(nginx).not_to include('ssl_verify_client' => 'on')
           end
           it { is_expected.to contain_file('/etc/gitlab/nginx/conf.d/http_access_list.conf').with_content(%r{allow 127.0.0.1/32;\n+\s+deny all;\n}) }
@@ -157,13 +157,13 @@ describe 'simp_gitlab' do
 
             it 'contains correct nginx settings' do
               nginx = catalogue.resource('class', 'gitlab').send(:parameters)[:nginx]
-              expect(nginx).to include({
-                                         'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+              expect(nginx).to include(
+                'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
                 'ssl_certificate'     => '/some/other/path/public/foo.example.com.pub',
                 'ssl_certificate_key' => '/some/other/path/private/foo.example.com.pem',
                 'ssl_verify_client'   => 'on',
                 'ssl_verify_depth'    => 2,
-                                       })
+              )
             end
           end
 
@@ -199,10 +199,10 @@ describe 'simp_gitlab' do
 
           it 'contains correct LDAP settings' do
             gitlab_rails = catalogue.resource('class', 'gitlab').send(:parameters)[:gitlab_rails]
-            expect(gitlab_rails).to include({ 'ldap_enabled' => true })
+            expect(gitlab_rails).to include('ldap_enabled' => true)
             expect(gitlab_rails['ldap_servers'].size).to eq 3
-            expect(gitlab_rails['ldap_servers'].first.last).to include({ 'base'  => 'dc=bar,dc=baz' })
-            expect(gitlab_rails['ldap_servers'].first.last).to include({ 'label' => 'LDAP' })
+            expect(gitlab_rails['ldap_servers'].first.last).to include('base'  => 'dc=bar,dc=baz')
+            expect(gitlab_rails['ldap_servers'].first.last).to include('label' => 'LDAP')
           end
 
           it 'mangles LDAP server names into valid and unique provider IDs' do
@@ -222,19 +222,19 @@ describe 'simp_gitlab' do
                 gitlab_options: {
                   'manage_omnibus_repository' => false,
                   'nginx'                     => {
-                    'client_max_body_size' => '300m'
-                  }
-                }
+                    'client_max_body_size' => '300m',
+                  },
+                },
               }
             end
 
             it {
               is_expected.to contain_class('gitlab')
                 .with_manage_omnibus_repository(false)
-                .with_nginx({
-                              'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
-              'client_max_body_size' => '300m'
-                            })
+                .with_nginx(
+                  'custom_nginx_config' => "include /etc/gitlab/nginx/conf.d/*.conf;\n",
+                  'client_max_body_size' => '300m',
+                )
             }
           end
 
@@ -244,9 +244,9 @@ describe 'simp_gitlab' do
                 gitlab_options: {
                   'mattermost' => {
                     'enable'         => 'true',
-                    'team_site_name' => 'My GitLab Matters the Most'
-                  }
-                }
+                    'team_site_name' => 'My GitLab Matters the Most',
+                  },
+                },
               }
             end
 
@@ -262,7 +262,7 @@ describe 'simp_gitlab' do
             let(:params) do
               {
                 gitlab_options: { 'letsencrypt' => { 'enable' => 'true' } },
-           pki: 'simp'
+           pki: 'simp',
               }
             end
 
