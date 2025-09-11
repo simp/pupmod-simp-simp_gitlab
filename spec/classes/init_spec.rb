@@ -24,7 +24,7 @@ describe 'simp_gitlab' do
           it { is_expected.to contain_file('/etc/gitlab/nginx/conf.d').with_ensure('directory') }
           it {
             is_expected.to contain_file('/etc/gitlab/nginx/conf.d/http_access_list.conf')
-              .with_content(<<~EOM,
+              .with_content(<<~EOM)
                 # This file is managed by Puppet(module 'simp_gitlab')
 
                     allow 127.0.0.1/32;
@@ -35,7 +35,6 @@ describe 'simp_gitlab' do
                     #   - https://gitlab.com/gitlab-org/gitlab-ce/issues/27607
                     # proxy_pass http://gitlab-workhorse;
               EOM
-            )
           }
 
           it {
