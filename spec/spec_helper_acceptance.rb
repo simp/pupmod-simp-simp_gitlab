@@ -1,6 +1,7 @@
 require 'beaker-rspec'
 require 'simp/beaker_helpers'
 include Simp::BeakerHelpers
+
 require 'tmpdir'
 require 'pry' if ENV['PRY'] == 'yes'
 
