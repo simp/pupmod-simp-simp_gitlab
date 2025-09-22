@@ -45,6 +45,6 @@ module SimpGitlabBeakerHelpers::SutVariables
   end
 
   def gitlab_signin_url(proto = 'https', port = nil)
-    "#{proto}://#{gitlab_server_fqdn}#{port ? ":#{port}" : ''}/users/sign_in"
+    "#{proto}://#{gitlab_server_fqdn}#{":#{port}" if port}/users/sign_in"
   end
 end
