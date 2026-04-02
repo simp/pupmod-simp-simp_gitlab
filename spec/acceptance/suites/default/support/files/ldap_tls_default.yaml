@@ -59,36 +59,6 @@ simp_ds389::instances::accounts::tls_params:
     cn=encryption,cn=config:
       nsSSLClientAuth: allowed
 
-###############################################################################
-# simp_openldap::client settings only applicable on EL7
-# - Used when adding ldapuser1 & ldapuser2 using 'ldapadd'
-###############################################################################
-simp_openldap::client::tls_cipher_suite:
-- 'HIGH'
-- '-SSLv2'
-
-###############################################################################
-# simp_openldap::server settings only applicable on EL7
-###############################################################################
-simp_openldap::server::conf::rootpw: "{SSHA}TghZyHW6r8/NL4fo0Q8BnihxVb7A7af5"
-simp_openldap::server::use_ppolicy: true
-simp_openldap::server::conf::tls_cipher_suite:
-- 'HIGH'
-- '-SSLv2'
-
-simp_openldap::server::conf::tls_protocol_min: 3.3
-simp_openldap::server::conf::slapd_log_level:
-- 'stats'
-- 'sync'
-- 'trace'
-- 'args'
-- 'BER'
-
-# relaxed LDAP defaults to make multiple tests easier to mock
-simp_openldap::server::conf::default_ldif::ppolicy_pwd_must_change: false
-simp_openldap::server::conf::default_ldif::ppolicy_pwd_min_length: 3
-simp_openldap::server::conf::default_ldif::ppolicy_pwd_check_quality: 0
-simp_openldap::server::conf::default_ldif::ppolicy_pwd_max_failure: 100
 
 ###############################################################################
 # Settings to allow vagrant access
