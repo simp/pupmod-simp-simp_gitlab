@@ -106,9 +106,11 @@ describe 'simp_gitlab pki tls' do
       result = apply_manifest_on(gitlab_server, manifest__gitlab, acceptable_exit_codes: [0, 1, 2, 4, 6])
 
       unless [0, 2].include?(result.exit_code)
+        # rubocop:disable RSpec/Output
         puts '>' * 80
         puts 'First `puppet apply` with gitlab install failed. Retrying...'
         puts '<' * 80
+        # rubocop:enable RSpec/Output
         apply_manifest_on(gitlab_server, manifest__gitlab, catch_failures: true)
       end
     end
