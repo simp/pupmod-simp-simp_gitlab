@@ -16,13 +16,13 @@ describe 'change_gitlab_root_password misc' do
     it 'prints a help message when -h option is used' do
       cmd = "#{exe} -h"
       result = on(gitlab_server, cmd)
-      expect(result.stdout).to match(%r{Usage:})
+      expect(result.stdout).to include('Usage:')
     end
 
     it 'debugs log when -v option is used' do
       cmd = "#{exe} -v #{password}"
       result = on(gitlab_server, cmd)
-      expect(result.stdout).to match(%r{Loading gitlab-rails console})
+      expect(result.stdout).to include('Loading gitlab-rails console')
     end
   end
 

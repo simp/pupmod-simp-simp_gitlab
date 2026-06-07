@@ -41,8 +41,8 @@ shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
         !result.stdout.include?('Confirm new password').nil?
       )
     expect(root_pw_change_page).to be(false), 'Root password not set:  root password change page detected'
-    expect(result.stdout).to match(%r{GitLab})
-    expect(result.stdout).to match(%r{Forgot your password}), 'Login page not detected'
+    expect(result.stdout).to include('GitLab')
+    expect(result.stdout).to include('Forgot your password'), 'Login page not detected'
   end
 
   it 'denies web access from unknown clients' do
@@ -62,7 +62,7 @@ shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
     else
       # Without a firewall, the web server should respond with a 403
       result = on(denied_client, curl_cmd)
-      expect(result.stdout).to match(%r{403 Forbidden})
+      expect(result.stdout).to include('403 Forbidden')
     end
   end
 end

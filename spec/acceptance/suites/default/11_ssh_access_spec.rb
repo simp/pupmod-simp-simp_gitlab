@@ -5,7 +5,7 @@ require 'json'
 # place to store global values needed in different `it` blocks
 # (Instance variables can't be used and rspec spews out nasty
 # message when class variables are used...)
-values_to_share = {}
+VALUES_TO_SHARE = {} # rubocop:disable Style/MutableConstant
 
 describe 'gitlab ssh access' do
   # This test is to verify that an authorized GitLab user can access
@@ -42,9 +42,9 @@ describe 'gitlab ssh access' do
       ]
       result = on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
       token_data = JSON.parse(result.stdout)
-      values_to_share[:access_token] = token_data.fetch('access_token')
+      VALUES_TO_SHARE[:access_token] = token_data.fetch('access_token')
       # store on host system for debugging
-      create_remote_file(permitted_client, '/root/root_oauth_token', values_to_share[:access_token])
+      create_remote_file(permitted_client, '/root/root_oauth_token', VALUES_TO_SHARE[:access_token])
     end
 
     # LDAP GitLab users are not actually Linux users in this system. For simplicity,
@@ -55,12 +55,12 @@ describe 'gitlab ssh access' do
       args = [
         curl_ssl_cmd(permitted_client),
         "https://#{gitlab_server.node_name}/api/v4/users?username=ldapuser1",
-        "--header 'Authorization: Bearer #{values_to_share[:access_token]}'",
+        "--header 'Authorization: Bearer #{VALUES_TO_SHARE[:access_token]}'",
         "--header 'Content-Type: application/json'",
       ]
       result = on(permitted_client, args.join(' '), acceptable_exit_codes: [0, 2])
       user_data = JSON.parse(result.stdout)
-      values_to_share[:ldapuser1_id] = user_data[0].fetch('id')
+      VALUES_TO_SHARE[:ldapuser1_id] = user_data[0].fetch('id')
     end
 
     it "allows user's ssh keys to be uploaded" do
@@ -71,12 +71,12 @@ describe 'gitlab ssh access' do
 
       # upload vagrant's dev ssh public key to ldapuser1 GitLab account
       # https://docs.gitlab.com/ee/api/users.html#add-ssh-key-for-user
-      json = "{\"id\": #{values_to_share[:ldapuser1_id]}, \"title\": \"ssh access test key\", \"key\": \"#{pub_key}\" }"
+      json = "{\"id\": #{VALUES_TO_SHARE[:ldapuser1_id]}, \"title\": \"ssh access test key\", \"key\": \"#{pub_key}\" }"
       args = [
         curl_ssl_cmd(permitted_client),
-        "https://#{gitlab_server.node_name}/api/v4/users/#{values_to_share[:ldapuser1_id]}/keys",
+        "https://#{gitlab_server.node_name}/api/v4/users/#{VALUES_TO_SHARE[:ldapuser1_id]}/keys",
         '--request POST',
-        "--header 'Authorization: Bearer #{values_to_share[:access_token]}'",
+        "--header 'Authorization: Bearer #{VALUES_TO_SHARE[:access_token]}'",
         "--header 'Content-Type: application/json'",
         "--data '" + json + "'",
       ]
@@ -86,12 +86,12 @@ describe 'gitlab ssh access' do
     it 'allows user to create a GitLab project' do
       # create a project for ldapuser1
       # https://docs.gitlab.com/ee/api/projects.html#create-project-for-user
-      json = "{\"id\": #{values_to_share[:ldapuser1_id]}, \"name\": \"test_project\" }"
+      json = "{\"id\": #{VALUES_TO_SHARE[:ldapuser1_id]}, \"name\": \"test_project\" }"
       args = [
         curl_ssl_cmd(permitted_client),
-        "https://#{gitlab_server.node_name}/api/v4/projects/user/#{values_to_share[:ldapuser1_id]}",
+        "https://#{gitlab_server.node_name}/api/v4/projects/user/#{VALUES_TO_SHARE[:ldapuser1_id]}",
         '--request POST',
-        "--header \"Authorization: Bearer #{values_to_share[:access_token]}\"",
+        "--header \"Authorization: Bearer #{VALUES_TO_SHARE[:access_token]}\"",
         '--header \'Content-Type: application/json\'',
         "--data '" + json + "'",
       ]

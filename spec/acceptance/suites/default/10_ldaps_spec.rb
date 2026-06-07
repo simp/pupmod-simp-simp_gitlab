@@ -138,9 +138,11 @@ describe 'simp_gitlab using ldap' do
         result = apply_manifest_on(gitlab_server, @manifest__gitlab, acceptable_exit_codes: [0, 1, 2, 4, 6])
 
         unless [0, 2].include?(result.exit_code)
+          # rubocop:disable RSpec/Output
           puts '>' * 80
           puts 'First `puppet apply` with gitlab install failed. Retrying...'
           puts '<' * 80
+          # rubocop:enable RSpec/Output
           apply_manifest_on(gitlab_server, @manifest__gitlab, catch_failures: true)
         end
       end
@@ -243,7 +245,7 @@ describe 'simp_gitlab using ldap' do
 
         # Test for success
         expect(current_user).not_to be_nil
-        expect(current_user_text).to match(%r{ldapuser1})
+        expect(current_user_text).to include('ldapuser1')
       end
 
       # (As of 10.4) LDAP group membership is only considered by GitLab EE
