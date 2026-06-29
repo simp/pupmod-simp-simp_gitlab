@@ -1,17 +1,43 @@
 ---
 HOSTS:
-  oel8:
+  oel8-server:
     roles:
+    - server
     - default
     - master
-    - server
     - el8
     platform: el-8-x86_64
     box: generic/oracle8
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 2048
-    vagrant_cpus: 2
+    vagrant_memsize: 4096
+    vagrant_cpus: 4
+  oel8-permittedclient:
+    roles:
+    - client
+    - permittedclient
+    platform: el-8-x86_64
+    box: generic/oracle8
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 512
+    vagrant_cpus: 1
+  oel8-ldapserver:
+    roles:
+    - client
+    - unknownclient
+    - ldapserver
+    platform: el-8-x86_64
+    box: generic/oracle8
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 1024
+    vagrant_cpus: 1
 CONFIG:
   log_level: verbose
   type: aio
-  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox8') %>"
+  run_in_parallel:
+  - install
+  - config
+  ssh:
+    keepalive: true
+    keepalive_interval: 10
+    keepalive_maxcount: 60
+  puppet_collection: <%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox8') %>

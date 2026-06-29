@@ -1,19 +1,49 @@
 ---
 HOSTS:
-  rocky9:
+  rocky9-server:
     roles:
+    - server
     - default
     - master
-    - server
     - el9
     platform: el-9-x86_64
     box: rockylinux/9
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 2048
-    vagrant_cpus: 2
+    vagrant_memsize: 4096
+    vagrant_cpus: 4
+    family: rocky-linux-cloud/rocky-linux-9
+    gce_machine_type: n1-standard-2
+  rocky9-permittedclient:
+    roles:
+    - client
+    - permittedclient
+    platform: el-9-x86_64
+    box: rockylinux/9
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 512
+    vagrant_cpus: 1
+    family: rocky-linux-cloud/rocky-linux-9
+    gce_machine_type: n1-standard-2
+  rocky9-ldapserver:
+    roles:
+    - client
+    - unknownclient
+    - ldapserver
+    platform: el-9-x86_64
+    box: rockylinux/9
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    vagrant_memsize: 1024
+    vagrant_cpus: 1
     family: rocky-linux-cloud/rocky-linux-9
     gce_machine_type: n1-standard-2
 CONFIG:
   log_level: verbose
   type: aio
-  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox8') %>"
+  run_in_parallel:
+  - install
+  - config
+  ssh:
+    keepalive: true
+    keepalive_interval: 10
+    keepalive_maxcount: 60
+  puppet_collection: <%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox8') %>
