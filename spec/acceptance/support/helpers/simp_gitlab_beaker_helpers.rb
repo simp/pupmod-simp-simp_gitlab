@@ -1,3 +1,11 @@
+# Namespace for simp_gitlab acceptance-test helpers.
+# NOTE: This bare module declaration MUST come first. The `SutVariables`
+# module below uses the compact `SimpGitlabBeakerHelpers::SutVariables`
+# form, which requires the parent constant to already be defined; without
+# this, Ruby raises `uninitialized constant SimpGitlabBeakerHelpers` and
+# every acceptance spec fails to load.
+module SimpGitlabBeakerHelpers; end
+
 # memoized variables to share across examples
 module SimpGitlabBeakerHelpers::SutVariables
   def gitlab_ce_version
