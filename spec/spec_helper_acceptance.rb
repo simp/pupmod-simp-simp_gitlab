@@ -42,6 +42,17 @@ RSpec.configure do |c|
     # Install modules and dependencies from spec/fixtures/modules
     copy_fixture_modules_to(hosts)
 
+    # Ensure firewalld is present before the first Puppet run. simp_firewalld
+    # only manages firewalld when the `simplib__firewalls` fact already reports
+    # `firewall-cmd` on PATH, and it never installs the package itself -- a
+    # chicken-and-egg that no-ops the whole firewall stack on images that don't
+    # ship firewalld preinstalled (e.g. minimal EL10), which then falls back to
+    # the iptables SysV service (non-functional on systemd-only EL10). Once the
+    # package is present the fact resolves and the SIMP stack engages.
+    # No-op on EL8/EL9 where firewalld is already installed.
+    # See https://github.com/simp/pupmod-simp-simp_firewalld/issues/102
+    apply_manifest_on(hosts, "package { 'firewalld': ensure => installed }", catch_failures: true)
+
     # Generate and install PKI certificates on each SUT
     Dir.mktmpdir do |cert_dir|
       run_fake_pki_ca_on(default, hosts, cert_dir)
