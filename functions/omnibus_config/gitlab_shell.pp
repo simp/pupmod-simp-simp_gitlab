@@ -7,4 +7,3 @@ function simp_gitlab::omnibus_config::gitlab_shell() {
     'auth_file' => $simp_gitlab::gitlab_ssh_keyfile,
   }
 }
-

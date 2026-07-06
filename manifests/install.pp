@@ -49,5 +49,4 @@ class simp_gitlab::install {
   # gitlab::service optionally manages this service, so when it is not managed,
   # we need to make sure it is not killed
   svckill::ignore { 'gitlab-runsvdir': }
-
 }

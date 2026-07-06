@@ -11,7 +11,7 @@ class simp_gitlab::config {
   }
 
   pam::access::rule { 'Allow GitLab git users via ssh':
-    users   => [ $simp_gitlab::gitlab_ssh_user ],
+    users   => [$simp_gitlab::gitlab_ssh_user],
     origins => $pam_access_origins,
     comment => 'Allow Gitlab git access via ssh',
   }
@@ -41,5 +41,4 @@ class simp_gitlab::config {
 
     Class['gitlab::service'] -> Exec['set_gitlab_root_password']
   }
-
 }

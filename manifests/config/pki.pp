@@ -18,7 +18,7 @@ class simp_gitlab::config::pki {
     group  => 'root',
   }
 
-  pki_cert_sync{ '/etc/gitlab/trusted-certs':
+  pki_cert_sync { '/etc/gitlab/trusted-certs':
     source                  => "${simp_gitlab::app_pki_dir}/cacerts",
     purge                   => true,
     # ``gitlab-ctl reconfigure`` generates PEM hash links
@@ -46,5 +46,4 @@ class simp_gitlab::config::pki {
       mode => '0644'
     }
   }
-
 }

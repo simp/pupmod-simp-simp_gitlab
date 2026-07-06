@@ -153,18 +153,18 @@
 # @author https://github.com/simp/pupmod-simp-simp_gitlab/graphs/contributors
 #
 class simp_gitlab (
-  Simplib::Netlist       $trusted_nets               = simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] }),
+  Simplib::Netlist       $trusted_nets               = simplib::lookup('simp_options::trusted_nets', { 'default_value' => ['127.0.0.1/32'] }),
   Simp_gitlab::Stroolean $pki                        = simplib::lookup('simp_options::pki', { 'default_value' => false }),
   Simplib::Uri           $external_url               = $pki ? { true => "https://${facts['networking']['fqdn']}", 'simp' => "https://${facts['networking']['fqdn']}", default => "http://${facts['networking']['fqdn']}" },
   Simplib::Netlist       $denied_nets                = [],
-  Simplib::Port          $tcp_listen_port            = $pki ? { true => 443, 'simp' => 443, default => 80},
-  Boolean                $firewall                   = simplib::lookup('simp_options::firewall',      {'default_value' => false}),
-  Boolean                $ldap                       = simplib::lookup('simp_options::ldap',          {'default_value' => false}),
+  Simplib::Port          $tcp_listen_port            = $pki ? { true => 443, 'simp' => 443, default => 80 },
+  Boolean                $firewall                   = simplib::lookup('simp_options::firewall', { 'default_value' => false }),
+  Boolean                $ldap                       = simplib::lookup('simp_options::ldap', { 'default_value' => false }),
   Boolean                $ldap_active_directory      = false,
-  Array[Simplib::URI]    $ldap_uri                   = simplib::lookup('simp_options::ldap::uri',     {'default_value' => []}),
-  String[3]              $ldap_base_dn               = simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()}),
-  String[3]              $ldap_bind_dn               = simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"}),
-  String[1]              $ldap_bind_pw               = simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"}),
+  Array[Simplib::URI]    $ldap_uri                   = simplib::lookup('simp_options::ldap::uri', { 'default_value' => [] }),
+  String[3]              $ldap_base_dn               = simplib::lookup('simp_options::ldap::base_dn', { 'default_value' => simplib::ldap::domain_to_dn() }),
+  String[3]              $ldap_bind_dn               = simplib::lookup('simp_options::ldap::bind_dn', { 'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}" }),
+  String[1]              $ldap_bind_pw               = simplib::lookup('simp_options::ldap::bind_pw', { 'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}" }),
   Optional[String[3]]    $ldap_group_base            = undef,
   Optional[String[1]]    $ldap_user_filter           = undef,
   Hash                   $gitlab_options             = {},
@@ -178,8 +178,8 @@ class simp_gitlab (
   Integer[1]             $ssl_verify_depth           = 2,
   Array[String[1]]       $ssl_protocols              = ['TLSv1.2'],
   Array[String[1]]       $cipher_suite               = simplib::lookup( 'simp_options::openssl::cipher_suite', {
-                                                                        'default_value'  => ['DEFAULT', '!MEDIUM']
-                                                                      }),
+    'default_value'  => ['DEFAULT', '!MEDIUM']
+  }),
   Enum['ce','ee']        $edition                    = 'ce',
   Boolean                $manage_package             = true,
   String                 $package_ensure             = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
@@ -188,7 +188,6 @@ class simp_gitlab (
   Integer[60]            $rails_console_load_timeout = 300,
   Boolean                $allow_fips                 = true
 ) {
-
   simplib::assert_metadata( $module_name )
 
   if $facts['fips_enabled'] and !$allow_fips {

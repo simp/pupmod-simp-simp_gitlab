@@ -3,7 +3,6 @@
 #
 # @return Hash of `puppet/gitlab` parameters
 function simp_gitlab::omnibus_config::gitlab() {
-
   # For HTTPS, non-standard ports *must* be included in the external_url:
   $_external_url = $simp_gitlab::external_url ? {
     /^(https?:\/\/[^\/]+)(?!:\d+)(\/.*)?/ => "${1}:${simp_gitlab::tcp_listen_port}${2}",

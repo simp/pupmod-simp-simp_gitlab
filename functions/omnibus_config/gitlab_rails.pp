@@ -3,7 +3,6 @@
 #
 # @return Hash of settings for the 'gitlab::gitlab_rails' # parameter
 function simp_gitlab::omnibus_config::gitlab_rails() {
-
   if $simp_gitlab::set_gitlab_root_password {
     # We need to set this password to ensure the first GitLab page that comes
     # up in a new GitLab installation is NOT the page to reset the root user
@@ -31,7 +30,6 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
   # Construct the 'ldap_servers' Hash
   # --------------------------------------------------------------------
   $_servers = Hash($simp_gitlab::ldap_uri.map |$server| {
-
     # We should also capture a port if it is specified at end of the URL, but
     # even simp_openldap doesn't support that.
     $_port = $server ? {
@@ -81,11 +79,9 @@ function simp_gitlab::omnibus_config::gitlab_rails() {
       'ldap_enabled' => true,
       'ldap_servers' => $_servers,
     },
-    default =>  {},
+    default => {},
   }
   # --------------------------------------------------------------------
 
   deep_merge( $options, $ldap_options )
-
 }
-
