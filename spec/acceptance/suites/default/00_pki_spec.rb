@@ -74,11 +74,21 @@ describe 'simp_gitlab pki tls' do
   context 'with PKI enabled but no firewall' do
     let(:hiera) do
       hiera = hiera__vagrant.dup
-      # don't use iptables firewall
-      hiera['iptables::enable'] = false
+      # Genuinely manage no firewall. NOTE: `iptables::enable => false` does
+      # NOT do this -- the iptables module only skips management when `enable`
+      # is the string 'ignore'; `false` still *contains* iptables::service to
+      # drive the service to a stopped/disabled state (and ship its
+      # /etc/init.d/iptables SysV script). That "manage-to-off" path is dead on
+      # systemd-only EL10 (no /etc/init.d, non-functional `redhat` provider),
+      # so it errored the idempotency check. 'ignore' makes the class a true
+      # no-op (no service, no init script) and, being inside the same guard,
+      # never brings up firewalld either.
+      hiera['iptables::enable'] = 'ignore'
 
-      # don't use firewalld either (if this is true, firewalld will start up
-      # even if iptables::enable is false)
+      # Keep the standalone `iptables::listen::tcp_stateful { 'ssh' }` (added so
+      # beaker can reconnect) on the raw path rather than the firewalld path --
+      # this context deliberately runs no firewalld daemon. On EL10 the raw rule
+      # is applied idempotently via iptables-nft.
       hiera['iptables::use_firewalld'] = false
 
       hiera
