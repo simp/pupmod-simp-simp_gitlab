@@ -50,6 +50,11 @@ RSpec.configure do |c|
 
   # Configure all nodes in nodeset
   c.before :suite do
+    # Nothing to set up on EL10 -- every example is skipped there (see the
+    # before(:each) guard above / issue #120), so don't risk a suite-level
+    # failure doing setup that won't be used.
+    next if hosts.any? { |host| host[:platform].to_s =~ %r{^el-10} }
+
     # Install modules and dependencies from spec/fixtures/modules
     copy_fixture_modules_to(hosts)
 
