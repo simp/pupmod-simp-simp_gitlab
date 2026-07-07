@@ -1,4 +1,9 @@
 * Mon Jun 08 2026 Steven Pritchard <steven.pritchard@gmail.com> - 1.0.0
+- Stop configuring bundled Mattermost, which was removed from the GitLab
+  package in 19.0. Emitting any `mattermost`/`mattermost_nginx` setting now
+  causes `gitlab-ctl reconfigure` to abort, so these keys are no longer written
+  to `gitlab.rb`. To integrate an external Mattermost, set
+  `gitlab_rails['mattermost_host']`.
 - Switch `requirements` from `puppet` to `openvox` (>= 8 < 9)
 - Point `issues_url` at GitHub Issues
 - Drop end-of-life OS support (CentOS 8, EL7); list EL10 across all supported distros
