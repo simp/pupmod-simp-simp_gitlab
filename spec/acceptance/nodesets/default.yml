@@ -9,7 +9,9 @@ HOSTS:
     platform: el-9-x86_64
     box: almalinux/9
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 4096
+    # GitLab omnibus + a `gitlab-ctl reconfigure` fork does not fit in 4 GB (no
+    # swap) -- reconfigure dies with Errno::ENOMEM. 6 GB leaves headroom.
+    vagrant_memsize: 6144
     vagrant_cpus: 4
     family: almalinux-cloud/almalinux-9
     gce_machine_type: n1-standard-2

@@ -52,12 +52,20 @@ simp_ds389::instances::accounts::password_policy:
 
 
 # GitLab - 389ds interoperability settings
+# ds389 2.0.0's dse_config (Ds389::ConfigItem) is a FLAT attr => value hash
+# applied to the instance config, not the older nested by-DN structure. These
+# two values also match the ds389 TLS defaults, but are kept explicit for
+# interop clarity.
 simp_ds389::instances::accounts::tls_params:
+  # ds389::instance::tls defaults its cert source to /etc/pki/simp/x509, which
+  # is not populated in the test environment. Without a real server cert the
+  # instance cannot initialize its attribute-encryption (attrcrypt) system and
+  # fails to start ("Unable to initialize attrcrypt system"), so point it at the
+  # FakeCA test PKI.
+  source: '/etc/pki/simp-testing/pki'
   dse_config:
-    cn=config:
-      nsslapd-minssf: 128
-    cn=encryption,cn=config:
-      nsSSLClientAuth: allowed
+    nsslapd-minssf: 128
+    nsslapd-SSLclientAuth: allowed
 
 
 ###############################################################################

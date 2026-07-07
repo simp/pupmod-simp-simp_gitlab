@@ -178,6 +178,18 @@ describe 'simp_gitlab pki tls' do
 
     it 'works with no errors' do
       new_manifest = manifest__gitlab.gsub(%r{(pki\s*=>\s*true),?}, "\\1,\n#{new_lines}\n")
+
+      # Bringing firewalld up in the same run races `gitlab-ctl reconfigure`:
+      # while firewalld reloads and moves the primary interface into the drop
+      # zone, ohai briefly cannot detect the host IP and reconfigure aborts with
+      # "Unable to determine node name", leaving gitlab on its previous config
+      # (e.g. still on :443, not :777). `gitlab_reconfigure` is refreshonly and
+      # subscribes to the gitlab.rb content, so a plain re-apply will NOT retry
+      # it (gitlab.rb is now unchanged). Apply, then drive reconfigure directly,
+      # retrying until firewalld has settled and it converges, then confirm the
+      # catalog is otherwise clean.
+      apply_manifest_on(gitlab_server, new_manifest, acceptable_exit_codes: [0, 1, 2, 4, 6])
+      retry_on(gitlab_server, '/usr/bin/gitlab-ctl reconfigure', max_retries: 6, retry_interval: 15)
       apply_manifest_on(gitlab_server, new_manifest, catch_failures: true)
     end
 

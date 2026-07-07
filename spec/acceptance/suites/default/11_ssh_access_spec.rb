@@ -12,6 +12,15 @@ describe 'gitlab ssh access' do
   # GitLab via ssh.  It uses the GitLab server and an LDAP account set
   # up in 10_ldaps_spec.rb
 
+  # BLOCKED on GitLab 19: every example below needs an authenticated API token,
+  # which this suite obtains via the OAuth resource-owner-password (ROPC) grant.
+  # GitLab 19 removed ROPC ("unsupported_grant_type"), so the token step and
+  # everything chained on it cannot run. Rework to a seeded root Personal Access
+  # Token. See https://github.com/simp/pupmod-simp-simp_gitlab/issues/119
+  before(:each) do
+    skip('gitlab API access needs rework for GitLab 19 (no OAuth ROPC grant) -- see issue #119')
+  end
+
   context 'set up ssh and create empty project for authorized user' do
     # We need an oauth token for root in order to modify a user's account
     # via the REST API.
