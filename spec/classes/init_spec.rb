@@ -62,8 +62,6 @@ describe 'simp_gitlab' do
               shell: {
                 'auth_file' => '/var/opt/gitlab/.ssh/authorized_keys',
               },
-              mattermost: { 'enable' => false },
-              mattermost_nginx: { 'enable' => false },
               prometheus: { 'enable' => false },
               gitlab_exporter: { 'enable' => false },
               node_exporter: { 'enable' => false },
