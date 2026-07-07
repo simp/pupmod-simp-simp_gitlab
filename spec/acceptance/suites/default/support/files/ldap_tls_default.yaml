@@ -88,3 +88,11 @@ pam::access::users:
 
 ssh::server::conf::permitrootlogin: true
 ssh::server::conf::authorizedkeysfile: '.ssh/authorized_keys'
+
+# simp_options::ldap (above) otherwise makes ssh::server pull in the
+# openssh-ldap package for LDAP AuthorizedKeysCommand support. That package was
+# removed in EL9+ ("Unable to find a match: openssh-ldap"), which breaks the
+# apply. This suite tests GitLab's LDAP auth, not ssh LDAP key lookup, so
+# disable the ssh LDAP integration here.
+# See https://github.com/simp/pupmod-simp-ssh/issues/225
+ssh::server::conf::ldap: false

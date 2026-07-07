@@ -37,6 +37,17 @@ RSpec.configure do |c|
   # Readable test descriptions
   c.formatter = :documentation
 
+  # EL10 is blocked upstream: `gitlab-ctl reconfigure` fails in GitLab's own
+  # selinux cookbook because EL10 SELinux treats /var/opt as an equivalency of
+  # /opt and rejects the /var/opt/gitlab/.ssh fcontext. Fixed in GitLab 19.2
+  # (omnibus-gitlab!9577). Skip the suite on EL10 until that package is
+  # available. See https://github.com/simp/pupmod-simp-simp_gitlab/issues/120
+  c.before(:each) do
+    if hosts.any? { |host| host[:platform].to_s =~ %r{^el-10} }
+      skip('GitLab omnibus reconfigure fails on EL10 (selinux fcontext); fixed in GitLab 19.2 -- see issue #120')
+    end
+  end
+
   # Configure all nodes in nodeset
   c.before :suite do
     # Install modules and dependencies from spec/fixtures/modules
@@ -46,12 +57,20 @@ RSpec.configure do |c|
     # only manages firewalld when the `simplib__firewalls` fact already reports
     # `firewall-cmd` on PATH, and it never installs the package itself -- a
     # chicken-and-egg that no-ops the whole firewall stack on images that don't
-    # ship firewalld preinstalled (e.g. minimal EL10), which then falls back to
+    # ship firewalld preinstalled (minimal EL9/EL10), which then falls back to
     # the iptables SysV service (non-functional on systemd-only EL10). Once the
-    # package is present the fact resolves and the SIMP stack engages.
-    # No-op on EL8/EL9 where firewalld is already installed.
+    # package is present the fact resolves and the SIMP stack engages. It is a
+    # no-op where firewalld is already installed.
+    #
+    # `--disablerepo=epel*`: firewalld and its deps live in BaseOS/AppStream, so
+    # EPEL is not needed here -- and loading EPEL's metadata pushes dnf's memory
+    # use past the 1 GB client nodes, OOM-killing the install.
     # See https://github.com/simp/pupmod-simp-simp_firewalld/issues/102
-    apply_manifest_on(hosts, "package { 'firewalld': ensure => installed }", catch_failures: true)
+    apply_manifest_on(
+      hosts,
+      "package { 'firewalld': ensure => installed, install_options => ['--disablerepo=epel*'] }",
+      catch_failures: true,
+    )
 
     # Generate and install PKI certificates on each SUT
     Dir.mktmpdir do |cert_dir|

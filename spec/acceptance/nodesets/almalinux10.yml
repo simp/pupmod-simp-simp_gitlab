@@ -36,7 +36,9 @@ HOSTS:
     platform: el-10-x86_64
     box: almalinux/10
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 1024
+    # `dnf install 389-ds-base` (pulled in by the ds389 module) OOMs at 1 GB
+    # once EPEL metadata is loaded. 2 GB gives dnf the headroom.
+    vagrant_memsize: 2048
     vagrant_cpus: 1
     family: almalinux-cloud/almalinux-10
     gce_machine_type: n1-standard-2

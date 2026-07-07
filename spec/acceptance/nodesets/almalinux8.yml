@@ -39,7 +39,10 @@ HOSTS:
     platform: el-8-x86_64
     box: almalinux/8
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 1024
+    # `dnf install 389-ds-base` (a large package, pulled in by the ds389 module
+    # which we can't pass --disablerepo to) OOMs at 1 GB once EPEL metadata is
+    # loaded. 2 GB gives dnf the headroom.
+    vagrant_memsize: 2048
     vagrant_cpus: 1
     family: almalinux-cloud/almalinux-8
     gce_machine_type: n1-standard-2
