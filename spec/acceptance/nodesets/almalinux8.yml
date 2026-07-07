@@ -20,7 +20,10 @@ HOSTS:
     platform: el-8-x86_64
     box: almalinux/8
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 512
+    # dnf on EL8 (BaseOS+AppStream+EPEL metadata) needs well over 512 MB; at
+    # 512 the client OOMed mid-`fix_errata_on` and dropped SSH. 1 GB is ample
+    # and trivial against the 16 GB GHA runner.
+    vagrant_memsize: 1024
     vagrant_cpus: 1
     family: almalinux-cloud/almalinux-8
     gce_machine_type: n1-standard-2

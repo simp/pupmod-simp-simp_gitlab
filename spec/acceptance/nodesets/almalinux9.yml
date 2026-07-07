@@ -20,7 +20,9 @@ HOSTS:
     platform: el-9-x86_64
     box: almalinux/9
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    vagrant_memsize: 512
+    # dnf metadata (BaseOS+AppStream+EPEL) needs well over 512 MB; give the
+    # client 1 GB so it can't OOM during package operations. Cheap on 16 GB.
+    vagrant_memsize: 1024
     vagrant_cpus: 1
     family: almalinux-cloud/almalinux-9
     gce_machine_type: n1-standard-2
