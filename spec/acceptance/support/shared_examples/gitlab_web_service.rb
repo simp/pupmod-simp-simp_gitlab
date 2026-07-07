@@ -34,11 +34,16 @@ shared_examples_for 'a GitLab web service' do |gitlab_signin_url, options|
 
     # These web-page-scraping checks are inherently fragile, but the best we
     # can do...
+    #
+    # NOTE: `String#include?` returns a Boolean (never nil), so the previous
+    # `!result.stdout.include?(...).nil?` form evaluated to `true`
+    # unconditionally, making this assertion impossible to pass once the block
+    # actually ran against a live GitLab. Use the Boolean results directly.
     root_pw_change_page =
-      !result.stdout.include?('reset_password_token').nil? ||
+      result.stdout.include?('reset_password_token') ||
       (
-        !result.stdout.include?('New password').nil? &&
-        !result.stdout.include?('Confirm new password').nil?
+        result.stdout.include?('New password') &&
+        result.stdout.include?('Confirm new password')
       )
     expect(root_pw_change_page).to be(false), 'Root password not set:  root password change page detected'
     expect(result.stdout).to include('GitLab')
