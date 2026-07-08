@@ -22,7 +22,7 @@
 * [`simp_gitlab::omnibus_config::gitlab`](#simp_gitlab--omnibus_config--gitlab): Compile a hash of settings for the ``gitlab`` class parameters, using SIMP settings
 * [`simp_gitlab::omnibus_config::gitlab_rails`](#simp_gitlab--omnibus_config--gitlab_rails): Compile a hash of settings for the ``gitlab::gitlab_rails`` parameter, using SIMP settings
 * [`simp_gitlab::omnibus_config::gitlab_shell`](#simp_gitlab--omnibus_config--gitlab_shell): Compile a hash of settings for the ``gitlab::shell`` parameter, using SIMP settings
-* [`simp_gitlab::omnibus_config::mattermost`](#simp_gitlab--omnibus_config--mattermost): Compile a hash of settings for the ``gitlab::mattermost`` parameter, using SIMP settings
+* [`simp_gitlab::omnibus_config::mattermost`](#simp_gitlab--omnibus_config--mattermost): Compile a hash of settings for the ``gitlab::mattermost`` parameter, using SIMP settings  NOTE: This function is intentionally NOT wired into
 * [`simp_gitlab::omnibus_config::nginx`](#simp_gitlab--omnibus_config--nginx): Compile a hash of settings for the ``gitlab::nginx`` parameter, using SIMP settings
 
 ### Data types
@@ -91,7 +91,7 @@ Data type: `Simplib::Netlist`
 
 A list of subnets (in CIDR notation) that should be permitted access
 
-Default value: `simplib::lookup('simp_options::trusted_nets', {'default_value' => ['127.0.0.1/32'] })`
+Default value: `simplib::lookup('simp_options::trusted_nets', { 'default_value' => ['127.0.0.1/32'] })`
 
 ##### <a name="-simp_gitlab--denied_nets"></a>`denied_nets`
 
@@ -125,7 +125,7 @@ Data type: `Boolean`
 
 If ``true``, manage firewall rules to accommodate **simp_gitlab**
 
-Default value: `simplib::lookup('simp_options::firewall',      {'default_value' => false})`
+Default value: `simplib::lookup('simp_options::firewall', { 'default_value' => false })`
 
 ##### <a name="-simp_gitlab--pki"></a>`pki`
 
@@ -252,8 +252,8 @@ Default value:
 
 ```puppet
 simplib::lookup( 'simp_options::openssl::cipher_suite', {
-                                                                        'default_value'  => ['DEFAULT', '!MEDIUM']
-                                                                      })
+    'default_value'  => ['DEFAULT', '!MEDIUM']
+  })
 ```
 
 ##### <a name="-simp_gitlab--ldap"></a>`ldap`
@@ -262,7 +262,7 @@ Data type: `Boolean`
 
 If ``true``, enable LDAP support for Gitlab Omnibus.
 
-Default value: `simplib::lookup('simp_options::ldap',          {'default_value' => false})`
+Default value: `simplib::lookup('simp_options::ldap', { 'default_value' => false })`
 
 ##### <a name="-simp_gitlab--ldap_uri"></a>`ldap_uri`
 
@@ -271,7 +271,7 @@ Data type: `Array[Simplib::URI]`
 List of OpenLDAP server URIs.  Note that _multiple_ URIs is an EE feature.
 @example ['ldap://server1', 'ldaps://server2']
 
-Default value: `simplib::lookup('simp_options::ldap::uri',     {'default_value' => []})`
+Default value: `simplib::lookup('simp_options::ldap::uri', { 'default_value' => [] })`
 
 ##### <a name="-simp_gitlab--ldap_active_directory"></a>`ldap_active_directory`
 
@@ -291,7 +291,7 @@ Base where we can search for users
 
 @example ou=People,dc=gitlab,dc=example
 
-Default value: `simplib::lookup('simp_options::ldap::base_dn', {'default_value' => simplib::ldap::domain_to_dn()})`
+Default value: `simplib::lookup('simp_options::ldap::base_dn', { 'default_value' => simplib::ldap::domain_to_dn() })`
 
 ##### <a name="-simp_gitlab--ldap_bind_dn"></a>`ldap_bind_dn`
 
@@ -299,7 +299,7 @@ Data type: `String[3]`
 
 The DN to use when binding to the LDAP server
 
-Default value: `simplib::lookup('simp_options::ldap::bind_dn', {'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}"})`
+Default value: `simplib::lookup('simp_options::ldap::bind_dn', { 'default_value' => "cn=hostAuth,ou=Hosts,${ldap_base_dn}" })`
 
 ##### <a name="-simp_gitlab--ldap_bind_pw"></a>`ldap_bind_pw`
 
@@ -307,7 +307,7 @@ Data type: `String[1]`
 
 The password of the bind user
 
-Default value: `simplib::lookup('simp_options::ldap::bind_pw', {'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}"})`
+Default value: `simplib::lookup('simp_options::ldap::bind_pw', { 'default_value' => "cn=LDAPAdmin,ou=People,${ldap_base_dn}" })`
 
 ##### <a name="-simp_gitlab--ldap_user_filter"></a>`ldap_user_filter`
 
@@ -437,10 +437,24 @@ Type: Puppet Language
 Compile a hash of settings for the ``gitlab::mattermost`` parameter, using
 SIMP settings
 
+NOTE: This function is intentionally NOT wired into
+simp_gitlab::omnibus_config::gitlab anymore. Bundled Mattermost was removed
+from the GitLab Linux package in 19.0, and `gitlab-ctl reconfigure` FATALs on
+the presence of ANY `mattermost[...]` key in gitlab.rb (even `enable=>false`).
+Do not re-add its return value to the omnibus config. To integrate an
+external Mattermost, use `gitlab_rails['mattermost_host']` instead.
+
 #### `simp_gitlab::omnibus_config::mattermost()`
 
 Compile a hash of settings for the ``gitlab::mattermost`` parameter, using
 SIMP settings
+
+NOTE: This function is intentionally NOT wired into
+simp_gitlab::omnibus_config::gitlab anymore. Bundled Mattermost was removed
+from the GitLab Linux package in 19.0, and `gitlab-ctl reconfigure` FATALs on
+the presence of ANY `mattermost[...]` key in gitlab.rb (even `enable=>false`).
+Do not re-add its return value to the omnibus config. To integrate an
+external Mattermost, use `gitlab_rails['mattermost_host']` instead.
 
 Returns: `Any` Hash of settings for the 'gitlab::mattermost' parameter
 
