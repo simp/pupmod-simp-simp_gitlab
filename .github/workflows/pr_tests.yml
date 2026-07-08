@@ -121,7 +121,11 @@ jobs:
         node:
           - almalinux8
           - almalinux9
-          - almalinux10
+          # almalinux10 temporarily removed: gitlab-ctl reconfigure fails in
+          # GitLab's own selinux cookbook on EL10 (/var/opt=/opt fcontext
+          # conflict). Fixed upstream in GitLab 19.2 (omnibus-gitlab!9577);
+          # restore this once that release is available. See #120.
+          # - almalinux10
       fail-fast: false
     steps:
       - name: checkout repo

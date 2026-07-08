@@ -37,24 +37,8 @@ RSpec.configure do |c|
   # Readable test descriptions
   c.formatter = :documentation
 
-  # EL10 is blocked upstream: `gitlab-ctl reconfigure` fails in GitLab's own
-  # selinux cookbook because EL10 SELinux treats /var/opt as an equivalency of
-  # /opt and rejects the /var/opt/gitlab/.ssh fcontext. Fixed in GitLab 19.2
-  # (omnibus-gitlab!9577). Skip the suite on EL10 until that package is
-  # available. See https://github.com/simp/pupmod-simp-simp_gitlab/issues/120
-  c.before(:each) do
-    if hosts.any? { |host| host[:platform].to_s =~ %r{^el-10} }
-      skip('GitLab omnibus reconfigure fails on EL10 (selinux fcontext); fixed in GitLab 19.2 -- see issue #120')
-    end
-  end
-
   # Configure all nodes in nodeset
   c.before :suite do
-    # Nothing to set up on EL10 -- every example is skipped there (see the
-    # before(:each) guard above / issue #120), so don't risk a suite-level
-    # failure doing setup that won't be used.
-    next if hosts.any? { |host| host[:platform].to_s =~ %r{^el-10} }
-
     # Install modules and dependencies from spec/fixtures/modules
     copy_fixture_modules_to(hosts)
 
