@@ -253,7 +253,7 @@ bundle exec rake lint
 bundle exec rake rubocop
 
 # Regenerate REFERENCE.md from puppet-strings docstrings
-puppet strings generate --format markdown --out REFERENCE.md
+bundle exec puppet strings generate --format markdown --out REFERENCE.md
 
 # Run a beaker acceptance suite (run manually — see note below)
 bundle exec rake beaker:suites[default]
