@@ -266,12 +266,11 @@ shipped nodesets are run manually. Nodesets in `spec/acceptance/nodesets/`:
 `centos-7-x86_64.yml`, `centos-8-x86_64.yml`, `oel-7-x86_64.yml`,
 `oel-8-x86_64.yml`, and `default.yml`.
 
-Relevant gem pins (from `Gemfile`): `rubocop ~> 1.88.0` (line 16),
-`puppetlabs_spec_helper ~> 8.0.0` (line 30), `simp-rake-helpers ~> 5.24.0`
-(line 36), `simp-beaker-helpers ~> 2.0.0` (line 52). The `Gemfile` installs the
-**puppet** gem only (`gem 'puppet', puppet_version`, line 29) — no OpenVox — and
-`puppet_version` defaults to `['>= 7', '< 9']` (line 23). `spec/spec_helper.rb`
-requires `puppetlabs_spec_helper/module_spec_helper` (line 11).
+Relevant gem pins (from `Gemfile`): `rubocop ~> 1.88.0`,
+`puppetlabs_spec_helper ~> 8.0.0`, `simp-rake-helpers ~> 5.24.0`, `simp-beaker-helpers ~> 2.0.0`. The `Gemfile` installs the
+**puppet** gem only (`gem 'puppet', puppet_version`) — no OpenVox — and
+`puppet_version` defaults to `['>= 7', '< 9']`. `spec/spec_helper.rb`
+requires `puppetlabs_spec_helper/module_spec_helper`.
 
 ## Conventions
 
