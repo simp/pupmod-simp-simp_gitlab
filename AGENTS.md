@@ -17,12 +17,12 @@ Like most SIMP profiles, the module is designed to run inside a full SIMP
 deployment but can be used independently: when standalone, the SIMP security
 subsystems are opt-in and default to *off* — you must explicitly enable them via
 parameters such as `$trusted_nets`, `$pki`, and `$firewall`
-(`manifests/init.pp:8-16`).
+(`manifests/init.pp`).
 
 The core of the module is a translation layer: it reads SIMP conventions
 (`simp_options::*` Hiera keys, SIMP PKI paths, SIMP netlists) and compiles them
 into the parameter hash that `puppet/gitlab` expects, then deep-merges any
-operator overrides on top (`manifests/init.pp:202`,
+operator overrides on top (`manifests/init.pp`,
 `functions/omnibus_config/gitlab.pp`).
 
 ### Business logic
@@ -30,28 +30,28 @@ operator overrides on top (`manifests/init.pp:202`,
 The public entry class is `simp_gitlab`; everything else is a private
 (`assert_private()`) sub-class or a `simp_gitlab::omnibus_config::*` function.
 
-- **`simp_gitlab` (`manifests/init.pp:155-230`)** — Public entry class
+- **`simp_gitlab` (`manifests/init.pp`)** — Public entry class
   (consumers `include 'simp_gitlab'`; it is *not* `assert_private()`'d). It calls
-  `simplib::assert_metadata($module_name)` (`init.pp:192`) and then:
-  - **FIPS guard (`init.pp:194-196`)**: if `$facts['fips_enabled']` is true and
+  `simplib::assert_metadata($module_name)` (`init.pp`) and then:
+  - **FIPS guard (`init.pp`)**: if `$facts['fips_enabled']` is true and
     `$allow_fips` is false, it `fail()`s with "GitLab does not support FIPS
-    mode". `$allow_fips` defaults to `true` (`init.pp:189`), so by default the
+    mode". `$allow_fips` defaults to `true` (`init.pp`), so by default the
     module *proceeds* under FIPS — only set `$allow_fips => false` to hard-block.
-  - **Calculated variables (`init.pp:199-202`)**: derives the GitLab SSH user,
+  - **Calculated variables (`init.pp`)**: derives the GitLab SSH user,
     home, and authorized-keys path from `$gitlab_options` via `pick()`/`dig()`
     (defaulting to `git`, `/var/opt/gitlab`, `<home>/.ssh/authorized_keys`), and
     builds `$merged_gitlab_options` by `deep_merge`ing
     `simp_gitlab::omnibus_config::gitlab()` (the SIMP-computed defaults) with the
     operator-supplied `$gitlab_options` — operator values win.
-  - **Class ordering (`init.pp:204-213`)**: unconditionally `include`s `chrony`,
+  - **Class ordering (`init.pp`)**: unconditionally `include`s `chrony`,
     `postfix`, `ssh`, `simp_gitlab::install`, and `simp_gitlab::config`, then
     pins the chain
     `chrony -> simp_gitlab::install -> simp_gitlab::config -> postfix`.
-  - **PKI branch (`init.pp:215-220`)**: when `$pki` is truthy (`'simp'` or
+  - **PKI branch (`init.pp`)**: when `$pki` is truthy (`'simp'` or
     `true`), `include`s `simp_gitlab::config::pki` and wires
     `simp_gitlab::config::pki ~> gitlab::service` so new certs trigger a
     `gitlab-ctl reconfigure`.
-  - **Firewall branch (`init.pp:222-228`)**: when `$firewall` is true, `include`s
+  - **Firewall branch (`init.pp`)**: when `$firewall` is true, `include`s
     `simp_gitlab::config::firewall` and orders it *before*
     `simp_gitlab::install` — the comment notes install brings up a live GitLab,
     so the firewall must already be in place.
@@ -60,33 +60,33 @@ The public entry class is `simp_gitlab`; everything else is a private
   `init -> install -> config`, with `config::pki` and `config::firewall` hung off
   that chain conditionally.
 
-- **`simp_gitlab::install` (`manifests/install.pp:9-53`, private)** — the real
+- **`simp_gitlab::install` (`manifests/install.pp`, private)** — the real
   installer. It renders the NGINX IP-allowlist
   (`simp_gitlab/etc/nginx/http_access_list.conf.epp`) from `$trusted_nets` /
   `$denied_nets` into `/etc/gitlab/nginx/conf.d/http_access_list.conf`
-  (`install.pp:14-28`); forces the *standard* `AuthorizedKeysFile` path for the
+  (`install.pp`); forces the *standard* `AuthorizedKeysFile` path for the
   GitLab SSH user via `sshd_config` because GitLab's Chef recipes and Puppet
-  cannot both manage the SIMP-customized SSH key path (`install.pp:30-43`);
+  cannot both manage the SIMP-customized SSH key path (`install.pp`);
   declares `class { 'gitlab': * => $simp_gitlab::merged_gitlab_options }`
-  (`install.pp:45-47`); and adds `svckill::ignore { 'gitlab-runsvdir' }` so
+  (`install.pp`); and adds `svckill::ignore { 'gitlab-runsvdir' }` so
   svckill does not reap the runit supervisor when `gitlab::service` is unmanaged
-  (`install.pp:49-51`).
+  (`install.pp`).
 
-- **`simp_gitlab::config` (`manifests/config.pp:6-45`, private)** — post-install
+- **`simp_gitlab::config` (`manifests/config.pp`, private)** — post-install
   configuration. Adds a `pam::access::rule` permitting the GitLab SSH user from
   the trusted nets (rewriting a leading `127.0.0.1` to the PAM `LOCAL` token,
-  `config.pp:9-17`); installs the `/usr/local/sbin/change_gitlab_root_password`
-  helper (`config.pp:19-25`); and, when `$set_gitlab_root_password` is true
+  `config.pp`); installs the `/usr/local/sbin/change_gitlab_root_password`
+  helper (`config.pp`); and, when `$set_gitlab_root_password` is true
   (default), runs that helper via an `exec` guarded by
   `creates => /etc/gitlab/.root_password_set`, ordered after `gitlab::service`
-  (`config.pp:27-43`). The Puppet `timeout` is deliberately set to
+  (`config.pp`). The Puppet `timeout` is deliberately set to
   `$rails_console_load_timeout + 60` so Puppet outlasts the script.
 
 - **`simp_gitlab::config::firewall`
-  (`manifests/config/firewall.pp:6-13`, private)** — a single
+  (`manifests/config/firewall.pp`, private)** — a single
   `iptables::listen::tcp_stateful` opening `$tcp_listen_port` to `$trusted_nets`.
 
-- **`simp_gitlab::config::pki` (`manifests/config/pki.pp:6-50`, private)** —
+- **`simp_gitlab::config::pki` (`manifests/config/pki.pp`, private)** —
   distributes certs via `pki::copy { 'gitlab' }` into
   `/etc/pki/simp_apps/gitlab/x509` and syncs trusted CAs into
   `/etc/gitlab/trusted-certs` with `pki_cert_sync` (`purge => true`,
@@ -95,15 +95,15 @@ The public entry class is `simp_gitlab`; everything else is a private
   workaround: when `letsencrypt.enable` is set in the merged options, it uses a
   resource collector to override the `public` PKI directory to mode `0644` to
   stop permission flapping between the GitLab recipe and `pki::copy`
-  (`config/pki.pp:31-48`).
+  (`config/pki.pp`).
 
 - **`simp_gitlab::omnibus_config::*` functions
   (`functions/omnibus_config/*.pp`)** — five Puppet-language functions
   (`gitlab`, `gitlab_rails`, `gitlab_shell`, `mattermost`, `nginx`) that compute
   the `puppet/gitlab` parameter hash from SIMP settings. `gitlab()` is the top
-  entry point (`init.pp:202`); notably it rewrites the `external_url` to embed a
+  entry point (`init.pp`); notably it rewrites the `external_url` to embed a
   non-standard `$tcp_listen_port` because Omnibus requires the port in the URL
-  for HTTPS (`functions/omnibus_config/gitlab.pp:7-11`).
+  for HTTPS (`functions/omnibus_config/gitlab.pp`).
 
 ### Gotchas / non-obvious details
 
@@ -113,37 +113,37 @@ The public entry class is `simp_gitlab`; everything else is a private
   `puppet/gitlab` or the Omnibus recipes, not here.
 - **The SIMP subsystems are opt-in.** `$firewall`, `$ldap`, and `$pki` all
   default from `simp_options::*` with a fallback of `false`
-  (`init.pp:157,161,162`); `$trusted_nets` defaults to `['127.0.0.1/32']`
-  (`init.pp:156`). A bare `include simp_gitlab` will *not* open a firewall port
+  (`init.pp`); `$trusted_nets` defaults to `['127.0.0.1/32']`
+  (`init.pp`). A bare `include simp_gitlab` will *not* open a firewall port
   or manage certs unless those toggles are set.
 - **`$pki` is tri-state, not boolean.** Its type is `Simp_gitlab::Stroolean`
   = `Variant[Enum['simp'], Boolean]` (`types/stroolean.pp`). `'simp'` includes
   `simp/pki` and copies certs; `true` copies certs but does *not* include
   `simp/pki`; `false` disables cert management entirely (docstring at
-  `init.pp:35-46`). Several defaults (`$external_url`, `$tcp_listen_port`) branch
-  on all three values (`init.pp:158,160`).
+  `init.pp`). Several defaults (`$external_url`, `$tcp_listen_port`) branch
+  on all three values (`init.pp`).
 - **`$allow_fips` defaults to `true`.** Under FIPS the module proceeds by
   default; it only fails hard when an operator explicitly sets
-  `$allow_fips => false` (`init.pp:189,194-196`). Do not assume FIPS is blocked.
+  `$allow_fips => false` (`init.pp`). Do not assume FIPS is blocked.
 - **Firewall is ordered before install on purpose.** `config::firewall` runs
-  *before* `install` (`init.pp:227`) so the port is filtered before GitLab comes
+  *before* `install` (`init.pp`) so the port is filtered before GitLab comes
   up live — reversing this would briefly expose an unfirewalled instance.
 - **The root password exec is idempotent by marker file.**
   `set_gitlab_root_password` only runs while `/etc/gitlab/.root_password_set` is
-  absent (`config.pp:35`); deleting that file re-triggers it.
+  absent (`config.pp`); deleting that file re-triggers it.
 - **`gitlab_root_password` is auto-generated if unset** via
-  `simplib::passgen("simp_gitlab_${trusted['certname']}")` (`init.pp:187`) — it
+  `simplib::passgen("simp_gitlab_${trusted['certname']}")` (`init.pp`) — it
   is per-host and stored in the passgen backend, not hard-coded.
 - **`simp/simp_options` is NOT a declared dependency** in `metadata.json`, yet
   the manifests consume the `simp_options::*` seam via `simplib::lookup`
   (the function ships in `simp/simplib`). Treat the seam as provided by
   `simplib`, not by a `simp_options` runtime dep.
 - **The EPP template path uses the module namespace, not the filesystem path.**
-  `install.pp:14` references `simp_gitlab/etc/nginx/http_access_list.conf.epp`,
+  `install.pp` references `simp_gitlab/etc/nginx/http_access_list.conf.epp`,
   which resolves to `templates/etc/nginx/http_access_list.conf.epp`.
 - **`config::pki` reaches into merged options.** Its Let's Encrypt branch reads
   `$simp_gitlab::merged_gitlab_options['letsencrypt']['enable']`
-  (`config/pki.pp:31`), so that key must survive the deep-merge — a nil
+  (`config/pki.pp`), so that key must survive the deep-merge — a nil
   `letsencrypt` hash would raise at compile time.
 
 ## The `simp_options` / `simplib::lookup` seam
@@ -152,19 +152,19 @@ This is the module's real SIMP-integration seam — the natural target for a
 lookup-path unit test. All calls are in `manifests/init.pp` (class parameter
 defaults):
 
-| Line | Key | `default_value` |
+| File | Key | `default_value` |
 |------|-----|-----------------|
-| `init.pp:156` | `simp_options::trusted_nets` | `['127.0.0.1/32']` |
-| `init.pp:157` | `simp_options::pki` | `false` |
-| `init.pp:161` | `simp_options::firewall` | `false` |
-| `init.pp:162` | `simp_options::ldap` | `false` |
-| `init.pp:164` | `simp_options::ldap::uri` | `[]` |
-| `init.pp:165` | `simp_options::ldap::base_dn` | `simplib::ldap::domain_to_dn()` |
-| `init.pp:166` | `simp_options::ldap::bind_dn` | `"cn=hostAuth,ou=Hosts,${ldap_base_dn}"` |
-| `init.pp:167` | `simp_options::ldap::bind_pw` | `"cn=LDAPAdmin,ou=People,${ldap_base_dn}"` |
-| `init.pp:171` | `simp_options::pki::source` | `'/etc/pki/simp/x509'` |
-| `init.pp:180` | `simp_options::openssl::cipher_suite` | `['DEFAULT', '!MEDIUM']` |
-| `init.pp:185` | `simp_options::package_ensure` | `'installed'` |
+| `init.pp` | `simp_options::trusted_nets` | `['127.0.0.1/32']` |
+| `init.pp` | `simp_options::pki` | `false` |
+| `init.pp` | `simp_options::firewall` | `false` |
+| `init.pp` | `simp_options::ldap` | `false` |
+| `init.pp` | `simp_options::ldap::uri` | `[]` |
+| `init.pp` | `simp_options::ldap::base_dn` | `simplib::ldap::domain_to_dn()` |
+| `init.pp` | `simp_options::ldap::bind_dn` | `"cn=hostAuth,ou=Hosts,${ldap_base_dn}"` |
+| `init.pp` | `simp_options::ldap::bind_pw` | `"cn=LDAPAdmin,ou=People,${ldap_base_dn}"` |
+| `init.pp` | `simp_options::pki::source` | `'/etc/pki/simp/x509'` |
+| `init.pp` | `simp_options::openssl::cipher_suite` | `['DEFAULT', '!MEDIUM']` |
+| `init.pp` | `simp_options::package_ensure` | `'installed'` |
 
 Keep routing SIMP feature toggles through `simplib::lookup('simp_options::*', {
 'default_value' => ... })` with an explicit default rather than assuming
@@ -230,8 +230,8 @@ OracleLinux 7/8/9; Rocky 8/9; AlmaLinux 8/9.
   seam. No `lib/` — it has no Ruby types/providers/functions/facts; every custom
   type, function, and provider it uses comes from the dependencies above.
 - **`assert_private()`** is called in the four private classes —
-  `manifests/config.pp:7`, `manifests/install.pp:10`,
-  `manifests/config/firewall.pp:7`, and `manifests/config/pki.pp:7`. `init.pp`
+  `manifests/config.pp`, `manifests/install.pp`,
+  `manifests/config/firewall.pp`, and `manifests/config/pki.pp`. `init.pp`
   is the public entry class and is not private.
 
 ## Common commands
