@@ -43,8 +43,21 @@ describe 'simp_gitlab' do
               key: 'AuthorizedKeysFile',
               condition: 'User git',
               value: '/var/opt/gitlab/.ssh/authorized_keys',
-            )
+            ).that_requires('Package[openssh-server]')
           }
+
+          # simp/ssh >= 9.0.0 leaves sshd unmanaged unless asked, so there is
+          # no Service['sshd'] to notify on a bare include
+          it { is_expected.not_to contain_service('sshd') }
+          it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with_notify(nil) }
+
+          context 'when the ssh module manages the sshd service' do
+            let(:facts) { super().merge('custom_hiera' => 'sshd_managed') }
+
+            it { is_expected.to compile.with_all_deps }
+            it { is_expected.to contain_service('sshd').with_ensure('running') }
+            it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').that_notifies('Service[sshd]') }
+          end
 
           it {
             is_expected.to contain_class('gitlab').with(

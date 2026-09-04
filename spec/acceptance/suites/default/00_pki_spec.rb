@@ -21,6 +21,11 @@ describe 'simp_gitlab pki tls' do
         },
         'vagrant' => nil,
       },
+      # simp/ssh >= 9.0.0 only manages sshd when asked; simp_gitlab needs a
+      # managed sshd so its AuthorizedKeysFile setting for the git user is
+      # picked up
+      'ssh::server::service_ensure'           => 'running',
+      'ssh::server::service_enable'           => true,
       'ssh::server::conf::permitrootlogin'    => true,
       'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
     }
