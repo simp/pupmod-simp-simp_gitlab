@@ -178,10 +178,11 @@ include 'simp_gitlab'
 ```
 
 `simp_gitlab` includes the SIMP `ssh` module and adds an `AuthorizedKeysFile`
-`sshd_config` entry for the GitLab `git` user. As of `simp/ssh` 9.0.0, that
-module no longer manages the `sshd` service unless asked, so make sure the
-service is managed (otherwise the new setting is not picked up until sshd is
-restarted by other means). Either set the parameters directly:
+`sshd_config` entry for the GitLab `git` user (via
+`ssh::server::sshd_config_entry`). As of `simp/ssh` 9.0.0, that module no
+longer manages the `sshd` service unless asked, so make sure the service is
+managed (otherwise the new setting is not picked up until sshd is restarted by
+other means). Either set the parameters directly:
 
 ```yaml
 ssh::server::service_ensure: running

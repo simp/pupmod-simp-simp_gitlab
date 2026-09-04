@@ -38,6 +38,13 @@ describe 'simp_gitlab' do
           }
 
           it {
+            is_expected.to contain_ssh__server__sshd_config_entry('AuthorizedKeysFile GitLab user').with(
+              key: 'AuthorizedKeysFile',
+              condition: 'User git',
+              value: '/var/opt/gitlab/.ssh/authorized_keys',
+            ).that_comes_before('Class[gitlab]')
+          }
+          it {
             is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with(
               ensure: 'present',
               key: 'AuthorizedKeysFile',

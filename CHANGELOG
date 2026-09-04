@@ -1,12 +1,14 @@
 * Fri Sep 04 2026 Steven Pritchard <steve@sicura.us> - 1.1.0
 - Support the simp/ssh 9.x rewrite, which no longer manages the `sshd` service
-  (or `Service['sshd']` in the catalog) on a bare `include ssh`. The
-  `AuthorizedKeysFile` entry for the GitLab `git` user now only notifies
-  `Service['sshd']` when the ssh module has been asked to manage the service
-  via `ssh::server::service_ensure`/`ssh::server::service_enable`, so the
-  catalog compiles either way. Set one of those (or enable the ssh module's
-  `simp:defaults` profile) so sshd picks up the new setting.
-- Require simp/ssh >= 9.0.0 < 10.0.0
+  (or declares `Service['sshd']`) on a bare `include ssh`. The
+  `AuthorizedKeysFile` entry for the GitLab `git` user is now declared with the
+  `ssh::server::sshd_config_entry` defined type (new in simp/ssh 9.2.0), which
+  orders the entry after the openssh-server package and notifies
+  `Service['sshd']` only when the ssh module has been asked to manage the
+  service. Set `ssh::server::service_ensure`/`ssh::server::service_enable` (or
+  enable the ssh module's `simp:defaults` profile) so sshd picks up the new
+  setting.
+- Require simp/ssh >= 9.2.0 < 10.0.0
 - Opt in to sshd service management in the acceptance test hieradata
 
 * Mon Aug 24 2026 Steven Pritchard <steve@sicura.us> - 1.0.1
