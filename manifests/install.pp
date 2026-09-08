@@ -33,13 +33,17 @@ class simp_gitlab::install {
   # (including ownership, permissions and selinux context of
   # directory in which ssh authorized keys file exists) cannot be
   # simultaneously, but independently, managed by Puppet.
-  sshd_config { 'AuthorizedKeysFile GitLab user':
-    ensure    => present,
+  #
+  # The ssh module's defined type handles ordering after the openssh-server
+  # package and notifies the sshd service only when the ssh module manages it
+  # (service management is opt-in as of simp/ssh 9.0.0).  When sshd is
+  # unmanaged, this setting is not picked up until sshd is restarted by other
+  # means.
+  ssh::server::sshd_config_entry { 'AuthorizedKeysFile GitLab user':
     key       => 'AuthorizedKeysFile',
     condition => "User ${simp_gitlab::gitlab_ssh_user}",
     value     => $simp_gitlab::gitlab_ssh_keyfile,
     before    => Class['gitlab'],
-    notify    => Service['sshd'],
   }
 
   class { 'gitlab':

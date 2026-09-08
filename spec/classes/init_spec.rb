@@ -38,13 +38,27 @@ describe 'simp_gitlab' do
           }
 
           it {
-            is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with(
-              ensure: 'present',
+            is_expected.to contain_ssh__server__sshd_config_entry('AuthorizedKeysFile GitLab user').with(
               key: 'AuthorizedKeysFile',
               condition: 'User git',
               value: '/var/opt/gitlab/.ssh/authorized_keys',
-            )
+            ).that_comes_before('Class[gitlab]')
           }
+          # simp/ssh >= 9.0.0 leaves sshd unmanaged unless asked, so there is
+          # no Service['sshd'] to notify on a bare include
+          it { is_expected.not_to contain_service('sshd') }
+          it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with_notify(nil) }
+
+          context 'when the ssh module manages the sshd service' do
+            # `timezone_file` is the ssh module's own custom fact; its managed
+            # branch interpolates it into a file source, so stub it as the ssh
+            # module's specs do
+            let(:facts) { super().merge('custom_hiera' => 'sshd_managed', 'timezone_file' => '/etc/localtime') }
+
+            it { is_expected.to compile.with_all_deps }
+            it { is_expected.to contain_service('sshd').with_ensure('running') }
+            it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').that_notifies('Service[sshd]') }
+          end
 
           it {
             is_expected.to contain_class('gitlab').with(

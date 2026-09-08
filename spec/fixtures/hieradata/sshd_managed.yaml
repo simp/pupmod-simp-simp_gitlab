@@ -1,0 +1,4 @@
+---
+# Opt in to sshd service management (simp/ssh >= 9.0.0)
+ssh::server::service_ensure: running
+ssh::server::service_enable: true
