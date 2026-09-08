@@ -50,7 +50,10 @@ describe 'simp_gitlab' do
           it { is_expected.to contain_sshd_config('AuthorizedKeysFile GitLab user').with_notify(nil) }
 
           context 'when the ssh module manages the sshd service' do
-            let(:facts) { super().merge('custom_hiera' => 'sshd_managed') }
+            # `timezone_file` is the ssh module's own custom fact; its managed
+            # branch interpolates it into a file source, so stub it as the ssh
+            # module's specs do
+            let(:facts) { super().merge('custom_hiera' => 'sshd_managed', 'timezone_file' => '/etc/localtime') }
 
             it { is_expected.to compile.with_all_deps }
             it { is_expected.to contain_service('sshd').with_ensure('running') }
