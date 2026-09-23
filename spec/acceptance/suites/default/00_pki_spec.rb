@@ -111,6 +111,12 @@ describe 'simp_gitlab pki tls' do
 
       apply_manifest_on(gitlab_server, test_prep_manifest)
       on(gitlab_server, 'puppet resource service firewalld ensure=stopped')
+
+      # The raw `iptables_rule` needs the iptables command, but with
+      # `iptables::enable => 'ignore'` nothing installs it, and minimal EL10
+      # images do not ship it. Installing by path lets dnf pick whichever
+      # package provides it on each EL version.
+      on(gitlab_server, 'dnf -y install --disablerepo="epel*" /usr/sbin/iptables')
     end
 
     it 'works with no errors' do
