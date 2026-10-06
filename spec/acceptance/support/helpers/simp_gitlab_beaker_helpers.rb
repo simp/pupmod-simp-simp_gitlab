@@ -1,4 +1,3 @@
-# rubocop:disable Style/OneClassPerFile -- nested helper namespace requires
 # forward-declaring the parent module in this single file (see note below).
 # Namespace for simp_gitlab acceptance-test helpers.
 # NOTE: This bare module declaration MUST come first. The `SutVariables`

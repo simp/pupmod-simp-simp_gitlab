@@ -38,12 +38,11 @@ class GitlabSigninForm
 
     unless msg.empty?
       warn "WARNING: #{msg}", '-' * 80, ''
-      # rubocop:disable Lint/Debugger
+      # rubocop:disable-next Lint/Debugger
       if ENV['PRY'] == 'yes'
         warn "ENV['PRY'] is set to 'yes'; switching to pry console"
         binding.pry
       end
-      # rubocop:enable Lint/Debugger
       raise 'ERROR: Not a recognizable signin form'
     end
     form
