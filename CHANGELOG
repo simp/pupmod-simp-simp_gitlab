@@ -1,3 +1,7 @@
+* Thu Oct 08 2026 Steven Pritchard <steve@sicura.us> - 1.2.0
+- Add support for OpenVox 9
+- Update metadata.json dependency ranges from the Forge
+
 * Fri Sep 04 2026 Steven Pritchard <steve@sicura.us> - 1.1.0
 - Support the simp/ssh 9.x rewrite, which no longer manages the `sshd` service
   (or declares `Service['sshd']`) on a bare `include ssh`. The
