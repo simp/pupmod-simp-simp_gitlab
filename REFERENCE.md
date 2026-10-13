@@ -479,4 +479,3 @@ Returns: `Any` Hash of settings for the 'gitlab::nginx' parameter
 Valid PKI management options
 
 Alias of `Variant[Enum['simp'], Boolean]`
-
