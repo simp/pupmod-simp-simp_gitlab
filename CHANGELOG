@@ -1,3 +1,9 @@
+* Thu Nov 12 2026 Steven Pritchard <steve@sicura.us> - 1.2.1
+- Allow simp/ssh 10.x. The `AuthorizedKeysFile` entry for the GitLab `git` user
+  is a `Match User` block in `sshd_config`, which ssh 10.0.0 does not move, so
+  it still takes precedence over the global value ssh 10 writes to
+  `/etc/ssh/sshd_config.d/00-simp.conf` on EL9+
+
 * Thu Oct 08 2026 Steven Pritchard <steve@sicura.us> - 1.2.0
 - Add support for OpenVox 9
 - Update metadata.json dependency ranges from the Forge
